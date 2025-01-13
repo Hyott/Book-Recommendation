@@ -3,7 +3,7 @@
 | Name          | Role                   | GitHub Profile                              | Key Contributions               |
 |---------------|------------------------|---------------------------------------------|----------------------------------|
 | **Hyocheol Ahn** | 추후작성        | [@Hyott](https://github.com/Hyott)    | 추후작성 |
-| **Seohyeon**   | 추후작성     | [@boblee](https://github.com/heabppi)        | 추후작성 |
+| **Seohyeon**   | 추후작성     | [@heabppi](https://github.com/heabppi)        | 추후작성 |
 | **Charlie Yoo** | 추후작성   | [@charlieyoo](https://github.com/charlieyoo)| 추후작성|
 
 ### Special Thanks
