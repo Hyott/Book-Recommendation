@@ -4,7 +4,7 @@
 |---------------|------------------------|---------------------------------------------|----------------------------------|
 | **Hyocheol Ahn** | 추후작성        | [@Hyott](https://github.com/Hyott)    | 추후작성 |
 | **Bob Lee**   | 추후작성     | [@boblee](https://github.com/boblee)        | 추후작성 |
-| **Charlie Yoo** | 추후작성   | [@charlieyoo](https://github.com/charlieyoo)| 추후작성|
+| **Yeeun Seo** | 추후작성   | [@seo9045](https://github.com/seo9045)| 추후작성|
 
 ### Special Thanks
 - **Mentor:** [JinYeong Choi](https://www.linkedin.com/in/jin0choi/)
