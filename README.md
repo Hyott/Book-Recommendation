@@ -2,7 +2,7 @@
 ### Team
 | Name          | Role                   | GitHub Profile                              | Key Contributions               |
 |---------------|------------------------|---------------------------------------------|----------------------------------|
-| **Alice Kim** | 추후작성        | [@alicekim](https://github.com/alicekim)    | 추후작성 |
+| **Hyocheol Ahn** | 추후작성        | [@Hyott](https://github.com/Hyott)    | 추후작성 |
 | **Bob Lee**   | 추후작성     | [@boblee](https://github.com/boblee)        | 추후작성 |
 | **Charlie Yoo** | 추후작성   | [@charlieyoo](https://github.com/charlieyoo)| 추후작성|
 
