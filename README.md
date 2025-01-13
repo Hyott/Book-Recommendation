@@ -7,9 +7,8 @@ https://drive.google.com/drive/folders/1Fwagsc1JuDP8kbqkDSTzfTQXWDvehur-?usp=sha
 | Name          | Role                   | GitHub Profile                              | Key Contributions               |
 |---------------|------------------------|---------------------------------------------|----------------------------------|
 | **Hyocheol Ahn** | 추후작성        | [@Hyott](https://github.com/Hyott)    | 추후작성 |
-| **Yeeun Seo** | 추후작성   | [@seo9045](https://github.com/seo9045)| 추후작성|
-| **Seohyeon**   | 추후작성     | [@heabppi](https://github.com/heabppi)        | 추후작성 |
-
+| **Yeeun Seo**    | 추후작성        | [@seo9045](https://github.com/seo9045)| 추후작성 |
+| **Seohyeon**     | 추후작성        | [@heabppi](https://github.com/heabppi)| 추후작성 |
 
 ### Special Thanks
 - **Mentor:** [JinYeong Choi](https://www.linkedin.com/in/jin0choi/)
