@@ -1,5 +1,15 @@
-## Git Commit Message Convention
+## Project Member
+### Team
+| Name          | Role                   | GitHub Profile                              | Key Contributions               |
+|---------------|------------------------|---------------------------------------------|----------------------------------|
+| **Alice Kim** | 추후작성        | [@alicekim](https://github.com/alicekim)    | 추후작성 |
+| **Bob Lee**   | 추후작성     | [@boblee](https://github.com/boblee)        | 추후작성 |
+| **Charlie Yoo** | 추후작성   | [@charlieyoo](https://github.com/charlieyoo)| 추후작성|
 
+### Special Thanks
+- **Mentor:** [JinYeong Choi](https://www.linkedin.com/in/jin0choi/)
+
+## Git Commit Message Convention
 프로젝트의 Git 커밋 메시지는 일관성을 유지하기 위해 다음과 같은 헤더를 사용합니다. 이 규칙을 따르면 커밋의 목적을 명확히 알 수 있어 협업과 코드 리뷰가 더 효율적입니다.
 
 | **헤더**    | **의미**                                                                                   | **예시**                                     |
