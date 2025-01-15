@@ -1,3 +1,5 @@
 .env
 *.tsv
 *.csv
+*.json
+*.ttf
