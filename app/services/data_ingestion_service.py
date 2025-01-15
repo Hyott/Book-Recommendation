@@ -7,8 +7,10 @@ def create_tables(conn):
             isbn VARCHAR(20) PRIMARY KEY,
             title VARCHAR(255) NOT NULL,
             publisher VARCHAR(255),
+            publication_date DATE,
             description TEXT,
             key_sentences TEXT,
+            image VARCHAR(2083),
             category VARCHAR(100)
         );
         """,
