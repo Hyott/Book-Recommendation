@@ -17,17 +17,19 @@ def insert_books_and_authors(conn, json_file):
         for entry in data:
             # books 테이블 데이터 삽입
             book_query = """
-            INSERT INTO books (isbn, title, publisher, description, key_sentences, category)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO books (isbn, title, publisher, publication_date, description, image, key_sentences, category)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (isbn) DO NOTHING;
             """
             cursor.execute(book_query, (
-                entry.get('isbn13'),
-                entry.get('title'),
-                entry.get('publisher'),
-                entry.get('description'),
-                entry.get('key_sentences'),  # key_sentences
-                "essay"  # 모든 항목에 대해 'essay'로 설정
+                entry.get('isbn13'),                      # isbn
+                entry.get('title'),                       # title
+                entry.get('publisher'),                   # publisher
+                entry.get('publication_date'),                    # publication_date
+                entry.get('description'),                 # description
+                entry.get('img_url'),                       # image
+                entry.get('key_sentences'),               # key_sentences
+                "essay"                                   # category
             ))
 
             # 작가 이름이 쉼표로 구분된 경우 처리
