@@ -3,4 +3,5 @@
 *.csv
 *.json
 *.ttf
-api_db_connection.py
+api_db_connection.py*.pyc
+*.pyc
