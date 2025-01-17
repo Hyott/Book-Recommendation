@@ -4,7 +4,7 @@ def create_tables(conn):
     queries = [
         """
         CREATE TABLE IF NOT EXISTS books (
-            isbn VARCHAR(20) PRIMARY KEY,
+            isbn VARCHAR(30) PRIMARY KEY,
             title VARCHAR(255) NOT NULL,
             publisher VARCHAR(255),
             publication_date DATE,
@@ -18,7 +18,7 @@ def create_tables(conn):
         CREATE TABLE IF NOT EXISTS book_authors (
             author_id SERIAL PRIMARY KEY,
             name VARCHAR(255) NOT NULL,
-            isbn VARCHAR(20) NOT NULL,
+            isbn VARCHAR(30) NOT NULL,
             FOREIGN KEY (isbn) REFERENCES books (isbn) ON DELETE CASCADE
         );
         """,
@@ -31,7 +31,7 @@ def create_tables(conn):
         """,
         """
         CREATE TABLE IF NOT EXISTS book_tags (
-            isbn VARCHAR(20),
+            isbn VARCHAR(30),
             tag_id INT,
             PRIMARY KEY (isbn, tag_id),
             FOREIGN KEY (isbn) REFERENCES books (isbn) ON DELETE CASCADE,
@@ -56,7 +56,7 @@ def create_tables(conn):
             try:
                 cursor.execute(query)
                 conn.commit()  # 각 쿼리를 개별적으로 커밋
-                print("Query executed successfully!")
+                print("Query executed successfully!num:1")
             except Exception as e:
                 conn.rollback()  # 특정 쿼리에서 실패하면 롤백
                 print(f"Error executing query: {e}")
