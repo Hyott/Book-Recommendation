@@ -8,7 +8,9 @@ def create_tables(conn):
             publisher VARCHAR(255),
             author VARCHAR(255),
             image_url VARCHAR(2083),
-            category VARCHAR(100)
+            category VARCHAR(100),
+            description TEXT,  -- JSON 배열을 사용하여 설명 저장
+            key_sentences TEXT  -- 핵심 문장도 JSON 배열로 저장
         );
         """,
         """
@@ -65,7 +67,6 @@ def create_tables(conn):
         """
     ]
 
-
     cursor = None
     try:
         cursor = conn.cursor()
@@ -73,12 +74,12 @@ def create_tables(conn):
             try:
                 cursor.execute(query)
                 conn.commit()  # 각 쿼리를 개별적으로 커밋
-                print("Query executed successfully!")
+                print("✅ Query executed successfully!")
             except Exception as e:
                 conn.rollback()  # 특정 쿼리에서 실패하면 롤백
-                print(f"Error executing query: {e}")
+                print(f"❌ Error executing query: {e}")
     except Exception as e:
-        print("Error during table creation process:", e)
+        print(f"❌ Error during table creation process: {e}")
     finally:
         if cursor:
             cursor.close()
