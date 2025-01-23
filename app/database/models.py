@@ -1,4 +1,5 @@
-# 데이터베이스 테이블을 정의하는 모델 정의
+# 데이터베이스 테이블을 정의하는 SQLAlchemy 모델 클래스 모음
+# 각 모델 정의
 from sqlalchemy import Column, String, Text, ARRAY, Integer, TIMESTAMP, ForeignKey
 from sqlalchemy.sql import func
 from .database import Base
