@@ -46,3 +46,50 @@ def insert_books(conn, json_file):
 
     finally:
         cursor.close()
+
+
+
+def insert_hashtag_message_data(cursor, json_file):
+    """
+    llm.json 파일을 읽고, sentences, tags, book_tags 테이블에 데이터를 삽입한다.
+    """
+    with open(json_file, "r", encoding="utf-8") as f:
+        books_data = json.load(f)
+
+    tag_map = {}  # 태그 이름 -> tag_id 매핑
+
+    for book_key, book_info in books_data.items():
+        isbn = str(book_info["isbn13"])  # ISBN을 문자열로 변환
+        sentence = book_info["message"]  # 핵심 문장
+        hashtags = book_info["hashtags"].split("#")[1:]  # 태그 리스트 (첫 # 제거 후 리스트화)
+
+        # 🔹 1. sentences 테이블에 데이터 삽입
+        cursor.execute(
+            "INSERT INTO sentences (isbn, sentence) VALUES (%s, %s) RETURNING id;",
+            (isbn, sentence)
+        )
+        sentence_id = cursor.fetchone()[0]
+
+        # 🔹 2. tags 테이블에 태그 삽입 (중복 방지)
+        for tag in hashtags:
+            tag = tag.strip()
+            if tag not in tag_map:
+                cursor.execute("SELECT id FROM tags WHERE name = %s;", (tag,))
+                tag_id = cursor.fetchone()
+
+                if tag_id is None:
+                    cursor.execute(
+                        "INSERT INTO tags (name) VALUES (%s) RETURNING id;",
+                        (tag,)
+                    )
+                    tag_id = cursor.fetchone()[0]
+                else:
+                    tag_id = tag_id[0]
+
+                tag_map[tag] = tag_id  # 태그 매핑 저장
+
+            # 🔹 3. book_tags 테이블에 isbn과 tag_id 삽입 (중복 방지)
+            cursor.execute(
+                "INSERT INTO book_tags (isbn, tag_id) VALUES (%s, %s) ON CONFLICT DO NOTHING;",
+                (isbn, tag_map[tag])
+            )
