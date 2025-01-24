@@ -1,33 +1,38 @@
-# 데이터베이스 테이블을 정의하는 SQLAlchemy 모델 클래스 모음
-# 각 모델 정의
-from sqlalchemy import Column, String, Text, ARRAY, Integer, TIMESTAMP, ForeignKey
-from sqlalchemy.sql import func
-from .database import Base
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey
 
-class UserResponse(Base):
+Base = declarative_base()
+
+class BookTable(Base):
+    __tablename__ = "books"
+    isbn = Column(String, primary_key=True)
+    title = Column(String, nullable=False)
+    publisher = Column(String, nullable=False)
+    author = Column(String, nullable=False)
+    image_url = Column(String, nullable=False)
+    category = Column(String, nullable=False)
+
+class TagTable(Base):
+    __tablename__ = "tags"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String, nullable=False)
+
+class SentenceTable(Base):
+    __tablename__ = "sentences"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    isbn = Column(String, ForeignKey("books.isbn"), nullable=False)
+    sentence = Column(String, nullable=False)
+
+class BookTagTable(Base):
+    __tablename__ = "book_tags"
+    isbn = Column(String, ForeignKey("books.isbn"), primary_key=True)
+    tag_id = Column(Integer, ForeignKey("tags.id"), primary_key=True)
+
+class UserResponseTable(Base):
     __tablename__ = "user_responses"
-
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, nullable=False)
     question_number = Column(Integer, nullable=False)
-    g_sentence_id = Column(Integer, ForeignKey("sentences.g_sentence_id", ondelete="CASCADE"), nullable=False)
-    created_at = Column(TIMESTAMP, default=func.now())
-
-class Book(Base):
-    __tablename__ = "books"
-
-    isbn = Column(String(30), primary_key=True, index=True)
-    title = Column(String(255), nullable=False)
-    publisher = Column(String(255))
-    author = Column(String(255))
-    image_url = Column(String(2083))
-    category = Column(String(100))
-    description = Column(ARRAY(Text))
-    key_sentences = Column(ARRAY(Text))
-
-class NewBooks(Base):
-    __tablename__ = "new_books"
-
-    isbn = Column(String(30), primary_key=True)
-    message = Column(Text)
-    hashtags = Column(String)
+    sentence_id = Column(Integer, ForeignKey("sentences.id"), nullable=False)
+    is_positive = Column(Boolean, nullable=False)
+    datetime = Column(DateTime, nullable=True)
