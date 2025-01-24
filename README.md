@@ -2,6 +2,7 @@
 ## Google Drive URL :
 https://drive.google.com/drive/folders/1Fwagsc1JuDP8kbqkDSTzfTQXWDvehur-?usp=sharing
 
+
 ### Team
 | Name          | Role                   | GitHub Profile                              | Key Contributions               |
 |---------------|------------------------|---------------------------------------------|----------------------------------|
@@ -9,8 +10,10 @@ https://drive.google.com/drive/folders/1Fwagsc1JuDP8kbqkDSTzfTQXWDvehur-?usp=sha
 | **Yeeun Seo** | 추후작성   | [@seo9045](https://github.com/seo9045)| 추후작성|
 | **Seohyeon**   | 추후작성     | [@heabppi](https://github.com/heabppi)        | 추후작성 |
 
+
 ### Special Thanks
 - **Mentor:** [JinYeong Choi](https://www.linkedin.com/in/jin0choi/)
+
 
 ## Git Commit Message Convention
 프로젝트의 Git 커밋 메시지는 일관성을 유지하기 위해 다음과 같은 헤더를 사용합니다. 이 규칙을 따르면 커밋의 목적을 명확히 알 수 있어 협업과 코드 리뷰가 더 효율적입니다.
@@ -23,6 +26,7 @@ https://drive.google.com/drive/folders/1Fwagsc1JuDP8kbqkDSTzfTQXWDvehur-?usp=sha
 | `style`     | 코드 스타일 변경 (기능에는 영향 없음, 예: 포매팅, 공백 추가 등)                              | `style: Format code with black`            |
 | `refactor`  | 코드 리팩토링 (기능 변경 없이 구조 개선)                                                    | `refactor: Simplify book parsing logic`    |
 | `test`      | 테스트 코드 추가 또는 수정                                                                  | `test: Add unit tests for API endpoints`   |
+
 
 ### 커밋 메시지 작성 규칙
 
