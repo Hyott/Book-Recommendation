@@ -66,8 +66,6 @@ beta_values = np.ones(num_books)
 # 이미 제시된 책을 저장할 세트
 presented_books = set()
 
-
-
 ##############################################################################
 
 def thompson_sampling(alpha, beta_values):
@@ -75,7 +73,6 @@ def thompson_sampling(alpha, beta_values):
     Thompson Sampling을 수행하여 각 책의 확률 값을 샘플링.
     """
     return np.random.beta(alpha, beta_values)
-
 
 
 def select_books(cluster_to_books, alpha, beta_values, presented_books, exploration_prob=0.3, noise_factor=0.3):
@@ -127,7 +124,6 @@ def select_books(cluster_to_books, alpha, beta_values, presented_books, explorat
             [(idx, noisy_samples[idx]) for idx in range(len(alpha)) if idx not in presented_books and idx != best_book_a],
             key=lambda x: x[1]
         )[0]
-
     # 중복 방지
     presented_books.add(best_book_a)
     presented_books.add(random_book_b)
@@ -155,7 +151,7 @@ def get_message_by_id(ids, book_id, book_data):
     return book_data[idx]["message"]
 
 
-
+########################################################################
     # === 메인 루프 ===
 
 for round_num in range(12):
@@ -177,7 +173,6 @@ for round_num in range(12):
     # 책 메시지 조회
     message_a = get_message_by_id(ids, ids[book_a], book_data)
     message_b = get_message_by_id(ids, ids[book_b], book_data)
-
 
     # 초기 설정
     initial_prob = 0.3
@@ -207,7 +202,7 @@ for round_num in range(12):
     update_data(choice, book_a, book_b, alpha, beta_values)
 
 
-    ##############
+####################################################################
     # === 최종 추천 ===
 
 # 사용자 선택 데이터를 기반으로 선호 중심 계산
