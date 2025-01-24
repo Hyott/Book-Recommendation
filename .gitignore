@@ -3,4 +3,5 @@
 *.csv
 *.json
 *.ttf
-*.txt.DS_Store
+api_db_connection.py*.pyc
+*.pyc

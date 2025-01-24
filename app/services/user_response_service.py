@@ -1,3 +1,4 @@
+# 사용자의 응답 데이터를 저장
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.database.models import UserResponse
