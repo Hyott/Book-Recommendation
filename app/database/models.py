@@ -11,6 +11,7 @@ class BookTable(Base):
     author = Column(String, nullable=False)
     image_url = Column(String, nullable=False)
     category = Column(String, nullable=False)
+    publication_date = Column(DateTime, nullable=False)
 
 class TagTable(Base):
     __tablename__ = "tags"
