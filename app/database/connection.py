@@ -67,3 +67,7 @@ def setup_database_and_tables(host, port, user, password, database_name):
     print(f"Tables created in database '{database_name}'.")
 
     return engine
+
+
+def database_engine(host, port, user, password, database_name):
+    return create_engine(f"postgresql://{user}:{password}@{host}:{port}/{database_name}")
