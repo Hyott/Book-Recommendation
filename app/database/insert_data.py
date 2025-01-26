@@ -1,17 +1,23 @@
-from connection import ensure_database_exists
+from connection import setup_database_and_tables
 from sqlalchemy.orm import sessionmaker
 import json
 from sqlalchemy.exc import IntegrityError
 from models import BookTable
 from connection import database_engine
+from dotenv import load_dotenv
+import os
 
-host = "localhost"
-port = 5432
-user = "postgres"
-password = "1234"
-database_name = "book_recommend"
+# .env 파일 로드
+load_dotenv()
 
-ensure_database_exists(host, port, user, password, database_name)
+# 환경 변수 가져오기
+host = os.getenv("HOST")
+port = os.getenv("PORT")
+user = os.getenv("USER")
+password = os.getenv("PASSWORD")
+database_name = os.getenv("DATABASE_NAME")
+
+setup_database_and_tables(host, port, user, password, database_name)
 engine = database_engine(host, port, user, password, database_name)
 
 Session = sessionmaker(bind=engine)
