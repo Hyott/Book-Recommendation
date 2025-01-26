@@ -1,7 +1,6 @@
-from connection import ensure_database_exists, setup_database_and_tables
+from connection import ensure_database_exists
 from sqlalchemy.orm import sessionmaker
 import json
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
 from models import BookTable
 from connection import database_engine
@@ -13,12 +12,12 @@ password = "1234"
 database_name = "book_recommend"
 
 ensure_database_exists(host, port, user, password, database_name)
-engine = setup_database_and_tables(host, port, user, password, database_name)
+engine = database_engine(host, port, user, password, database_name)
 
 Session = sessionmaker(bind=engine)
 session = Session()
 
-json_file_path = '../../data/scraping/all_book_data_ver_cleaned.json'
+json_file_path = '../../data/scraping/all_book_data_ver_cleaned_JY.json'
 with open(json_file_path, 'r', encoding='utf-8') as file:
   data = json.load(file)
   for book in data:      
