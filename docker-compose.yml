@@ -2,26 +2,28 @@ version: "3.8"
 
 services:
   backend:
-    build: ./backend
+    build: 
+      context: ./app
+      dockerfile: Dockerfile
     container_name: fastapi_backend
     ports:
       - "8000:8000"
     depends_on:
       - db
-    restart: always
     environment:
       DATABASE_URL: postgresql://${USER}:${PASSWORD}@${HOST}:${PORT}/${DATABASE_NAME} # 환경 변수 사용
     env_file:
       - .env # .env 파일 로드
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./flutter_app
+      dockerfile: Dockerfile
     container_name: flutter_frontend
     ports:
       - "8080:80"
     depends_on:
       - backend
-    restart: always
 
   db:
     image: postgres:13
@@ -29,10 +31,12 @@ services:
     restart: always
     ports:
       - "${PORT}:5432" # 환경 변수 사용
-    env_file:
-      - .env # .env 파일 로드
+    environment:
+      POSTGRES_USER: ${USER}
+      POSTGRES_PASSWORD: ${PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
     volumes:
-      - postgres_data:/var/lib/postgresql/data # 호스트:컨테이너
+      - postgres_data:/var/lib/postgresql/data
 
 volumes:
   postgres_data:
