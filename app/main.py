@@ -4,8 +4,18 @@ from .database.connection import get_db
 from .database.crud import get_all_books, get_book_by_isbn
 from .database.schemas import BookSchema
 from typing import List
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+# CORS 설정
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 모든 출처 허용 (배포 시 특정 도메인으로 제한 추천)
+    allow_credentials=True,
+    allow_methods=["*"],  # 모든 HTTP 메서드 허용
+    allow_headers=["*"],  # 모든 헤더 허용
+)
 
 # ✅ 전체 도서 목록 조회 API
 @app.get("/books", response_model=List[BookSchema])
