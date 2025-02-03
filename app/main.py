@@ -1,8 +1,8 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from .database.connection import get_db
-from .database.crud import get_all_books, get_book_by_isbn
-from .database.schemas import BookSchema
+from .database.crud import get_book_by_isbn, get_sentence_by_isbn
+from .database.schemas import BookSchema, SentenceSchema
 from typing import List
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -24,3 +24,11 @@ def read_book(isbn: str, db: Session = Depends(get_db)):
     if book is None:
         raise HTTPException(status_code=404, detail="해당 ISBN의 도서를 찾을 수 없습니다.")
     return book
+
+# ✅ 특정 ISBN으로 생성문장 조회 API
+@app.get("/sentences/{isbn}", response_model=SentenceSchema)
+def read_book(isbn: str, db: Session = Depends(get_db)):
+    sentence = get_sentence_by_isbn(db, isbn)
+    if sentence is None:
+        raise HTTPException(status_code=404, detail="해당 ISBN의 생성문장을 찾을 수 없습니다.")
+    return sentence
