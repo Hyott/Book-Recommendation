@@ -1,37 +1,24 @@
-# FASTAPI 앱을 실행하는 메인 파일
-from fastapi import FastAPI, Depends
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.database.database import engine, get_db
-from app.database.models import Base
-from app.services.book_service import get_books, get_new_books
-from app.services.user_response_service import create_user_response, UserResponseCreate
-
-# ✅ 테이블 생성 (최초 실행 시)
-Base.metadata.create_all(bind=engine)
+from .database.connection import get_db
+from .database.crud import get_all_books, get_book_by_isbn
+from .database.schemas import BookSchema
+from typing import List
 
 app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# ✅ 전체 도서 목록 조회 API
+@app.get("/books", response_model=List[BookSchema])
+def read_books(db: Session = Depends(get_db)):
+    books = get_all_books(db)
+    if not books:
+        raise HTTPException(status_code=404, detail="도서 목록이 없습니다.")
+    return books
 
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to the Book Recommendation API!"}
-
-@app.get("/books/")
-def fetch_books(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-    return get_books(db, skip, limit)
-
-@app.get("/newbooks/")
-def fetch_new_books(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-    return get_new_books(db, skip, limit)
-
-@app.post("/user_responses/")
-def store_user_response(response: UserResponseCreate, db: Session = Depends(get_db)):
-    return create_user_response(response, db)
+# ✅ 특정 ISBN으로 도서 조회 API
+@app.get("/books/{isbn}", response_model=BookSchema)
+def read_book(isbn: str, db: Session = Depends(get_db)):
+    book = get_book_by_isbn(db, isbn)
+    if book is None:
+        raise HTTPException(status_code=404, detail="해당 ISBN의 도서를 찾을 수 없습니다.")
+    return book
