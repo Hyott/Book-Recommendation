@@ -1,0 +1,58 @@
+from pydantic import BaseModel
+from datetime import datetime
+from typing import List, Optional
+
+
+# ✅ 1. 도서(Book) 스키마
+class BookSchema(BaseModel):
+    isbn: str
+    title: str
+    publisher: str
+    author: str
+    image_url: str
+    category: str
+    publication_date: datetime
+
+    class Config:
+        orm_mode = True  # ✅ SQLAlchemy ORM 모델과 호환되도록 설정
+
+
+# ✅ 2. 태그(Tag) 스키마
+class TagSchema(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        orm_mode = True
+
+
+# ✅ 3. 문장(Sentence) 스키마
+class SentenceSchema(BaseModel):
+    id: int
+    isbn: str
+    sentence: str
+
+    class Config:
+        orm_mode = True
+
+
+# ✅ 4. 도서-태그 관계(BookTag) 스키마
+class BookTagSchema(BaseModel):
+    isbn: str
+    tag_id: int
+
+    class Config:
+        orm_mode = True
+
+
+# ✅ 5. 사용자 응답(UserResponse) 스키마
+class UserResponseSchema(BaseModel):
+    id: int
+    user_id: int
+    question_number: int
+    sentence_id: int
+    is_positive: bool
+    datetime: Optional[datetime]  # ✅ null 가능
+
+    class Config:
+        orm_mode = True
