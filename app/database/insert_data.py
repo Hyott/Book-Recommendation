@@ -2,7 +2,7 @@ from .connection import setup_database_and_tables
 from sqlalchemy.orm import sessionmaker
 import json
 from sqlalchemy.exc import IntegrityError
-from .models import BookTable
+from .models import BookTable, SentenceTable
 from .connection import database_engine
 from dotenv import load_dotenv
 import os
@@ -24,6 +24,7 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 json_file_path = 'data/scraping/all_book_data_ver_cleaned_JY.json'
+print('books 테이블에 데이터를 넣습니다.')
 with open(json_file_path, 'r', encoding='utf-8') as file:
   data = json.load(file)
   for book in data:      
@@ -45,5 +46,25 @@ with open(json_file_path, 'r', encoding='utf-8') as file:
     except Exception as e:
         session.rollback()
         print(f"오류 발생: {e}")
+
+json_file_path = 'data/scraping/llm_output_fixed.json'
+print('sentences 테이블에 데이터를 넣습니다.')
+with open(json_file_path, 'r', encoding='utf-8') as file:
+  data = json.load(file)
+  for book in data:      
+    book_sentence = SentenceTable(
+                isbn=data[book]["isbn"],
+                sentence=data[book]["sentence"],
+            )
+    try:
+      session.merge(book_sentence)
+      session.commit()
+    except IntegrityError:
+      session.rollback()
+      print(f"중복된 ISBN: {book.isbn} - 삽입을 건너뜁니다.")
+    except Exception as e:
+        session.rollback()
+        print(f"오류 발생: {e}")
+
 
 session.close()
