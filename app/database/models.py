@@ -18,17 +18,13 @@ class TagTable(Base):
     __tablename__ = "tags"
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, nullable=False)
+    isbn = Column(String, ForeignKey("books.isbn"), nullable=False)
 
 class SentenceTable(Base):
     __tablename__ = "sentences"
     id = Column(Integer, primary_key=True, autoincrement=True)
     isbn = Column(String, ForeignKey("books.isbn"), nullable=False)
     sentence = Column(String, nullable=False)
-
-class BookTagTable(Base):
-    __tablename__ = "book_tags"
-    isbn = Column(String, ForeignKey("books.isbn"), primary_key=True)
-    tag_id = Column(Integer, ForeignKey("tags.id"), primary_key=True)
 
 class UserResponseTable(Base):
     __tablename__ = "user_responses"
