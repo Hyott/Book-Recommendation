@@ -1,7 +1,7 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from typing import Optional
 from datetime import datetime
-from typing import List, Optional
-
+from zoneinfo import ZoneInfo
 
 # 도서(Book) 스키마
 class BookSchema(BaseModel):
@@ -38,11 +38,11 @@ class SentenceSchema(BaseModel):
 
 # 사용자 응답(UserResponse) 스키마
 class UserResponseSchema(BaseModel):
-    user_id: int
+    user_id: str = Field(..., description="User ID 또는 UUID")
     question_number: int
     sentence_id: int
     is_positive: bool
-    datetime: Optional[datetime]  # ✅ null 가능
+    datetime: Optional[datetime] = Field(datetime.now(ZoneInfo("Asia/Seoul"))) # ✅ null 가능
 
     class Config:
         orm_mode = True
