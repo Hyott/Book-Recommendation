@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 import json
 from sqlalchemy.exc import IntegrityError
 from .models import BookTable, SentenceTable, UserResponseTable
-from .connection import database_engine
+from .connection import database_engine, drop_all_tabal
 from dotenv import load_dotenv
 import os
 from datetime import datetime
@@ -17,12 +17,15 @@ port = os.getenv("PORT")
 user = os.getenv("USER")
 password = os.getenv("PASSWORD")
 database_name = os.getenv("DATABASE_NAME")
-
-setup_database_and_tables(host, port, user, password, database_name)
 engine = database_engine(host, port, user, password, database_name)
+drop_all_tabal(engine)
+setup_database_and_tables(host, port, user, password, database_name)
+
 
 Session = sessionmaker(bind=engine)
 session = Session()
+
+
 
 json_file_path = 'data/scraping/all_book_data_ver_cleaned_JY.json'
 print('books 테이블에 데이터를 넣습니다.')

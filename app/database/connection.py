@@ -1,6 +1,6 @@
 import psycopg2
 from psycopg2 import sql
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, MetaData
 from .models import Base 
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
@@ -86,6 +86,18 @@ def setup_database_and_tables(host, port, user, password, database_name):
     print(f"Tables created in database '{database_name}'.")
 
     return engine
+
+def drop_all_tabal(engine):
+    print("CASCADE 포함 모든 테이블을 삭제합니다...")
+
+    # 데이터베이스 메타데이터 반영 (현재 DB에 존재하는 모든 테이블 감지)
+    meta = MetaData()
+    meta.reflect(bind=engine)
+
+    # 모든 테이블 삭제 (CASCADE 포함)
+    meta.drop_all(bind=engine)
+
+    print("모든 테이블이 삭제되었습니다.")
 
 
 def database_engine(host, port, user, password, database_name):
