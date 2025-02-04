@@ -31,7 +31,7 @@ class SentenceTable(Base):
 
 class UserResponseTable(Base):
     __tablename__ = "user_responses"
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(String, primary_key=True, autoincrement=True)
     user_id = Column(String, nullable=False, index=True)  
     question_number = Column(Integer, nullable=False)
     sentence_id = Column(Integer, ForeignKey("sentences.id"), nullable=False)
