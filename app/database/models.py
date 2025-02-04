@@ -1,5 +1,7 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey, func
+from zoneinfo import ZoneInfo
+from datetime import datetime
 from pydantic import BaseModel
 
 Base = declarative_base()
@@ -30,8 +32,8 @@ class SentenceTable(Base):
 class UserResponseTable(Base):
     __tablename__ = "user_responses"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, nullable=False)
+    user_id = Column(String, nullable=False, index=True)  
     question_number = Column(Integer, nullable=False)
     sentence_id = Column(Integer, ForeignKey("sentences.id"), nullable=False)
     is_positive = Column(Boolean, nullable=False)
-    datetime = Column(DateTime, nullable=True)
+    datetime = Column(DateTime, default=datetime.now(ZoneInfo("Asia/Seoul")), nullable=True)
