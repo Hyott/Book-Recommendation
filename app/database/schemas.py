@@ -42,7 +42,7 @@ class UserResponseSchema(BaseModel):
     question_number: int
     sentence_id: int
     is_positive: bool
-    datetime: Optional[datetime] = Field(datetime.now(ZoneInfo("Asia/Seoul"))) # ✅ null 가능
+    datetime: datetime
 
     class Config:
         orm_mode = True

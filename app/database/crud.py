@@ -25,6 +25,6 @@ def add_user_response(response: UserResponseSchema):
             question_number=response.question_number,
             sentence_id=response.sentence_id,
             is_positive=response.is_positive,
-            datetime=datetime.now(ZoneInfo("Asia/Seoul"))
+            datetime=datetime.now().isoformat()
         )
     return new_response

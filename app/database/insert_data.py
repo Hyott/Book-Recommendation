@@ -14,9 +14,10 @@ load_dotenv()
 # 환경 변수 가져오기
 host = os.getenv("HOST")
 port = os.getenv("PORT")
-user = os.getenv("USER")
-password = os.getenv("PASSWORD")
+user = os.getenv("POSTGRES_USER")
+password = os.getenv("POSTGRES_PASSWORD")
 database_name = os.getenv("DATABASE_NAME")
+
 engine = database_engine(host, port, user, password, database_name)
 drop_all_tabal(engine)
 setup_database_and_tables(host, port, user, password, database_name)
