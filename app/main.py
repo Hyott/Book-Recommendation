@@ -1,8 +1,8 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-from database.connection import get_db
-from database.crud import get_book_by_isbn, get_sentence_by_isbn, add_user_response
-from database.schemas import BookSchema, SentenceSchema, UserResponseSchema
+from .database.connection import get_db
+from .database.crud import get_book_by_isbn, get_sentence_by_isbn, add_user_response, get_tags_by_isbn
+from .database.schemas import BookSchema, SentenceSchema, UserResponseSchema
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -38,4 +38,15 @@ def create_user_response(response: UserResponseSchema, db: Session = Depends(get
     stmt = add_user_response(response)
     db.execute(stmt)
     db.commit()
+    db.refresh(response)
     return response
+
+# 특정 ISBN으로 tags 조회 API
+@app.get("/tags/{isbn}")
+def get_tags(isbn: str, db: Session = Depends(get_db)):
+    tags = get_tags_by_isbn(db, isbn)
+    if tags is None:
+        raise HTTPException(status_code=404, detail="해당 ISBN의 태그를 찾을 수 없습니다.")
+    return {"isbn": isbn, "tags": list(tag[0] for tag in tags)}
+
+    

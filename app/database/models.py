@@ -1,7 +1,8 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey
-from datetime import datetime
+from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey, func
 from zoneinfo import ZoneInfo
+from datetime import datetime
+from pydantic import BaseModel
 
 Base = declarative_base()
 
@@ -18,8 +19,9 @@ class BookTable(Base):
 class TagTable(Base):
     __tablename__ = "tags"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String, nullable=False)
-    isbn = Column(String, ForeignKey("books.isbn"), nullable=False)
+    isbn = Column(String, ForeignKey("books.isbn"), primary_key=True)
+    tag_name = Column(String, nullable=False)
+    date = Column(DateTime, default=func.now(), onupdate=func.now())
 
 class SentenceTable(Base):
     __tablename__ = "sentences"

@@ -150,7 +150,7 @@ class NameInputScreen extends StatelessWidget {
                         .updateUserName(userName);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => BookListPage()),
+                      MaterialPageRoute(builder: (context) => ChooseMessageScreen()),
                     );
                   },
                   child: Text('시작하기'),
