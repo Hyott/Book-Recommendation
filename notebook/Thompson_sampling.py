@@ -29,7 +29,7 @@ def load_embeddings(file_path):
 # === 로드 및 사용 ===
 
 embedding_save_path = "notebook/book_embeddings.npz"  # 저장된 파일 경로
-json_file_path = 'notebook/notebook/data/llm_output[0:1486].json'
+json_file_path = 'notebook/notebook/data/llm_output_fixed.json'
 # 임베딩 데이터를 로드합니다.
 ids, embeddings = load_embeddings(embedding_save_path)
 # book data load
@@ -50,8 +50,8 @@ assert len(books) == len(ids), "Books length mismatch with IDs!"
 num_books = len(embeddings)
 # === 클러스터링 ===
 
-# KMeans 클러스터링 (50개의 클러스터로 나눔)
-num_clusters = 12
+# KMeans 클러스터링 (n개의 클러스터로 나눔)
+num_clusters = 6
 kmeans = KMeans(n_clusters=num_clusters, random_state=42)
 clusters = kmeans.fit_predict(book_embeddings)
 
@@ -108,8 +108,8 @@ def select_books(cluster_to_books, alpha, beta_values, presented_books, explorat
 
     elif exploration_prob <= 0.18:
     # if book_choice:
-        print(f"book_embeddings shape: {book_embeddings.shape}")
-        print(f"book_embeddings[book_choice] shape: {book_embeddings[book_choice].shape}")
+        # print(f"book_embeddings shape: {book_embeddings.shape}")
+        # print(f"book_embeddings[book_choice] shape: {book_embeddings[book_choice].shape}")
         
         similarities = []
         for idx in range(len(book_embeddings)):
@@ -183,7 +183,8 @@ def update_data(choice, book_a, book_b, alpha, beta_values):
     else:
         beta_values[book_a] += 1
         beta_values[book_b] += 1
-        return book_a
+        return None
+        
 
 
 def get_message_by_id(ids, book_id, book_data):
@@ -198,7 +199,7 @@ def get_message_by_id(ids, book_id, book_data):
     # === 메인 루프 ===
 
 for round_num in range(12):
-    noise_factor = 0.01
+    noise_factor = 0
     # 초기 설정
     initial_prob = 0.3
     decay_factor = 0.9
@@ -217,7 +218,7 @@ for round_num in range(12):
     # #     total_selections = len(presented_books)
     # #     exploration_prob = uncertainty_factor / (uncertainty_factor + total_selections)
     exploration_prob = initial_prob * (decay_factor ** round_num)
-    print(f"{exploration_prob = }")
+    print(f"exploration_prob: {exploration_prob:.2f}")
     # 클러스터 기반 책 쌍 선택
     book_a, book_b = select_books(cluster_to_books, alpha, beta_values, presented_books, exploration_prob, noise_factor, book_choice)
 
@@ -250,17 +251,22 @@ for round_num in range(12):
     #     continue
 
     # 데이터 업데이트
-    book_choice = update_data(choice, book_a, book_b, alpha, beta_values)
+    if choice:
+        book_choice = update_data(choice, book_a, book_b, alpha, beta_values)
+        print('----------Choice----------')
+    if not choice:
+        print("/////// No choice ////////")
     print(f"{book_choice = }")
 
 ####################################################################
     # === 최종 추천 ===
 
 # 사용자 선택 데이터를 기반으로 선호 중심 계산
-selected_books = np.array(list(presented_books))
+selected_books = np.array(list(presented_books)[-5:])
 selected_embeddings = book_embeddings[selected_books]
 weights = np.arange(1, len(selected_books) + 1)  # 가중치 추가  ######### 다시 볼 필요 있음
 preference_center = np.average(selected_embeddings, axis=0, weights=weights).reshape(1, -1)
+
 
 # 중심과 유사한 책 추천 (코사인 유사도 기준)
 similarities = cosine_similarity(preference_center, book_embeddings).flatten()
@@ -282,10 +288,10 @@ def weighted_sampling(similarities, num_samples=10, temperature=0.5):
     return sampled_indices
 
 # 가중치 샘플링을 통한 추천
-final_recommendations = weighted_sampling(similarities, num_samples=10, temperature=0.7)
+final_recommendations = weighted_sampling(similarities, num_samples=10, temperature=0.2)
 
 # 추천 결과 출력
-print("\nTop 10 Recommended Books:")
+print("\nTop 10 Recommended Books:\n")
 for idx in final_recommendations:
     # 책 ID를 이용해 메시지 조회
     book_id = ids[idx]

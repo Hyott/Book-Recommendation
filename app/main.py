@@ -1,37 +1,42 @@
-# FASTAPI 앱을 실행하는 메인 파일
-from fastapi import FastAPI, Depends
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.database.database import engine, get_db
-from app.database.models import Base
-from app.services.book_service import get_books, get_new_books
-from app.services.user_response_service import create_user_response, UserResponseCreate
-
-# ✅ 테이블 생성 (최초 실행 시)
-Base.metadata.create_all(bind=engine)
+from .database.connection import get_db
+from .database.crud import get_book_by_isbn, get_sentence_by_isbn, add_user_response
+from .database.schemas import BookSchema, SentenceSchema, UserResponseSchema
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
+# CORS 설정
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # 모든 출처 허용 (배포 시 특정 도메인으로 제한 추천)
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # 모든 HTTP 메서드 허용
+    allow_headers=["*"],  # 모든 헤더 허용
 )
 
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to the Book Recommendation API!"}
+# ✅ 특정 ISBN으로 도서 조회 API
+@app.get("/books/{isbn}", response_model=BookSchema)
+def read_book(isbn: str, db: Session = Depends(get_db)):
+    book = get_book_by_isbn(db, isbn)
+    if book is None:
+        raise HTTPException(status_code=404, detail="해당 ISBN의 도서를 찾을 수 없습니다.")
+    return book
 
-@app.get("/books/")
-def fetch_books(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-    return get_books(db, skip, limit)
+# ✅ 특정 ISBN으로 생성문장 조회 API
+@app.get("/sentences/{isbn}", response_model=SentenceSchema)
+def read_book(isbn: str, db: Session = Depends(get_db)):
+    sentence = get_sentence_by_isbn(db, isbn)
+    if sentence is None:
+        raise HTTPException(status_code=404, detail="해당 ISBN의 생성문장을 찾을 수 없습니다.")
+    return sentence
 
-@app.get("/newbooks/")
-def fetch_new_books(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-    return get_new_books(db, skip, limit)
 
 @app.post("/user_responses/")
-def store_user_response(response: UserResponseCreate, db: Session = Depends(get_db)):
-    return create_user_response(response, db)
+def create_user_response(response: UserResponseSchema, db: Session = Depends(get_db)):
+    new_response = add_user_response(response)
+    db.add(new_response)
+    db.commit()
+    db.refresh(new_response)
+    return new_response
