@@ -2,10 +2,11 @@ from .connection import setup_database_and_tables
 from sqlalchemy.orm import sessionmaker
 import json
 from sqlalchemy.exc import IntegrityError
-from .models import BookTable, SentenceTable
+from .models import BookTable, SentenceTable, UserResponseTable
 from .connection import database_engine
 from dotenv import load_dotenv
 import os
+from datetime import datetime
 
 # .env 파일 로드
 load_dotenv()
@@ -66,5 +67,29 @@ with open(json_file_path, 'r', encoding='utf-8') as file:
         session.rollback()
         print(f"오류 발생: {e}")
 
+
+json_file_path = 'data/scraping/dummy01.json'
+print('user_response 테이블에 데이터를 넣습니다.')
+with open(json_file_path, 'r', encoding='utf-8') as file:
+  data = json.load(file)
+  for user_response in data:
+    user_responses = UserResponseTable(
+          id = user_response["id"],
+          user_id = user_response['user_id'],
+          question_number = user_response["question_number"],
+          sentence_id = user_response["sentence_id"],
+          is_positive = user_response["is_positive"],
+          datetime=datetime.fromisoformat(user_response['datetime'])
+    )
+
+    try:
+      session.merge(user_responses)
+      session.commit()
+    except IntegrityError:
+      session.rollback()
+      # print(f"중복된 ISBN: {book.isbn} - 삽입을 건너뜁니다.")
+    except Exception as e:
+        session.rollback()
+        print(f"오류 발생: {e}")
 
 session.close()
