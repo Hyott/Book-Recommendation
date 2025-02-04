@@ -12,7 +12,7 @@ import re
 load_dotenv()
 
 # 환경 변수 가져오기
-host = os.getenv("HOST")
+host = 'localhost'
 port = os.getenv("PORT")
 user = os.getenv("POSTGRES_USER")
 password = os.getenv("POSTGRES_PASSWORD")
