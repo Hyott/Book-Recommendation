@@ -1,8 +1,8 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-from .database.connection import get_db
-from .database.crud import get_book_by_isbn, get_sentence_by_isbn, add_user_response, get_tags_by_isbn
-from .database.schemas import BookSchema, SentenceSchema, UserResponseSchema
+from database.connection import get_db
+from database.crud import get_book_by_isbn, get_sentence_by_isbn, add_user_response, get_tags_by_isbn
+from database.schemas import BookSchema, SentenceSchema, UserResponseSchema
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()

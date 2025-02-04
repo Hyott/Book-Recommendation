@@ -2,7 +2,7 @@ from .connection import setup_database_and_tables
 from sqlalchemy.orm import sessionmaker
 import json
 from sqlalchemy.exc import IntegrityError
-from .models import BookTable, SentenceTable, TagTable, UserResponseTable
+from .models import BookTable, SentenceTable, TagTable
 from .connection import database_engine, drop_all_tabal
 from dotenv import load_dotenv
 import os
