@@ -14,7 +14,7 @@ class BookSchema(BaseModel):
     publication_date: datetime
 
     class Config:
-        orm_mode = True  # ✅ SQLAlchemy ORM 모델과 호환되도록 설정
+        from_attributes = True  # ✅ SQLAlchemy ORM 모델과 호환되도록 설정
 
 
 # 태그(Tag) 스키마
@@ -24,7 +24,7 @@ class TagSchema(BaseModel):
     isbn: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 # 문장(Sentence) 스키마
@@ -34,7 +34,7 @@ class SentenceSchema(BaseModel):
     sentence: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # 사용자 응답(UserResponse) 스키마
 class UserResponseSchema(BaseModel):
@@ -45,4 +45,4 @@ class UserResponseSchema(BaseModel):
     datetime: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True

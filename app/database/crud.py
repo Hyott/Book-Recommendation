@@ -4,6 +4,7 @@ from .schemas import UserResponseSchema
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import uuid
+from sqlalchemy.dialects.postgresql import insert
 
 # # ✅ 전체 도서 목록 조회
 # def get_all_books(db: Session):
@@ -20,11 +21,11 @@ def get_sentence_by_isbn(db: Session, isbn: str):
 # ✅ 유저의 log 생성
 def add_user_response(response: UserResponseSchema):
     user_id = response.user_id if response.user_id else str(uuid.uuid4())
-    new_response = UserResponseTable(
+    stmt = insert(UserResponseTable).values(
             user_id=user_id,
             question_number=response.question_number,
             sentence_id=response.sentence_id,
             is_positive=response.is_positive,
-            datetime=datetime.now().isoformat()
-        )
-    return new_response
+            datetime=datetime.now(ZoneInfo("Asia/Seoul"))
+        ).on_conflict_do_nothing()
+    return stmt

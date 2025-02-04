@@ -35,8 +35,7 @@ def read_book(isbn: str, db: Session = Depends(get_db)):
 
 @app.post("/user_responses/")
 def create_user_response(response: UserResponseSchema, db: Session = Depends(get_db)):
-    new_response = add_user_response(response)
-    db.add(new_response)
+    stmt = add_user_response(response)
+    db.execute(stmt)
     db.commit()
-    db.refresh(new_response)
-    return new_response
+    return response
