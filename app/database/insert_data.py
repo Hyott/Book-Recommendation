@@ -2,11 +2,11 @@ from .connection import setup_database_and_tables
 from sqlalchemy.orm import sessionmaker
 import json
 from sqlalchemy.exc import IntegrityError
-from .models import BookTable, SentenceTable, UserResponseTable
+from .models import BookTable, SentenceTable, TagTable
 from .connection import database_engine
 from dotenv import load_dotenv
 import os
-from datetime import datetime
+import re
 
 # .env 파일 로드
 load_dotenv()
@@ -52,44 +52,47 @@ json_file_path = 'data/scraping/llm_output_fixed.json'
 print('sentences 테이블에 데이터를 넣습니다.')
 with open(json_file_path, 'r', encoding='utf-8') as file:
   data = json.load(file)
-  for book in data:      
+
+  tag_id = 1
+  for book_key in data:
+    book = data[book_key]
+    isbn = str(book["isbn"])
+    sentence_text = book["sentence"]
+    hashtags = book["hashtags"]
+
     book_sentence = SentenceTable(
-                isbn=data[book]["isbn"],
-                sentence=data[book]["sentence"],
+                isbn=isbn,
+                sentence=sentence_text,
             )
     try:
       session.merge(book_sentence)
       session.commit()
     except IntegrityError:
       session.rollback()
-      print(f"중복된 ISBN: {book.isbn} - 삽입을 건너뜁니다.")
+      print(f"중복된 ISBN: {isbn} - 'sentences' 삽입을 건너뜁니다.")
     except Exception as e:
         session.rollback()
         print(f"오류 발생: {e}")
 
 
-json_file_path = 'data/scraping/dummy01.json'
-print('user_response 테이블에 데이터를 넣습니다.')
-with open(json_file_path, 'r', encoding='utf-8') as file:
-  data = json.load(file)
-  for user_response in data:
-    user_responses = UserResponseTable(
-          id = user_response["id"],
-          user_id = user_response['user_id'],
-          question_number = user_response["question_number"],
-          sentence_id = user_response["sentence_id"],
-          is_positive = user_response["is_positive"],
-          datetime=datetime.fromisoformat(user_response['datetime'])
-    )
+    cleaned_tags = re.findall(r"#([^\s#\d.][^#]*)", hashtags)
 
-    try:
-      session.merge(user_responses)
-      session.commit()
-    except IntegrityError:
-      session.rollback()
-      # print(f"중복된 ISBN: {book.isbn} - 삽입을 건너뜁니다.")
-    except Exception as e:
+    for tag in cleaned_tags:
+      tag_entry = TagTable(
+        id = tag_id,
+        isbn = isbn,
+        tag_name = tag.strip()
+      )
+      try:
+        session.add(tag_entry)
+        session.commit()
+        tag_id += 1
+      except IntegrityError:
         session.rollback()
-        print(f"오류 발생: {e}")
+        print(f"중복된 ISBN: {isbn} - {tag.strip()} 삽입을 건너뜁니다.")
+      except Exception as e:
+          session.rollback()
+          print(f"오류 발생: {e}")
+
 
 session.close()
