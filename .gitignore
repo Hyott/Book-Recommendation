@@ -6,3 +6,4 @@
 api_db_connection.py*.pyc
 *.pyc
 .DS_Store
+__pycache__/
