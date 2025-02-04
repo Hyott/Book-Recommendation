@@ -29,7 +29,7 @@ def load_embeddings(file_path):
 # === 로드 및 사용 ===
 
 embedding_save_path = "notebook/book_embeddings.npz"  # 저장된 파일 경로
-json_file_path = 'notebook/notebook/data/llm_output.json'
+json_file_path = 'notebook/notebook/data/llm_output_fixed.json'
 # 임베딩 데이터를 로드합니다.
 ids, embeddings = load_embeddings(embedding_save_path)
 # book data load
