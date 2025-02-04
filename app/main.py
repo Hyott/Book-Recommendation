@@ -38,7 +38,6 @@ def create_user_response(response: UserResponseSchema, db: Session = Depends(get
     stmt = add_user_response(response)
     db.execute(stmt)
     db.commit()
-    db.refresh(response)
     return response
 
 # 특정 ISBN으로 tags 조회 API
