@@ -1,9 +1,8 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from .database.connection import get_db
-from .database.crud import get_book_by_isbn, get_sentence_by_isbn
-from .database.schemas import BookSchema, SentenceSchema
-from typing import List
+from .database.crud import get_book_by_isbn, get_sentence_by_isbn, add_user_response
+from .database.schemas import BookSchema, SentenceSchema, UserResponseSchema
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -32,3 +31,12 @@ def read_book(isbn: str, db: Session = Depends(get_db)):
     if sentence is None:
         raise HTTPException(status_code=404, detail="해당 ISBN의 생성문장을 찾을 수 없습니다.")
     return sentence
+
+
+@app.post("/user_responses/")
+def create_user_response(response: UserResponseSchema, db: Session = Depends(get_db)):
+    new_response = add_user_response(response)
+    db.add(new_response)
+    db.commit()
+    db.refresh(new_response)
+    return new_response

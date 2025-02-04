@@ -47,7 +47,6 @@ class BookTagSchema(BaseModel):
 
 # ✅ 5. 사용자 응답(UserResponse) 스키마
 class UserResponseSchema(BaseModel):
-    id: int
     user_id: int
     question_number: int
     sentence_id: int
