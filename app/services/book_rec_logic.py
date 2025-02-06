@@ -75,14 +75,14 @@ def suggest_books():
                                     beta_values, presented_books, exploration_prob, 
                                     noise_factor, book_choice)
     
-    # 책 메시지 조회
-    message_a = get_message_by_id(ids, ids[book_a], book_data)
-    message_b = get_message_by_id(ids, ids[book_b], book_data)
+    # # 책 메시지 조회
+    # message_a = get_message_by_id(ids, ids[book_a], book_data)
+    # message_b = get_message_by_id(ids, ids[book_b], book_data)
 
-    print('\n')
-    print(f"Round {round_num+1}: Choose between:")
-    print(f"a: {message_a}")
-    print(f"b: {message_b}")
+    # print('\n')
+    # print(f"Round {round_num+1}: Choose between:")
+    # print(f"a: {message_a}")
+    # print(f"b: {message_b}")
 
     round_num += 1
     return book_a, book_b
@@ -129,7 +129,7 @@ def get_recommendations():
 
 embedding_save_path = "notebook/notebook/data/book_embeddings.npz"  # 저장된 파일 경로
 # llm_output_path = 'data/scraping/llm_output_fixed.json'
-user_id = 101
+user_id = '101'
 num_clusters = 6
 noise_factor = 0.01
 

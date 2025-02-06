@@ -43,9 +43,12 @@ def get_choice_bool(user_id, question_number):
         (user_id, question_number)
     )
     exists = cursor.fetchall()
-    book_a_select = exists[0][4]
-    book_b_select = exists[1][4]
-
+    if exists:
+        book_a_select = exists[0][4]
+        book_b_select = exists[1][4]
+    else:
+        book_a_select = None
+        book_b_select = None
     return book_a_select, book_b_select
 
 
