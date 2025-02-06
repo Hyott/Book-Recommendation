@@ -7,4 +7,4 @@ api_db_connection.py*.pyc
 *.pyc
 *.sql
 .DS_Store
-__pycache__/
+__pycache__/"readme.env" 
