@@ -19,7 +19,7 @@ from psycopg2 import sql
 host = "localhost"
 port = 5432
 user = "postgres"
-password = "1234"
+password = "2345"
 database_name = "book_recommend"
 
 engine = database_engine(host, port, user, password, database_name)
