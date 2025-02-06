@@ -10,7 +10,8 @@ from app.database.connection import database_engine
 import psycopg2
 from psycopg2 import sql
 
-
+from sqlalchemy.orm import Session
+from app.database.models import SentenceTable
 
 
 
@@ -48,14 +49,32 @@ def get_choice_bool(user_id, question_number):
     return book_a_select, book_b_select
 
 
-def load_book_data(json_file_path):
+def get_sentences_from_db(db: Session):
     """
-    JSON 파일에서 책 데이터를 로드합니다.
+    데이터베이스에서 책 데이터(id, isbn, sentence)만 불러옵니다.
     """
-    with open(json_file_path, 'r', encoding='utf-8') as file:
-        book_data = json.load(file)
-        book_data = list(book_data.values())
-    return book_data
+    sentences = db.query(SentenceTable.id, SentenceTable.isbn, SentenceTable.sentence).all()
+    
+    if not sentences:
+        return []
+
+    return [
+        {
+            "id": sentence.id,
+            "isbn": sentence.isbn,
+            "sentence": sentence.sentence,
+        }
+        for sentence in sentences
+    ]
+
+# def load_book_data(json_file_path):
+#     """
+#     JSON 파일에서 책 데이터를 로드합니다.
+#     """
+#     with open(json_file_path, 'r', encoding='utf-8') as file:
+#         book_data = json.load(file)
+#         book_data = list(book_data.values())
+#     return book_data
 
 
 # === 임베딩 로드 함수 ===
