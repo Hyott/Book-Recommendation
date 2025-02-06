@@ -24,7 +24,7 @@ services:
   #     - backend
 
   db:
-    image: postgres:13
+    image: postgres:17
     container_name: postgres_db
     restart: always
     ports:
@@ -37,6 +37,6 @@ services:
       - .env # .env 파일 로드
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
+      - ./database/init_database.sql:/docker-entrypoint-initdb.d/init_database.sql
 volumes:
   postgres_data:
