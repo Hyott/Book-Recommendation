@@ -6,5 +6,9 @@
 api_db_connection.py*.pyc
 *.pyc
 .DS_Store
+<<<<<<< HEAD
 __pycache__/
 readme.env
+=======
+__pycache__/"readme.env" 
+>>>>>>> main
