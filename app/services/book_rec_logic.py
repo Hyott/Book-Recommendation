@@ -43,6 +43,8 @@ def first_setting_of_logic(user_id, num_clusters, noise_factor, embedding_save_p
     uncertainty_factor = 10
     round_num = 0
     question_number = round_num +1
+
+    
     return round_num, initial_prob, decay_factor, uncertainty_factor, alpha, beta_values, \
         presented_books, noise_factor, ids, book_data, user_id, question_number, \
         book_embeddings, cluster_to_books

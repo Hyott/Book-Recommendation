@@ -28,8 +28,8 @@ def load_embeddings(file_path):
 
 # === 로드 및 사용 ===
 
-embedding_save_path = "notebook/book_embeddings.npz"  # 저장된 파일 경로
-json_file_path = 'notebook/notebook/data/llm_output_fixed.json'
+embedding_save_path = "notebook/notebook/data/book_embeddings.npz"  # 저장된 파일 경로
+json_file_path = 'data/scraping/llm_output_fixed.json'
 # 임베딩 데이터를 로드합니다.
 ids, embeddings = load_embeddings(embedding_save_path)
 # book data load
@@ -106,36 +106,59 @@ def select_books(cluster_to_books, alpha, beta_values, presented_books, explorat
 
         best_book_a = max(representative_books, key=lambda x: x[1])[0]
 
-    elif exploration_prob <= 0.18:
-    # if book_choice:
-        # print(f"book_embeddings shape: {book_embeddings.shape}")
-        # print(f"book_embeddings[book_choice] shape: {book_embeddings[book_choice].shape}")
+    # elif exploration_prob <= 0.18:
+    # # if book_choice:
+    #     # print(f"book_embeddings shape: {book_embeddings.shape}")
+    #     # print(f"book_embeddings[book_choice] shape: {book_embeddings[book_choice].shape}")
         
-        similarities = []
-        for idx in range(len(book_embeddings)):
-            if idx not in presented_books and idx != book_choice:
-                # 벡터를 1D로 변환
-                vector_a = book_embeddings[book_choice].reshape(-1)
-                vector_b = book_embeddings[idx].reshape(-1)
+    #     similarities = []
+    #     for idx in range(len(book_embeddings)):
+    #         if idx not in presented_books and idx != book_choice:
+    #             # 벡터를 1D로 변환
+    #             vector_a = book_embeddings[book_choice].reshape(-1)
+    #             vector_b = book_embeddings[idx].reshape(-1)
 
-                # Norm 값 계산
-                norm_choice = norm(vector_a)
-                norm_idx = norm(vector_b)
+    #             # Norm 값 계산
+    #             norm_choice = norm(vector_a)
+    #             norm_idx = norm(vector_b)
 
-                # Norm 값이 0이면 건너뜀
-                if norm_choice == 0 or norm_idx == 0:
-                    continue
+    #             # Norm 값이 0이면 건너뜀
+    #             if norm_choice == 0 or norm_idx == 0:
+    #                 continue
 
-                # 코사인 유사도 계산
-                similarity = np.dot(vector_a, vector_b) / (norm_choice * norm_idx)
-                similarities.append((idx, similarity))
+    #             # 코사인 유사도 계산
+    #             similarity = np.dot(vector_a, vector_b) / (norm_choice * norm_idx)
+    #             similarities.append((idx, similarity))
 
-        # 가장 유사한 책 선택
-        if not similarities:
-            raise ValueError("No valid books to calculate similarity. Check presented_books and book_choice.")
+    #     # 가장 유사한 책 선택
+    #     if not similarities:
+    #         raise ValueError("No valid books to calculate similarity. Check presented_books and book_choice.")
 
-        best_book_a = max(similarities, key=lambda x: x[1])[0]
+    #     best_book_a = max(similarities, key=lambda x: x[1])[0]
+    
+    ### 코사인 유사도 계산 시 벡터화 연산 활용 
+    elif exploration_prob <= 0.18:
+        # 선택된 책의 임베딩 벡터와 그 norm 계산
+        vector_a = book_embeddings[book_choice]
+        norm_a = np.linalg.norm(vector_a)
+        
+        # 전체 임베딩 벡터들과의 내적을 한 번에 계산
+        dot_products = np.dot(book_embeddings, vector_a)
+        
+        # 전체 책들의 L2 norm을 벡터화 연산으로 계산
+        norms = np.linalg.norm(book_embeddings, axis=1)
+        
+        # 코사인 유사도 계산 (벡터화)
+        cosine_similarities = dot_products / (norm_a * norms)
+        
+        # 이미 제시된 책과 현재 선택된 책(book_choice)은 제외 (유사도를 아주 낮게 처리)
+        mask = np.ones(len(book_embeddings), dtype=bool)
+        mask[list(presented_books)] = False
+        mask[book_choice] = False
+        cosine_similarities[~mask] = -np.inf  # 제외할 인덱스의 유사도는 -무한대로 처리
 
+        # 가장 높은 유사도를 가진 책 선택
+        best_book_a = int(np.argmax(cosine_similarities))    
 
     # 탐색 여부 결정
     if 0.18 < exploration_prob :  ## 1~5라운드까지로 한정
@@ -192,8 +215,7 @@ def get_message_by_id(ids, book_id, book_data):
     ids와 book_data를 이용해 특정 book_id의 메시지를 조회합니다.
     """
     idx = np.where(ids == book_id)[0][0]  # book_id의 인덱스 찾기
-    return book_data[idx]["message"]
-
+    return book_data[idx]["sentence"]
 
 ########################################################################
     # === 메인 루프 ===
@@ -279,12 +301,18 @@ def weighted_sampling(similarities, num_samples=10, temperature=0.5):
     - num_samples: 추천할 책의 개수
     - temperature: 유사도 가중치 조정을 위한 파라미터 (낮을수록 상위 선택 집중)
     """
-    # 유사도를 가중치로 변환
-    probabilities = np.exp(similarities / temperature)
-    probabilities /= probabilities.sum()  # 확률로 정규화
+    # # 유사도를 가중치로 변환
+    # probabilities = np.exp(similarities / temperature)
+    # probabilities /= probabilities.sum()  # 확률로 정규화
 
-    # 가중치를 기반으로 랜덤 샘플링
+    # # 가중치를 기반으로 랜덤 샘플링
+    # sampled_indices = np.random.choice(len(similarities), size=num_samples, replace=False, p=probabilities)
+    
+    max_val = np.max(similarities)
+    exp_values = np.exp((similarities - max_val) / temperature)
+    probabilities = exp_values / np.sum(exp_values)
     sampled_indices = np.random.choice(len(similarities), size=num_samples, replace=False, p=probabilities)
+    
     return sampled_indices
 
 # 가중치 샘플링을 통한 추천
