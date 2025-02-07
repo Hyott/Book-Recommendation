@@ -38,6 +38,7 @@ dependencies:
   flutter_spinkit: ^5.2.1
   http: ^1.2.2
   provider: ^6.1.2
+  uuid: ^4.5.1
 
 flutter_native_splash:
   color: "#FFFFFF" # 스플래시 화면의 배경색 설정 (흰색)

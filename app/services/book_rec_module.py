@@ -10,7 +10,8 @@ from app.database.connection import database_engine
 import psycopg2
 from psycopg2 import sql
 
-
+from sqlalchemy.orm import Session
+from app.database.models import SentenceTable
 
 
 
@@ -19,7 +20,7 @@ from psycopg2 import sql
 host = "localhost"
 port = 5432
 user = "postgres"
-password = "1234"
+password = "2345"
 database_name = "book_recommend"
 
 engine = database_engine(host, port, user, password, database_name)
@@ -42,20 +43,41 @@ def get_choice_bool(user_id, question_number):
         (user_id, question_number)
     )
     exists = cursor.fetchall()
-    book_a_select = exists[0][4]
-    book_b_select = exists[1][4]
-
+    if exists:
+        book_a_select = exists[0][4]
+        book_b_select = exists[1][4]
+    else:
+        book_a_select = None
+        book_b_select = None
     return book_a_select, book_b_select
 
 
-def load_book_data(json_file_path):
+def get_sentences_from_db(db: Session):
     """
-    JSON 파일에서 책 데이터를 로드합니다.
+    데이터베이스에서 책 데이터(id, isbn, sentence)만 불러옵니다.
     """
-    with open(json_file_path, 'r', encoding='utf-8') as file:
-        book_data = json.load(file)
-        book_data = list(book_data.values())
-    return book_data
+    sentences = db.query(SentenceTable.id, SentenceTable.isbn, SentenceTable.sentence).all()
+    
+    if not sentences:
+        return []
+
+    return [
+        {
+            "id": sentence.id,
+            "isbn": sentence.isbn,
+            "sentence": sentence.sentence,
+        }
+        for sentence in sentences
+    ]
+
+# def load_book_data(json_file_path):
+#     """
+#     JSON 파일에서 책 데이터를 로드합니다.
+#     """
+#     with open(json_file_path, 'r', encoding='utf-8') as file:
+#         book_data = json.load(file)
+#         book_data = list(book_data.values())
+#     return book_data
 
 
 # === 임베딩 로드 함수 ===

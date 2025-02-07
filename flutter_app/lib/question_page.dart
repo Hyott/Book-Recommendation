@@ -1,14 +1,7 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:flutter/material.dart';
-import 'book.dart';
-import 'package:provider/provider.dart';
-import 'main.dart';
-import 'message.dart';
-
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:uuid/uuid.dart';
 
 class ChooseMessageScreen extends StatefulWidget {
   @override
@@ -16,91 +9,185 @@ class ChooseMessageScreen extends StatefulWidget {
 }
 
 class _ChooseMessageScreenState extends State<ChooseMessageScreen> {
-  static const String apiUrl = 'http://127.0.0.1:8000/sentences/9791189856502';
-  // static const String userResponseApiUrl = 'http://176.16.0.17:8000/user_responses/';
-  late Future<Message> _messages;
+  final String apiUrl = 'http://127.0.0.1:8000/recommendation';  // API 주소를 여기에 넣어주세요
+  var userId = Uuid().v4();  // 사용자 UUID 생성
+
+  Map<String, dynamic> bookA = {};
+  Map<String, dynamic> bookB = {};
+  int round = 0;
 
   @override
   void initState() {
     super.initState();
-    _messages = fetchMessages(); // 메시지 로드
+    _fetchBooks();  // 화면이 로드될 때 책 정보 가져오기
   }
 
-  Future<Message> fetchMessages() async {
-    final response = await http.get(Uri.parse(apiUrl));
+  Future<void> _fetchBooks() async {
+    try {
+      // 추천 API 호출
+      final response = await http.get(
+        Uri.parse('$apiUrl/$userId'),
+      );
 
-    // 상태 코드 로그
-    print('Response status code: ${response.statusCode}');
-
-    final decodedResponseBody = json.decode(utf8.decode(response.bodyBytes));
-
-    if (response.statusCode == 200) {
-      // 성공 시 응답 데이터 로그
-      print('Response body: $decodedResponseBody');
-
-      return Message.fromJson(decodedResponseBody);
-    } else {
-      // 실패 시 오류 로그
-      print('Failed to load messages. Status code: ${response.statusCode}');
-      print('Response body: $decodedResponseBody');
-
-      throw Exception('Failed to load messages: ${response.statusCode}');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          round = data['round'];
+          bookA = data['book_a'];
+          bookB = data['book_b'];
+        });
+      } else {
+        throw Exception('추천 책을 불러오는데 실패했습니다.');
+      }
+    } catch (e) {
+      print(e);
     }
   }
 
-  // Future<void> sendUserResponse(int userId, int questionNumber, String gSentenceId) async {
-  //   final response = await http.post(
-  //     Uri.parse(userResponseApiUrl),
-  //     headers: {'Content-Type': 'application/json'},
-  //     body: json.encode({
-  //       'user_id': userId,
-  //       'question_number': questionNumber,
-  //       'g_sentence_id': gSentenceId,
-  //     }),
-  //   );
-  //
-  //   if (response.statusCode == 200 || response.statusCode == 201) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(content: Text('Response submitted successfully!')),
-  //     );
-  //   } else {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(content: Text('Failed to submit response.')),
-  //     );
-  //   }
-  // }
+  Future<void> _sendUserResponse(int chosenBookId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://127.0.0.1:8000/user_responses/'),  // 응답을 처리할 API 주소
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'user_id': userId,
+          'question_number': round,
+          'sentence_id': chosenBookId,
+          'is_positive': true,  // 실제로 사용자가 선택한 책에 대한 긍정적인 응답을 보냄
+          'datetime': DateTime.now().toIso8601String(),
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('응답 저장 성공');
+      } else {
+        print('응답 저장 실패');
+      }
+    } catch (e) {
+      print('응답 전송 중 오류 발생: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Choose a Message')),
-      body: FutureBuilder<Message>(
-        future: _messages,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData) {
-            return Center(child: Text('No messages found'));
-          }
-
-          final message = snapshot.data!;
-
-          return Card(
-            margin: EdgeInsets.all(16),
-            child: ListTile(
-              title: Text(
-                message.sentence,
-                style: TextStyle(fontSize: 18),
+      appBar: AppBar(title: Text("책 추천")),
+      body: bookA.isEmpty || bookB.isEmpty
+          ? Center(child: CircularProgressIndicator())
+          : Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text('Round: $round', style: TextStyle(fontSize: 20)),
+          SizedBox(height: 20),
+          Text('추천 책 A: ${bookA['title']}'),
+          SizedBox(height: 10),
+          Text('추천 책 B: ${bookB['title']}'),
+          SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  _sendUserResponse(bookA['id']);
+                },
+                child: Text('책 A 선택'),
               ),
-            ),
-          );
-        },
+              SizedBox(width: 20),
+              ElevatedButton(
+                onPressed: () {
+                  _sendUserResponse(bookB['id']);
+                },
+                child: Text('책 B 선택'),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 }
+
+
+// import 'dart:convert';
+// import 'package:http/http.dart' as http;
+// import 'package:flutter/material.dart';
+// import 'message.dart';
+//
+// class ChooseMessageScreen extends StatefulWidget {
+//   @override
+//   _ChooseMessageScreenState createState() => _ChooseMessageScreenState();
+// }
+//
+// class _ChooseMessageScreenState extends State<ChooseMessageScreen> {
+//   static const String apiUrl = 'http://127.0.0.1:8000/sentences/9791189856502';
+//   late Future<Message> _messages;
+//
+//   @override
+//   void initState() {
+//     super.initState();
+//     _messages = fetchMessages(); // 메시지 로드
+//   }
+//
+//   Future<Message> fetchMessages() async {
+//     final response = await http.get(Uri.parse(apiUrl));
+//
+//     // 상태 코드 로그
+//     print('Response status code: ${response.statusCode}');
+//
+//     final decodedResponseBody = json.decode(utf8.decode(response.bodyBytes));
+//
+//     if (response.statusCode == 200) {
+//       // 성공 시 응답 데이터 로그
+//       print('Response body: $decodedResponseBody');
+//
+//       return Message.fromJson(decodedResponseBody);
+//     } else {
+//       // 실패 시 오류 로그
+//       print('Failed to load messages. Status code: ${response.statusCode}');
+//       print('Response body: $decodedResponseBody');
+//
+//       throw Exception('Failed to load messages: ${response.statusCode}');
+//     }
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(title: Text('Choose a Message')),
+//       body: FutureBuilder<Message>(
+//         future: _messages,
+//         builder: (context, snapshot) {
+//           if (snapshot.connectionState == ConnectionState.waiting) {
+//             return Center(child: CircularProgressIndicator());
+//           } else if (snapshot.hasError) {
+//             return Center(child: Text('Error: ${snapshot.error}'));
+//           } else if (!snapshot.hasData) {
+//             return Center(child: Text('No messages found'));
+//           }
+//
+//           final message = snapshot.data!;
+//
+//           return Card(
+//             margin: EdgeInsets.all(16),
+//             child: ListTile(
+//               title: Text(
+//                 message.sentence,
+//                 style: TextStyle(fontSize: 18),
+//               ),
+//             ),
+//           );
+//         },
+//       ),
+//     );
+//   }
+// }
+
+
+
+
 
 // class NextScreen extends StatefulWidget {
 //   @override

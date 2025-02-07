@@ -58,6 +58,10 @@ ffi
 3.3
 file:///C:/Users/yh02s/AppData/Local/Pub/Cache/hosted/pub.dev/ffi-2.1.3/
 file:///C:/Users/yh02s/AppData/Local/Pub/Cache/hosted/pub.dev/ffi-2.1.3/lib/
+fixnum
+3.1
+file:///C:/Users/yh02s/AppData/Local/Pub/Cache/hosted/pub.dev/fixnum-1.1.1/
+file:///C:/Users/yh02s/AppData/Local/Pub/Cache/hosted/pub.dev/fixnum-1.1.1/lib/
 flutter_launcher_icons
 3.0
 file:///C:/Users/yh02s/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_launcher_icons-0.14.2/
@@ -146,6 +150,10 @@ source_span
 2.18
 file:///C:/Users/yh02s/AppData/Local/Pub/Cache/hosted/pub.dev/source_span-1.10.0/
 file:///C:/Users/yh02s/AppData/Local/Pub/Cache/hosted/pub.dev/source_span-1.10.0/lib/
+sprintf
+2.12
+file:///C:/Users/yh02s/AppData/Local/Pub/Cache/hosted/pub.dev/sprintf-7.0.0/
+file:///C:/Users/yh02s/AppData/Local/Pub/Cache/hosted/pub.dev/sprintf-7.0.0/lib/
 stack_trace
 3.4
 file:///C:/Users/yh02s/AppData/Local/Pub/Cache/hosted/pub.dev/stack_trace-1.12.0/
@@ -174,6 +182,10 @@ universal_io
 2.17
 file:///C:/Users/yh02s/AppData/Local/Pub/Cache/hosted/pub.dev/universal_io-2.2.2/
 file:///C:/Users/yh02s/AppData/Local/Pub/Cache/hosted/pub.dev/universal_io-2.2.2/lib/
+uuid
+3.0
+file:///C:/Users/yh02s/AppData/Local/Pub/Cache/hosted/pub.dev/uuid-4.5.1/
+file:///C:/Users/yh02s/AppData/Local/Pub/Cache/hosted/pub.dev/uuid-4.5.1/lib/
 vector_math
 2.14
 file:///C:/Users/yh02s/AppData/Local/Pub/Cache/hosted/pub.dev/vector_math-2.1.4/
@@ -196,8 +208,8 @@ file:///C:/Users/yh02s/AppData/Local/Pub/Cache/hosted/pub.dev/yaml-3.1.3/
 file:///C:/Users/yh02s/AppData/Local/Pub/Cache/hosted/pub.dev/yaml-3.1.3/lib/
 project
 3.6
-file:///C:/Users/yh02s/StudioProjects/project/
-file:///C:/Users/yh02s/StudioProjects/project/lib/
+file:///C:/Users/yh02s/Book-Recommendation/flutter_app/
+file:///C:/Users/yh02s/Book-Recommendation/flutter_app/lib/
 sky_engine
 3.2
 file:///C:/Users/yh02s/flutter/bin/cache/pkg/sky_engine/
