@@ -52,9 +52,33 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database.connection import get_db
+import psycopg2
 from database.crud import get_book_by_isbn, get_sentence_by_isbn, add_user_response, get_tags_by_isbn
 from database.schemas import BookSchema, SentenceSchema, UserResponseSchema
 from fastapi.middleware.cors import CORSMiddleware
+import numpy as np
+from sklearn.cluster import KMeans
+from sklearn.metrics.pairwise import cosine_similarity
+from services.book_rec_module import load_embeddings, select_books, \
+    update_data, get_message_by_id, weighted_sampling, get_choice_bool, get_sentence_from_db
+import json
+from typing import Optional
+from dotenv import load_dotenv
+import os
+from app.database.connection import database_engine
+# .env 파일 로드
+load_dotenv()
+
+# 환경 변수 가져오기
+host = os.getenv("HOST")
+port = os.getenv("PORT")
+user = os.getenv("POSTGRES_USER")
+password = os.getenv("POSTGRES_PASSWORD")
+database_name = os.getenv("DATABASE_NAME")
+
+#cursor 설정
+engine_for_cursor = database_engine(host, port, user, password, database_name)
+
 import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.metrics.pairwise import cosine_similarity
@@ -73,6 +97,39 @@ app.add_middleware(
     allow_headers=["*"],  # 모든 헤더 허용
 )
 
+# Global variables for the session
+presented_books = set()
+round_num = 0
+alpha = None
+beta_values = None
+# book_embeddings = None
+# ids = None
+book_data = None
+user_id = None
+question_number = None
+cluster_to_books = None
+initial_prob = 0.3
+decay_factor = 0.9
+uncertainty_factor = 10
+noise_factor = 0.01
+embedding_save_path = "notebook/notebook/data/book_embeddings.npz"
+
+num_clusters = 10
+
+
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the API!"}
+
+
+@app.get("/books/{isbn}")
+def get_book(isbn: str, db: Session = Depends(get_db)):
+    if len(isbn) != 13 or not isbn.isdigit():
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid ISBN format. ISBN must be a 13-digit number."
+        )
+    
 # Global variables for the session
 round_num = 0
 alpha = None
@@ -141,7 +198,10 @@ def suggest_books(book_embeddings, cluster_to_books, exploration_prob, noise_fac
 def read_book(isbn: str, db: Session = Depends(get_db)):
     book = get_book_by_isbn(db, isbn)
     if book is None:
-        raise HTTPException(status_code=404, detail="해당 ISBN의 도서를 찾을 수 없습니다.")
+        raise HTTPException(
+            status_code=404,
+            detail=f"Book with ISBN {isbn} not found."
+        )
     return book
 
 @app.get("/sentences/{isbn}", response_model=SentenceSchema)
