@@ -13,28 +13,6 @@ from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 from app.database.models import SentenceTable
 
-# # .env 파일 로드
-# load_dotenv()
-
-# host=os.getenv("HOST")
-# port=os.getenv("PORT")
-# user=os.getenv("POSTGRES_USER")
-# password=os.getenv("POSTGRES_PASSWORD")
-# database_name=os.getenv("DATABASE_NAME")
-
-# engine = database_engine(host, port, user, password, database_name)
-
-
-# conn = psycopg2.connect(
-#             host=host,
-#             port=port,
-#             user=user,
-#             password=password,
-#             dbname=database_name
-#         )
-# conn.autocommit = True
-# cursor = conn.cursor()
-
 
 def get_choice_bool(cursor, user_id, question_number):
     cursor.execute(
@@ -68,16 +46,6 @@ def get_sentence_from_db(db: Session):
         }
         for sentence in sentences
     ]
-
-# def load_book_data(json_file_path):
-#     """
-#     JSON 파일에서 책 데이터를 로드합니다.
-#     """
-#     with open(json_file_path, 'r', encoding='utf-8') as file:
-#         book_data = json.load(file)
-#         book_data = list(book_data.values())
-#     return book_data
-
 
 # === 임베딩 로드 함수 ===
 def load_embeddings(file_path):
