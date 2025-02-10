@@ -60,6 +60,7 @@ from sklearn.cluster import KMeans
 from sklearn.metrics.pairwise import cosine_similarity
 from services.book_rec_module import load_embeddings, select_books, \
     update_data, get_message_by_id, weighted_sampling, get_choice_bool, get_sentences_from_db
+from 
 
 app = FastAPI()
 
