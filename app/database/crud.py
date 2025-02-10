@@ -34,3 +34,18 @@ def add_user_response(response: UserResponseSchema):
             datetime=datetime.now(ZoneInfo("Asia/Seoul"))
         ).on_conflict_do_nothing()
     return stmt
+
+# def get_question_number_by_user_id(db: Session, user_id: str):
+#     return (
+#         db.query(UserResponseTable.user_id)
+#         .filter(UserResponseTable.user_id == user_id)
+#         .order_by(UserResponseTable.id.desc())  # 최신순 정렬
+#         .first()  # 첫 번째(가장 최신) 값 가져오기
+#     )
+
+def get_question_number_by_user_id(db: Session, user_id: str):
+    return db.query(UserResponseTable.question_number) \
+        .filter(UserResponseTable.user_id == user_id) \
+        .order_by(UserResponseTable.question_number.desc())  \
+        .first() # 가장 최신 값 가져오기
+    

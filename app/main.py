@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database.connection import get_db
 import psycopg2
-from database.crud import get_book_by_isbn, get_sentence_by_isbn, add_user_response, get_tags_by_isbn
+from database.crud import get_book_by_isbn, get_sentence_by_isbn, add_user_response, get_tags_by_isbn, get_question_number_by_user_id
 from database.schemas import BookSchema, SentenceSchema, UserResponseSchema
 from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
@@ -46,7 +46,7 @@ alpha = None
 beta_values = None
 book_data = None
 user_id = None
-question_number = None
+question_number = 0
 cluster_to_books = None
 initial_prob = 0.3
 decay_factor = 0.9
@@ -85,6 +85,7 @@ def read_sentence(isbn: str, db: Session = Depends(get_db)):
     if sentence is None:
         raise HTTPException(status_code=404, detail="해당 ISBN의 생성문장을 찾을 수 없습니다.")
     return sentence
+
 
 
 @app.post("/user_responses/")
@@ -161,10 +162,22 @@ def read_book(isbn: str, db: Session = Depends(get_db)):
             detail=f"Book with ISBN {isbn} not found."
         )
     return book
+
+@app.get("/question_number/{user_id}", response_model=BookSchema)
+def get_question_number(user_id: str, db: Session = Depends(get_db)):
+    question_number = get_question_number_by_user_id(db, user_id)
+    if question_number is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Book with ISBN {user_id} not found."
+        )
+    return question_number
+
+
+
 def choice_arrange(user_id, question_number, book_a, book_b):
     cursor = get_cursor(host, port, user, password, database_name)
     choice_bool = get_choice_bool(cursor,user_id, question_number)
-    print(f"{choice_bool = }")
 
     if choice_bool[0]:
         choice = 'a'
@@ -212,9 +225,15 @@ def get_cursor(host, port, user, password, database_name):
     return cursor
 
 
-@app.get("/recommendation/{user_id}/{question_number}")
-def get_book_suggestions(user_id: str, question_number: int, db: Session = Depends(get_db)): # and id_response 의 컬럼 값들이 없다면,
-    if user_id and question_number == 0:
+@app.get("/recommendation/{user_id}")
+def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
+    # question_number = get_question_number(user_id, db)
+    question_number = get_question_number_by_user_id(db, user_id)
+    print('question_number--tuple:!!!!!!!!!!!!!!!!!!!!!!!!!!!!' , question_number)
+    print('question_number--int:!!!!!!!!!!!!!!!!!!!!!!!!!!!!' , int(question_number[0]))
+
+
+    if user_id and question_number:
         ids, book_embeddings, book_data, user_id, question_number, cluster_to_books = first_setting_of_logic(user_id, num_clusters, embedding_save_path, db)
         book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor)
 
@@ -223,8 +242,8 @@ def get_book_suggestions(user_id: str, question_number: int, db: Session = Depen
         
         message_a = get_message_by_id(ids, ids[book_a], book_data)
         message_b = get_message_by_id(ids, ids[book_b], book_data)
-        
     
+
     if user_id and question_number > 0 :
         book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b)
         book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor, book_choice_updated)
@@ -236,7 +255,7 @@ def get_book_suggestions(user_id: str, question_number: int, db: Session = Depen
         message_b = get_message_by_id(ids, ids[book_b], book_data)
 
     print('\n')
-    print(f"Round {round_num + 1}: Choose between:")
+    print(f"Round {question_number + 1}: Choose between:")
     print(f"a: {message_a}")
     print(f"b: {message_b}")
 
