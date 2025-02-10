@@ -111,7 +111,8 @@ def get_recommendations(user_id: str):
 
 def first_setting_of_logic(user_id, num_clusters, embedding_save_path, db):
     global round_num, alpha, beta_values, presented_books, book_embeddings, ids, book_data, cluster_to_books
-    embedding_save_path = "notebook/notebook/data/book_embeddings.npz"  # 저장된 파일 경로
+    # embedding_save_path = "notebook/notebook/data/book_embeddings.npz" 
+    embedding_save_path = "embedding/book_embeddings.npz"  # 저장된 파일 경로
 
     ids, book_embeddings = load_embeddings(embedding_save_path)
 
@@ -160,7 +161,7 @@ def read_book(isbn: str, db: Session = Depends(get_db)):
             detail=f"Book with ISBN {isbn} not found."
         )
     return book
-def choice_arrange(user_id, question_number):
+def choice_arrange(user_id, question_number, book_a, book_b):
     cursor = get_cursor(host, port, user, password, database_name)
     choice_bool = get_choice_bool(cursor,user_id, question_number)
     print(f"{choice_bool = }")
@@ -175,13 +176,10 @@ def choice_arrange(user_id, question_number):
     # 데이터 업데이트
     if choice:
         book_choice = update_data(choice, book_a, book_b, alpha, beta_values)
-        print('----------Choice----------')
-    if not choice:
+        return book_choice
+    else:
         update_data(choice, book_a, book_b, alpha, beta_values)
-        print("/////// No choice ////////")
-    print(f"{book_choice = }")
-
-    return book_choice
+        return None
 
 
 def get_message_by_id(ids, book_id, book_data):
@@ -215,8 +213,8 @@ def get_cursor(host, port, user, password, database_name):
 
 
 @app.get("/recommendation/{user_id}/{question_number}")
-def get_book_suggestions(user_id: str, question_number: Optional[int] = None, db: Session = Depends(get_db)): # and id_response 의 컬럼 값들이 없다면,
-    if user_id and question_number is None:
+def get_book_suggestions(user_id: str, question_number: int, db: Session = Depends(get_db)): # and id_response 의 컬럼 값들이 없다면,
+    if user_id and question_number == 0:
         ids, book_embeddings, book_data, user_id, question_number, cluster_to_books = first_setting_of_logic(user_id, num_clusters, embedding_save_path, db)
         book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor)
 
@@ -227,8 +225,8 @@ def get_book_suggestions(user_id: str, question_number: Optional[int] = None, db
         message_b = get_message_by_id(ids, ids[book_b], book_data)
         
     
-    if user_id and question_number:
-        book_choice_updated = choice_arrange(user_id, question_number)
+    if user_id and question_number > 0 :
+        book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b)
         book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor, book_choice_updated)
 
         book_a_isbn =  get_isbn_by_id(ids, ids[book_a], book_data)
