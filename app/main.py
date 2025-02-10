@@ -15,6 +15,8 @@ from typing import Optional
 from dotenv import load_dotenv
 import os
 from app.database.connection import database_engine
+from fastapi.responses import JSONResponse
+
 # .env 파일 로드
 load_dotenv()
 
@@ -240,7 +242,20 @@ def get_book_suggestions(user_id: str, question_number: int, db: Session = Depen
     print(f"a: {message_a}")
     print(f"b: {message_b}")
 
-    return book_a_isbn, book_b_isbn
+    # ISBN + 문장을 함께 반환
+    return JSONResponse(
+        content={
+            "bookA": {"sentence_id": str(book_a), "isbn": str(book_a_isbn), "sentence": message_a},
+            "bookB": {"sentence_id": str(book_b), "isbn": str(book_b_isbn), "sentence": message_b}
+        },
+        headers={"Content-Type": "application/json; charset=utf-8"}
+    )
+    # return {
+    # "bookA": {"isbn": str(book_a_isbn), "sentence": message_a},
+    # "bookB": {"isbn": str(book_b_isbn), "sentence": message_b}
+    # }
+
+
     
 
 

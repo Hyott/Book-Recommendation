@@ -1,114 +1,127 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:uuid/uuid.dart';
 
-class ChooseMessageScreen extends StatefulWidget {
+class RecommendationScreen extends StatefulWidget {
   @override
-  _ChooseMessageScreenState createState() => _ChooseMessageScreenState();
+  _RecommendationScreenState createState() => _RecommendationScreenState();
 }
 
-class _ChooseMessageScreenState extends State<ChooseMessageScreen> {
-  final String apiUrl = 'http://127.0.0.1:8000/recommendation';  // API 주소를 여기에 넣어주세요
-  var userId = Uuid().v4();  // 사용자 UUID 생성
-
-  Map<String, dynamic> bookA = {};
-  Map<String, dynamic> bookB = {};
-  int round = 0;
+class _RecommendationScreenState extends State<RecommendationScreen> {
+  final String baseUrl = "http://127.0.0.1:8000"; // FastAPI 백엔드 주소
+  final String userId = const Uuid().v4(); // UUID 생성
+  int questionNumber = 0; // 현재 질문 번호
+  String? sentenceA;
+  String? sentenceB;
+  String? bookAIsbn;
+  String? bookBIsbn;
+  String? sentenceA_id;
+  String? sentenceB_id;
 
   @override
   void initState() {
     super.initState();
-    _fetchBooks();  // 화면이 로드될 때 책 정보 가져오기
+    fetchRecommendations(); // 첫 번째 추천 가져오기
   }
 
-  Future<void> _fetchBooks() async {
+  Future<void> fetchRecommendations() async {
     try {
-      // 추천 API 호출
       final response = await http.get(
-        Uri.parse('$apiUrl/$userId/$round'),
+        Uri.parse("$baseUrl/recommendation/$userId/$questionNumber"),
       );
 
+      print("HTTP 요청 URL: $baseUrl/recommendation/$userId/$questionNumber");
+      print("HTTP 응답 코드: ${response.statusCode}");
+      print("HTTP 응답 본문: ${response.body}");
+
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+        final data = json.decode(response.body);
         setState(() {
-          round = data['round'];
-          bookA = data['book_a'];
-          bookB = data['book_b'];
+          bookAIsbn = data["bookA"]["isbn"];
+          bookBIsbn = data["bookB"]["isbn"];
+          sentenceA = data["bookA"]["sentence"]; // 백엔드에서 문장 데이터 가져오기
+          sentenceB = data["bookB"]["sentence"];
+          sentenceA_id = data["bookA"]["sentence_id"];
+          sentenceB_id = data["bookB"]["sentence_id"];
         });
       } else {
-        throw Exception('추천 책을 불러오는데 실패했습니다.');
+        throw Exception("Failed to load recommendations");
       }
     } catch (e) {
-      print(e);
+      print("Error fetching recommendations: $e");
     }
   }
 
-  // Future<void> _sendUserResponse(int chosenBookId) async {
-  //   try {
-  //     final response = await http.post(
-  //       Uri.parse('http://127.0.0.1:8000/user_responses/'),  // 응답을 처리할 API 주소
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: jsonEncode({
-  //         'user_id': userId,
-  //         'question_number': round,
-  //         'sentence_id': chosenBookId,
-  //         'is_positive': true,  // 실제로 사용자가 선택한 책에 대한 긍정적인 응답을 보냄
-  //         'datetime': DateTime.now().toIso8601String(),
-  //       }),
-  //     );
-  //
-  //     if (response.statusCode == 200) {
-  //       print('응답 저장 성공');
-  //     } else {
-  //       print('응답 저장 실패');
-  //     }
-  //   } catch (e) {
-  //     print('응답 전송 중 오류 발생: $e');
-  //   }
-  // }
+  Future<void> sendUserResponse(String selectedIsbn) async {
+    bool isBookASelected = selectedIsbn == bookAIsbn;
+
+    try {
+      final responseA = await http.post(
+        Uri.parse("$baseUrl/user_responses/"),
+        headers: {"Content-Type": "application/json"},
+        body: json.encode({
+          "user_id": userId,
+          "question_number": questionNumber,
+          "sentence_id": sentenceA_id, // 책 A의 sentence_id 값 (혹은 실제로 DB에서 가져오는 값)
+          "is_positive": isBookASelected, // 책 A를 선택하면 true
+          "datetime": DateTime.now().toIso8601String(),
+        }),
+      );
+
+      final responseB = await http.post(
+        Uri.parse("$baseUrl/user_responses/"),
+        headers: {"Content-Type": "application/json"},
+        body: json.encode({
+          "user_id": userId,
+          "question_number": questionNumber,
+          "sentence_id": sentenceB_id, // 책 B의 sentence_id 값 (혹은 실제로 DB에서 가져오는 값)
+          "is_positive": !isBookASelected, // 책 B는 선택되지 않으면 false
+          "datetime": DateTime.now().toIso8601String(),
+        }),
+      );
+
+      if (responseA.statusCode == 200 && responseB.statusCode == 200) {
+        setState(() {
+          questionNumber++; // 🔹 먼저 증가
+        });
+        fetchRecommendations(); // 🔹 이후 새로운 질문 불러오기
+      } else {
+        print("Failed to save response.");
+      }
+    } catch (e) {
+      print("Error sending user response: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("책 추천")),
-      body: bookA.isEmpty || bookB.isEmpty
-          ? Center(child: CircularProgressIndicator())
-          : Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text('Round: $round', style: TextStyle(fontSize: 20)),
-          SizedBox(height: 20),
-          Text('추천 책 A: ${bookA['title']}'),
-          SizedBox(height: 10),
-          Text('추천 책 B: ${bookB['title']}'),
-          SizedBox(height: 20),
-          // Row(
-          //   mainAxisAlignment: MainAxisAlignment.center,
-          //   children: [
-          //     ElevatedButton(
-          //       onPressed: () {
-          //         _sendUserResponse(bookA['id']);
-          //       },
-          //       child: Text('책 A 선택'),
-          //     ),
-          //     SizedBox(width: 20),
-          //     ElevatedButton(
-          //       onPressed: () {
-          //         _sendUserResponse(bookB['id']);
-          //       },
-          //       child: Text('책 B 선택'),
-          //     ),
-          //   ],
-          // ),
-        ],
+      body: Center(
+        child: sentenceA == null || sentenceB == null
+            ? CircularProgressIndicator()
+            : Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text("$questionNumber", style: TextStyle(fontSize: 18)),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => sendUserResponse(bookAIsbn!),
+              child: Text(sentenceA!),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => sendUserResponse(bookBIsbn!),
+              child: Text(sentenceB!),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
+
 
 
 // import 'dart:convert';
