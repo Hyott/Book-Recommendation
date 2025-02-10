@@ -13,16 +13,6 @@ services:
     env_file:
       - .env # .env 파일 로드
 
-  # frontend:
-  #   build:
-  #     context: ./flutter_app
-  #     dockerfile: Dockerfile
-  #   container_name: flutter_frontend
-  #   ports:
-  #     - "8080:80"
-  #   depends_on:
-  #     - backend
-
   db:
     image: postgres:17
     container_name: postgres_db
@@ -40,3 +30,13 @@ services:
       - ./database/init_database.sql:/docker-entrypoint-initdb.d/init_database.sql
 volumes:
   postgres_data:
+
+
+
+
+
+
+
+
+
+

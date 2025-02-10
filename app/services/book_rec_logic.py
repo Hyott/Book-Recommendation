@@ -7,7 +7,7 @@ from scipy.stats import beta
 
 import os; print("os.getcwd :", os.getcwd())
 from book_rec_module import load_embeddings,select_books, \
-    update_data, get_message_by_id, weighted_sampling, get_choice_bool, get_sentences_from_db
+    update_data, get_message_by_id, weighted_sampling, get_choice_bool, get_sentence_from_db
 
 from app.database.connection import get_db
 from sqlalchemy.orm import Session
@@ -23,7 +23,7 @@ def first_setting_of_logic(user_id, num_clusters, noise_factor, embedding_save_p
 
     # ✅ DB 연결 후 책 데이터 불러오기
     db: Session = next(get_db())
-    book_data = get_sentences_from_db(db)  # ✅ `id, isbn, sentence`만 가져오기
+    book_data = get_sentence_from_db(db)  # ✅ `id, isbn, sentence`만 가져오기
     db.close()  # 사용 후 세션 닫기
 
 

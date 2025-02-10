@@ -254,7 +254,7 @@ for round_num in range(12):
     uncertainty_factor = 10
 
     # 탐색 확률 계산
-    if round_num < 10:  # 초반 10 라운드 동안 지수적 감소
+    if round_num < 30:  # 초반 10 라운드 동안 지수적 감소
         exploration_prob = initial_prob * (decay_factor ** round_num)
     else:  # 이후에는 UCB 기반 조정
         total_selections = len(presented_books)

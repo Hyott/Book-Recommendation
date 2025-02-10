@@ -9,35 +9,34 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".
 from app.database.connection import database_engine
 import psycopg2
 from psycopg2 import sql
-
+from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 from app.database.models import SentenceTable
 
+# # .env 파일 로드
+# load_dotenv()
+
+# host=os.getenv("HOST")
+# port=os.getenv("PORT")
+# user=os.getenv("POSTGRES_USER")
+# password=os.getenv("POSTGRES_PASSWORD")
+# database_name=os.getenv("DATABASE_NAME")
+
+# engine = database_engine(host, port, user, password, database_name)
 
 
-
-# 데이터베이스 연결 설정
-host = "localhost"
-port = 5432
-user = "postgres"
-password = "2345"
-database_name = "book_recommend"
-
-engine = database_engine(host, port, user, password, database_name)
-
-
-conn = psycopg2.connect(
-            host=host,
-            port=port,
-            user=user,
-            password=password,
-            dbname="book_recommend"
-        )
-conn.autocommit = True
-cursor = conn.cursor()
+# conn = psycopg2.connect(
+#             host=host,
+#             port=port,
+#             user=user,
+#             password=password,
+#             dbname=database_name
+#         )
+# conn.autocommit = True
+# cursor = conn.cursor()
 
 
-def get_choice_bool(user_id, question_number):
+def get_choice_bool(cursor, user_id, question_number):
     cursor.execute(
         sql.SQL("SELECT * FROM public.user_responses WHERE user_id = %s and question_number = %s"),
         (user_id, question_number)
@@ -52,7 +51,7 @@ def get_choice_bool(user_id, question_number):
     return book_a_select, book_b_select
 
 
-def get_sentences_from_db(db: Session):
+def get_sentence_from_db(db: Session):
     """
     데이터베이스에서 책 데이터(id, isbn, sentence)만 불러옵니다.
     """
@@ -177,6 +176,7 @@ def select_books(book_embeddings, cluster_to_books, alpha, beta_values, presente
         else:
             # 모든 클러스터가 방문된 경우, 활용으로 전환
             exploration_prob = 0  # 탐색 비중을 제거하고 활용으로 이동
+            
     elif exploration_prob <= 0.18:
         # 활용: 선호도가 높은 책 선택 (노이즈 적용)
         random_book_b = max(
