@@ -26,7 +26,7 @@ class _ChooseMessageScreenState extends State<ChooseMessageScreen> {
     try {
       // 추천 API 호출
       final response = await http.get(
-        Uri.parse('$apiUrl/$userId'),
+        Uri.parse('$apiUrl/$userId/$round'),
       );
 
       if (response.statusCode == 200) {
@@ -44,31 +44,31 @@ class _ChooseMessageScreenState extends State<ChooseMessageScreen> {
     }
   }
 
-  Future<void> _sendUserResponse(int chosenBookId) async {
-    try {
-      final response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/user_responses/'),  // 응답을 처리할 API 주소
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'user_id': userId,
-          'question_number': round,
-          'sentence_id': chosenBookId,
-          'is_positive': true,  // 실제로 사용자가 선택한 책에 대한 긍정적인 응답을 보냄
-          'datetime': DateTime.now().toIso8601String(),
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        print('응답 저장 성공');
-      } else {
-        print('응답 저장 실패');
-      }
-    } catch (e) {
-      print('응답 전송 중 오류 발생: $e');
-    }
-  }
+  // Future<void> _sendUserResponse(int chosenBookId) async {
+  //   try {
+  //     final response = await http.post(
+  //       Uri.parse('http://127.0.0.1:8000/user_responses/'),  // 응답을 처리할 API 주소
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: jsonEncode({
+  //         'user_id': userId,
+  //         'question_number': round,
+  //         'sentence_id': chosenBookId,
+  //         'is_positive': true,  // 실제로 사용자가 선택한 책에 대한 긍정적인 응답을 보냄
+  //         'datetime': DateTime.now().toIso8601String(),
+  //       }),
+  //     );
+  //
+  //     if (response.statusCode == 200) {
+  //       print('응답 저장 성공');
+  //     } else {
+  //       print('응답 저장 실패');
+  //     }
+  //   } catch (e) {
+  //     print('응답 전송 중 오류 발생: $e');
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -86,24 +86,24 @@ class _ChooseMessageScreenState extends State<ChooseMessageScreen> {
           SizedBox(height: 10),
           Text('추천 책 B: ${bookB['title']}'),
           SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  _sendUserResponse(bookA['id']);
-                },
-                child: Text('책 A 선택'),
-              ),
-              SizedBox(width: 20),
-              ElevatedButton(
-                onPressed: () {
-                  _sendUserResponse(bookB['id']);
-                },
-                child: Text('책 B 선택'),
-              ),
-            ],
-          ),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.center,
+          //   children: [
+          //     ElevatedButton(
+          //       onPressed: () {
+          //         _sendUserResponse(bookA['id']);
+          //       },
+          //       child: Text('책 A 선택'),
+          //     ),
+          //     SizedBox(width: 20),
+          //     ElevatedButton(
+          //       onPressed: () {
+          //         _sendUserResponse(bookB['id']);
+          //       },
+          //       child: Text('책 B 선택'),
+          //     ),
+          //   ],
+          // ),
         ],
       ),
     );
