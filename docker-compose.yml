@@ -32,7 +32,7 @@ services:
     container_name: postgres_db
     restart: always
     ports:
-      - "${PORT}:5432" # 환경 변수 사용
+      - "5432:5432" # 환경 변수 사용
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
