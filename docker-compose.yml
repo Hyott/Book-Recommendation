@@ -13,12 +13,26 @@ services:
     env_file:
       - .env # .env 파일 로드
 
+  frontend:
+    build:
+      context: ./flutter_app
+      dockerfile: Dockerfile
+    container_name: flutter_frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    environment:
+      API_BASE_URL: http://backend:8000  # FastAPI의 API 주소를 환경 변수로 지정
+    env_file:
+      - .env
+
   db:
     image: postgres:17
     container_name: postgres_db
     restart: always
     ports:
-      - "${PORT}:5432" # 환경 변수 사용
+      - "5432:5432" # 환경 변수 사용
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
