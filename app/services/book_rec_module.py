@@ -9,53 +9,74 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".
 from app.database.connection import database_engine
 import psycopg2
 from psycopg2 import sql
+from dotenv import load_dotenv
+from sqlalchemy.orm import Session
+from app.database.models import SentenceTable
+
+# # .env 파일 로드
+# load_dotenv()
+
+# host=os.getenv("HOST")
+# port=os.getenv("PORT")
+# user=os.getenv("POSTGRES_USER")
+# password=os.getenv("POSTGRES_PASSWORD")
+# database_name=os.getenv("DATABASE_NAME")
+
+# engine = database_engine(host, port, user, password, database_name)
 
 
+# conn = psycopg2.connect(
+#             host=host,
+#             port=port,
+#             user=user,
+#             password=password,
+#             dbname=database_name
+#         )
+# conn.autocommit = True
+# cursor = conn.cursor()
 
 
-
-
-# 데이터베이스 연결 설정
-host = "db"
-port = 5432
-user = "postgres"
-password = "1234"
-database_name = "book_recommend"
-
-engine = database_engine(host, port, user, password, database_name)
-
-
-conn = psycopg2.connect(
-            host=host,
-            port=port,
-            user=user,
-            password=password,
-            dbname="book_recommend"
-        )
-conn.autocommit = True
-cursor = conn.cursor()
-
-
-def get_choice_bool(user_id, question_number):
+def get_choice_bool(cursor, user_id, question_number):
     cursor.execute(
         sql.SQL("SELECT * FROM public.user_responses WHERE user_id = %s and question_number = %s"),
         (user_id, question_number)
     )
     exists = cursor.fetchall()
-    book_a_select = exists[0][4]
-    book_b_select = exists[1][4]
-
+    if exists:
+        book_a_select = exists[0][4]
+        book_b_select = exists[1][4]
+    else:
+        book_a_select = None
+        book_b_select = None
     return book_a_select, book_b_select
 
 
-def load_book_data(json_file_path):
+def get_sentence_from_db(db: Session):
     """
-    JSON 파일에서 책 데이터를 로드합니다.
+    데이터베이스에서 책 데이터(id, isbn, sentence)만 불러옵니다.
     """
-    with open(json_file_path, 'r', encoding='utf-8') as file:
-        book_data = json.load(file)
-        book_data = list(book_data.values())
-    return book_data
+    sentences = db.query(SentenceTable.id, SentenceTable.isbn, SentenceTable.sentence).all()
+    
+    if not sentences:
+        return []
+
+    return [
+        {
+            "id": sentence.id,
+            "isbn": sentence.isbn,
+            "sentence": sentence.sentence,
+        }
+        for sentence in sentences
+    ]
+
+# def load_book_data(json_file_path):
+#     """
+#     JSON 파일에서 책 데이터를 로드합니다.
+#     """
+#     with open(json_file_path, 'r', encoding='utf-8') as file:
+#         book_data = json.load(file)
+#         book_data = list(book_data.values())
+#     return book_data
 
 
 # === 임베딩 로드 함수 ===
@@ -155,6 +176,7 @@ def select_books(book_embeddings, cluster_to_books, alpha, beta_values, presente
         else:
             # 모든 클러스터가 방문된 경우, 활용으로 전환
             exploration_prob = 0  # 탐색 비중을 제거하고 활용으로 이동
+            
     elif exploration_prob <= 0.18:
         # 활용: 선호도가 높은 책 선택 (노이즈 적용)
         random_book_b = max(

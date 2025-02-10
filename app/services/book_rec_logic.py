@@ -6,17 +6,26 @@ from sklearn.metrics.pairwise import cosine_similarity
 from scipy.stats import beta
 
 import os; print("os.getcwd :", os.getcwd())
-from book_rec_module import load_book_data, load_embeddings,select_books, \
-    update_data, get_message_by_id, weighted_sampling, get_choice_bool
+from book_rec_module import load_embeddings,select_books, \
+    update_data, get_message_by_id, weighted_sampling, get_choice_bool, get_sentence_from_db
+
+from app.database.connection import get_db
+from sqlalchemy.orm import Session
 
 
-
-def first_setting_of_logic(user_id, num_clusters, noise_factor, embedding_save_path, llm_output_path):
+def first_setting_of_logic(user_id, num_clusters, noise_factor, embedding_save_path):
     embedding_save_path = "notebook/notebook/data/book_embeddings.npz"  # 저장된 파일 경로
-    llm_output_path = 'data/scraping/llm_output_fixed.json'
+    # llm_output_path = 'data/scraping/llm_output_fixed.json'
 
     ids, book_embeddings = load_embeddings(embedding_save_path)
-    book_data = load_book_data(llm_output_path)
+    # book_data = load_book_data(llm_output_path)
+
+
+    # ✅ DB 연결 후 책 데이터 불러오기
+    db: Session = next(get_db())
+    book_data = get_sentence_from_db(db)  # ✅ `id, isbn, sentence`만 가져오기
+    db.close()  # 사용 후 세션 닫기
+
 
     books = [f"Book {i}" for i in range(len(ids))]  # books는 ids의 길이에 따라 생성
     assert len(books) == len(ids), "Books length mismatch with IDs!"
@@ -43,6 +52,8 @@ def first_setting_of_logic(user_id, num_clusters, noise_factor, embedding_save_p
     uncertainty_factor = 10
     round_num = 0
     question_number = round_num +1
+
+    
     return round_num, initial_prob, decay_factor, uncertainty_factor, alpha, beta_values, \
         presented_books, noise_factor, ids, book_data, user_id, question_number, \
         book_embeddings, cluster_to_books
@@ -66,14 +77,14 @@ def suggest_books():
                                     beta_values, presented_books, exploration_prob, 
                                     noise_factor, book_choice)
     
-    # 책 메시지 조회
-    message_a = get_message_by_id(ids, ids[book_a], book_data)
-    message_b = get_message_by_id(ids, ids[book_b], book_data)
+    # # 책 메시지 조회
+    # message_a = get_message_by_id(ids, ids[book_a], book_data)
+    # message_b = get_message_by_id(ids, ids[book_b], book_data)
 
-    print('\n')
-    print(f"Round {round_num+1}: Choose between:")
-    print(f"a: {message_a}")
-    print(f"b: {message_b}")
+    # print('\n')
+    # print(f"Round {round_num+1}: Choose between:")
+    # print(f"a: {message_a}")
+    # print(f"b: {message_b}")
 
     round_num += 1
     return book_a, book_b
@@ -119,14 +130,14 @@ def get_recommendations():
 
 
 embedding_save_path = "notebook/notebook/data/book_embeddings.npz"  # 저장된 파일 경로
-llm_output_path = 'data/scraping/llm_output_fixed.json'
-user_id = 101
+# llm_output_path = 'data/scraping/llm_output_fixed.json'
+user_id = '101'
 num_clusters = 6
 noise_factor = 0.01
 
 round_num, initial_prob, decay_factor, uncertainty_factor, alpha, beta_values, \
 presented_books, noise_factor, ids, book_data, user_id, question_number, \
-book_embeddings, cluster_to_books = first_setting_of_logic(user_id, num_clusters, noise_factor, embedding_save_path, llm_output_path)
+book_embeddings, cluster_to_books = first_setting_of_logic(user_id, num_clusters, noise_factor, embedding_save_path)
 
 
 book_choice_updated = None

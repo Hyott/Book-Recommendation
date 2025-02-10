@@ -16,11 +16,16 @@ user = os.getenv("POSTGRES_USER")
 password = os.getenv("POSTGRES_PASSWORD")
 database_name = os.getenv("DATABASE_NAME")
 
+
+
+
 # ✅ 엔진 생성
 engine = create_engine(f"postgresql://{user}:{password}@{host}:{port}/{database_name}")
 
 # ✅ 세션 생성
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+
 
 def ensure_database_exists(host, port, user, password, database_name):
     """
@@ -43,7 +48,8 @@ def ensure_database_exists(host, port, user, password, database_name):
             port=port,
             user=user,
             password=password,
-            dbname="postgres"
+            # dbname="postgres"
+            dbname=database_name
         )
         conn.autocommit = True
         cursor = conn.cursor()
