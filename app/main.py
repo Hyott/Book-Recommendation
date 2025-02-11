@@ -228,7 +228,7 @@ def get_cursor(host, port, user, password, database_name):
 @app.get("/recommendation/{user_id}")
 def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
     # question_number = get_question_number(user_id, db)
-    question_number = int(get_question_number_by_user_id(db, user_id)[0])
+    question_number = get_question_number_by_user_id(db, user_id)
     print('question_number:!!!!!!!!!!!!!!!!!!!!!!!!!!!!' , question_number)
     # print('question_number--int:!!!!!!!!!!!!!!!!!!!!!!!!!!!!' , int(question_number[0]))
 
