@@ -83,7 +83,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
         headers: {"Content-Type": "application/json"},
         body: json.encode({
           "user_id": userId,
-          "question_number": questionA_num,
+          "question_number": questionB_num,
           "sentence_id": sentenceB_id, // 책 B의 sentence_id 값
           "is_positive": !isBookASelected, // 책 B는 선택되지 않으면 false
           "datetime": DateTime.now().toIso8601String(),
