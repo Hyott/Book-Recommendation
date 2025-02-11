@@ -1,15 +1,6 @@
 import numpy as np
 from numpy.linalg import norm 
-import json
-import os
-print("os.getcwd: ", os.getcwd())
-import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
-
-from app.database.connection import database_engine
-import psycopg2
 from psycopg2 import sql
-from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 from app.database.models import SentenceTable
 

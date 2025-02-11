@@ -227,7 +227,7 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
     # print('question_number--int:!!!!!!!!!!!!!!!!!!!!!!!!!!!!' , int(question_number[0]))
 
 
-    if user_id and question_number:
+    if user_id and question_number == 0:
         ids, book_embeddings, book_data, user_id, question_number, cluster_to_books = first_setting_of_logic(user_id, num_clusters, embedding_save_path, db)
         book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor)
 
@@ -238,7 +238,7 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
         message_b = get_message_by_id(ids, ids[book_b], book_data)
     
 
-    if user_id and question_number > 0 :
+    elif user_id and question_number > 0 :
         book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b)
         book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor, book_choice_updated)
 
