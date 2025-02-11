@@ -1,5 +1,9 @@
 import numpy as np
 from numpy.linalg import norm 
+import os
+print("os.getcwd: ", os.getcwd())
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 from psycopg2 import sql
 from sqlalchemy.orm import Session
 from app.database.models import SentenceTable

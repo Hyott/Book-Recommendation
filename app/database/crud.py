@@ -6,7 +6,6 @@ from zoneinfo import ZoneInfo
 import uuid
 from sqlalchemy.dialects.postgresql import insert
 
-
 # ✅ 특정 ISBN으로 도서 조회
 def get_book_by_isbn(db: Session, isbn: str):
     return db.query(BookTable).filter(BookTable.isbn == isbn).first()
@@ -33,8 +32,13 @@ def add_user_response(response: UserResponseSchema):
     return stmt
 
 def get_question_number_by_user_id(db: Session, user_id: str):
-    return int(db.query(UserResponseTable.question_number)
-        .filter(UserResponseTable.user_id == user_id)
-        .order_by(UserResponseTable.question_number.desc())
-        .first()[0]) # 가장 최신 값 가져오기
+    result = db.query(UserResponseTable.question_number) \
+            .filter(UserResponseTable.user_id == user_id) \
+            .order_by(UserResponseTable.question_number.desc()) \
+            .first()
+         # .first()[0]) # 가장 최신 값 가져오기
+
+    if result is None:
+        return 0  # 데이터가 없으면 기본값 0 반환
     
+    return int(result.question_number)  # 첫 번째 컬럼 값 반환

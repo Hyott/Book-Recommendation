@@ -5,6 +5,8 @@
 *.ttf
 api_db_connection.py*.pyc
 *.pyc
+*.txt
+*.sql
 .DS_Store
 __pycache__/"readme.env" 
 
