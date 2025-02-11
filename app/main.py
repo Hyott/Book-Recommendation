@@ -20,7 +20,7 @@ load_dotenv()
 
 # 환경 변수 가져오기
 host = os.getenv("HOST")
-port = os.getenv("PORT")
+port = os.getenv("POSTGRES_PORT")
 user = os.getenv("POSTGRES_USER")
 password = os.getenv("POSTGRES_PASSWORD")
 database_name = os.getenv("DATABASE_NAME")
@@ -265,8 +265,4 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
     # "bookA": {"isbn": str(book_a_isbn), "sentence": message_a},
     # "bookB": {"isbn": str(book_b_isbn), "sentence": message_b}
     # }
-
-
-    
-
 
