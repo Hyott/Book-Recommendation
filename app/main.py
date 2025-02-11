@@ -10,8 +10,6 @@ from sklearn.cluster import KMeans
 from sklearn.metrics.pairwise import cosine_similarity
 from services.book_rec_module import load_embeddings, select_books, \
     update_data, get_message_by_id, weighted_sampling, get_choice_bool, get_sentence_from_db
-import json
-from typing import Optional
 from dotenv import load_dotenv
 import os
 from app.database.connection import database_engine
@@ -55,12 +53,6 @@ noise_factor = 0.01
 embedding_save_path = "notebook/notebook/data/book_embeddings.npz"
 
 num_clusters = 10
-
-
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to the API!"}
-
 
 @app.get("/books/{isbn}")
 def get_book(isbn: str, db: Session = Depends(get_db)):
@@ -229,8 +221,8 @@ def get_cursor(host, port, user, password, database_name):
 def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
     # question_number = get_question_number(user_id, db)
     question_number = get_question_number_by_user_id(db, user_id)
-    print('question_number--tuple:!!!!!!!!!!!!!!!!!!!!!!!!!!!!' , question_number)
-    print('question_number--int:!!!!!!!!!!!!!!!!!!!!!!!!!!!!' , int(question_number[0]))
+    print('question_number:!!!!!!!!!!!!!!!!!!!!!!!!!!!!' , question_number)
+    # print('question_number--int:!!!!!!!!!!!!!!!!!!!!!!!!!!!!' , int(question_number[0]))
 
 
     if user_id and question_number:

@@ -14,8 +14,10 @@ class BookTable(Base):
     author = Column(String, nullable=False)
     image_url = Column(String, nullable=False)
     category = Column(String, nullable=False)
+    description = Column(String, nullable=True)
+    key_sentences = Column(String, nullable=True)
     publication_date = Column(DateTime, nullable=False)
-
+    
 class TagTable(Base):
     __tablename__ = "tags"
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -28,6 +30,7 @@ class SentenceTable(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     isbn = Column(String, ForeignKey("books.isbn"), nullable=False)
     sentence = Column(String, nullable=False)
+    letter = Column(String, nullable=False)
 
 class UserResponseTable(Base):
     __tablename__ = "user_responses"

@@ -24,9 +24,21 @@ Read4U는 사용자의 독서 취향을 정밀하게 분석하여 맞춤형 에�
   </tr>
 </table>
 
-## 🎖 Special Thanks
+<br>
+
+### 🎖 Special Thanks
 - **Mentor:** [JinYeong Choi](https://www.linkedin.com/in/jin0choi/)
 
+<br>
+
+## 역할 분담
+#### 🧸 박서현 : Backend, PM
+
+#### 👩‍💻 서예은 : Frontend, UI/UX
+
+#### 👨‍💻 안효철 : Recommender System, Backend
+
+#### 👨‍💻 최진영 : DevOps/Infrastructure
 
 <br>
 <br>
@@ -61,33 +73,14 @@ Read4U는 사용자의 독서 취향을 정밀하게 분석하여 맞춤형 에�
 | 카테고리 | 기술 스택 |
 |:----------:|:----------:|
 | **Backend** | FastAPI, PostgreSQL |
-| **Frontend** | Flutter, figma |
-| **ML/NLP** | Hugging Face Transformers, TensorFlow/Keras, PyTorch |
-| **검색 및 벡터화** | RAG |
-| **배포** | Docker|
-| **운영체제** | Windows, macOS, Linux |
+| **Frontend** | Flutter |
+| **UI/UX** | figma |
+| **Recommender System** | RAG |
+| **DevOps/Infrastructure** | Docker|
 | **Communication** | Git, Slack, Notion|
 
 
-## 3. 설치 방법 및 실행 가이드
-### 1️⃣ 가상 환경 설정 및 패키지 설치
-```bash
-python -m venv venv
-source venv/bin/activate  # (Windows의 경우 venv\Scripts\activate)
-pip install -r requirements.txt
-```
-
-### 2️⃣ 데이터베이스 초기화
-```bash
-python init_db.py
-```
-
-### 3️⃣ 서버 실행
-```bash
-uvicorn main:app --reload
-```
-
-## 4. 프로젝트 구조
+## 3. 프로젝트 구조
 ```
 📦 book_recommedation
  ┣ 📂 app
@@ -109,17 +102,7 @@ uvicorn main:app --reload
 
 <br>
 
-## 5. (주) 역할 분담
-
-#### 👩‍💻 서예은 : API 연동 및 Flutter 구현, UI/UX 디자인(Figma)
-
-#### 👨‍💻 안효철 : 추천 알고리즘 구현, LLM 및 벡터화를 활용한 추천 시스템 개발
-
-#### 🧸 박서현 : API 구현 및 데이터베이스 설계, PM
-
-<br>
-
-## 6. 개발 기간 및 작업 관리
+## 4. 개발 기간 및 작업 관리
 #### 🗓 개발 기간
 - 전체 개발 기간 : 2025-01-06 ~ 2025-02-17
 - 데이터베이스 구현 및 알고리즘 설계 : 2025-01-06 ~ 2025-02-03
@@ -131,43 +114,20 @@ uvicorn main:app --reload
 
 <br>
 
-## 7. 신경 쓴 부분
-- 사용자가 쉽게 참여할 수 있고 몰입감 있는 취향 분석 테스트 설계
+## 5. 신경 쓴 부분
+- 사용자가 쉽게 참여할 수 있고 몰입감 있는 취향 분석 설계
 - 개인화된 맞춤 도서 추천 알고리즘 개발
 - 벡터화된 핵심 문장 기반의 정밀한 추천 시스템 구현
 
 <br>
 
-## 8. 페이지별 기능
+## 6. 페이지별 기능
 - **메인 페이지 :** 도서 추천 테스트 진입
-- **테스트 페이지 :** 질문에 답변하여 취향 분석
+- **핵심문장 선택 페이지 :** 질문에 답변하여 취향 분석
 - **추천 결과 페이지 :** 사용자 취향에 맞는 여러 권의 책 추천
 - **책 상세 및 공유 페이지 :** 추천된 책의 정보 및 리뷰 제공, 공유 가능 기능
 
 <br>
-
-##  9. 트러블 슈팅
-### 1️⃣ 데이터베이스 오류 해결
-**문제:** `오류` 발생
-**해결:** 데이터베이스 초기화 스크립트를 실행하세요.
-```bash
-python init_db.py
-```
-
-### 2️⃣ 가상 환경 오류 해결
-**문제:** `오류`
-**해결:** 가상 환경이 활성화되지 않았을 수 있습니다. 아래 명령어를 실행하세요.
-```bash
-source venv/bin/activate  # (Windows의 경우 venv\Scripts\activate)
-```
-
-<br>
-
-##  10. 개선 목표
-- [ ] AWS를 사용하여 주기적인 에세이 업로드
-- [ ] 공유 기능 업데이트(더 다양한 플랫폼으로 연동 가능하게)
-- [ ] UI/UX 최적화 및 macOS 앱 배포
-
 
 ## 📢 프로젝트 후기
 #### 👩‍💻 서예은 :
