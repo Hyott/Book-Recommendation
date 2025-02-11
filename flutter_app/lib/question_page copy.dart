@@ -91,10 +91,6 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
       );
 
       if (responseA.statusCode == 200 && responseB.statusCode == 200) {
-        // setState(() {
-        //   questionA_num++; // 🔹 먼저 증가
-        //   questionB_num++;
-        // });
         fetchRecommendations(); // 🔹 이후 새로운 질문 불러오기
       } else {
         print("Failed to save response.");

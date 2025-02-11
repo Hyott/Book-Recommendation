@@ -219,64 +219,20 @@ def get_cursor(host, port, user, password, database_name):
     return cursor
 
 
-# @app.get("/recommendation/{user_id}")
-# def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
-#     question_number = get_question_number_by_user_id(db, user_id)
-#     print('question_number:!!!!!!!!!!!!!!!!!!!!!!!!!!!!', question_number)
-
-#     # 변수 초기화
-#     book_a = None
-#     book_b = None
-#     book_a_isbn = None
-#     book_b_isbn = None
-#     message_a = None
-#     message_b = None
-#     book_embeddings = None
-#     cluster_to_books = None
-#     noise_factor = 0
-#     book_data = None
-#     ids = 0
-
-
-#     if user_id and question_number == 0:
-#         ids, book_embeddings, book_data, user_id, cluster_to_books = first_setting_of_logic(user_id, num_clusters, embedding_save_path, db)
-#         book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor)
-#         print("This is if")
-    
-#     elif user_id and question_number > 0 :
-#         book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b)
-#         book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor, book_choice_updated)
-#         print("This is else")
-
-#     # book_a, book_b가 None이 아닐 때만 실행
-#     if book_a is not None and book_b is not None:
-#         book_a_isbn = get_isbn_by_id(ids, ids[book_a], book_data)
-#         book_b_isbn = get_isbn_by_id(ids, ids[book_b], book_data)
-
-#         message_a = get_message_by_id(ids, ids[book_a], book_data)
-#         message_b = get_message_by_id(ids, ids[book_b], book_data)
-
-
-#     print('\n')
-#     print(f"Round {question_number + 1}: Choose between:")
-#     print(f"a: {message_a}")
-#     print(f"b: {message_b}")
-
-#     # ISBN + 문장을 함께 반환
-#     return JSONResponse(
-#         content={
-#             "bookA": {"question_num": question_number, "sentence_id": str(book_a), "isbn": str(book_a_isbn), "sentence": message_a},
-#             "bookB": {"question_num": question_number, "sentence_id": str(book_b), "isbn": str(book_b_isbn), "sentence": message_b}
-#         },
-#         headers={"Content-Type": "application/json; charset=utf-8"}
-    # )
-
 @app.get("/recommendation/{user_id}")
 def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
     global cluster_to_books, book_embeddings, book_data, ids
 
     question_number = get_question_number_by_user_id(db, user_id)
     print('question_number:!!!!!!!!!!!!!!!!!!!!!!!!!!!!', question_number)
+
+     # 선택된 책을 저장할 변수
+    book_a = None
+    book_b = None
+    book_a_isbn = None
+    book_b_isbn = None
+    message_a = None
+    message_b = None
 
     # 🔹 cluster_to_books가 None이면 초기화
     if cluster_to_books is None or book_embeddings is None or book_data is None:
@@ -285,41 +241,35 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
             user_id, num_clusters, embedding_save_path, db
         )
 
-    # 선택된 책을 저장할 변수
-    book_a = None
-    book_b = None
-    book_a_isbn = None
-    book_b_isbn = None
-    message_a = None
-    message_b = None
-
-    if question_number == 0:
-        book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor)
-        print("This is if")
     else:
-        book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b)
-        book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor, book_choice_updated)
-        print("This is else")
+        if question_number == 0:
+            book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor)
+            print("This is if")
+        else:
+            book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b)
+            book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor, book_choice_updated)
+            print("This is else")
 
-    # book_a, book_b가 None이 아닐 때만 실행
-    if book_a is not None and book_b is not None:
-        book_a_isbn = get_isbn_by_id(ids, ids[book_a], book_data)
-        book_b_isbn = get_isbn_by_id(ids, ids[book_b], book_data)
+        # book_a, book_b가 None이 아닐 때만 실행
+        if book_a is not None and book_b is not None:
+            question_number += 1
+            book_a_isbn = get_isbn_by_id(ids, ids[book_a], book_data)
+            book_b_isbn = get_isbn_by_id(ids, ids[book_b], book_data)
 
-        message_a = get_message_by_id(ids, ids[book_a], book_data)
-        message_b = get_message_by_id(ids, ids[book_b], book_data)
+            message_a = get_message_by_id(ids, ids[book_a], book_data)
+            message_b = get_message_by_id(ids, ids[book_b], book_data)
 
 
     print('\n')
-    print(f"Round {question_number + 1}: Choose between:")
+    print(f"Round {question_number}: Choose between:")
     print(f"a: {message_a}")
     print(f"b: {message_b}")
 
     # ISBN + 문장을 함께 반환
     return JSONResponse(
         content={
-            "bookA": {"question_num": question_number+1, "sentence_id": str(book_a), "isbn": str(book_a_isbn), "sentence": message_a},
-            "bookB": {"question_num": question_number+1, "sentence_id": str(book_b), "isbn": str(book_b_isbn), "sentence": message_b}
+            "bookA": {"question_num": question_number, "sentence_id": str(book_a), "isbn": str(book_a_isbn), "sentence": message_a},
+            "bookB": {"question_num": question_number, "sentence_id": str(book_b), "isbn": str(book_b_isbn), "sentence": message_b}
         },
         headers={"Content-Type": "application/json; charset=utf-8"}
     )
