@@ -252,6 +252,7 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
 
         # book_a, book_b가 None이 아닐 때만 실행
         if book_a is not None and book_b is not None:
+            question_number += 1
             book_a_isbn = get_isbn_by_id(ids, ids[book_a], book_data)
             book_b_isbn = get_isbn_by_id(ids, ids[book_b], book_data)
 
@@ -260,15 +261,15 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
 
 
     print('\n')
-    print(f"Round {question_number + 1}: Choose between:")
+    print(f"Round {question_number}: Choose between:")
     print(f"a: {message_a}")
     print(f"b: {message_b}")
 
     # ISBN + 문장을 함께 반환
     return JSONResponse(
         content={
-            "bookA": {"question_num": question_number+1, "sentence_id": str(book_a), "isbn": str(book_a_isbn), "sentence": message_a},
-            "bookB": {"question_num": question_number+1, "sentence_id": str(book_b), "isbn": str(book_b_isbn), "sentence": message_b}
+            "bookA": {"question_num": question_number, "sentence_id": str(book_a), "isbn": str(book_a_isbn), "sentence": message_a},
+            "bookB": {"question_num": question_number, "sentence_id": str(book_b), "isbn": str(book_b_isbn), "sentence": message_b}
         },
         headers={"Content-Type": "application/json; charset=utf-8"}
     )
