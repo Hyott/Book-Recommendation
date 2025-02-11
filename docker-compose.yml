@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     container_name: fastapi_backend
     ports:
-      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
     depends_on:
       - db
     environment:
