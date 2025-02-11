@@ -60,6 +60,7 @@ cluster_to_books = {i: [] for i in range(num_clusters)}
 for idx, cluster_id in enumerate(clusters):
     cluster_to_books[cluster_id].append(idx)
 
+print("cluster to books:", cluster_to_books[0])
 # 클러스터별 알파, 베타 값 초기화
 alpha = np.ones(num_books)
 beta_values = np.ones(num_books)
@@ -105,6 +106,7 @@ def select_books(cluster_to_books, alpha, beta_values, presented_books, explorat
             raise ValueError("No more books to present. All books have been used.")
 
         best_book_a = max(representative_books, key=lambda x: x[1])[0]
+
 
     # elif exploration_prob <= 0.18:
     # # if book_choice:
