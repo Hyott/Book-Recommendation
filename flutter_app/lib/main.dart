@@ -1,71 +1,7 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
 import 'package:project/loading.dart';
 import 'package:project/question_page.dart';
 import 'package:provider/provider.dart';
-
-// void main() {
-//   runApp(
-//     ChangeNotifierProvider(
-//       create: (context) => UserNameProvider(),
-//       child: MyApp(),
-//     ),
-//   );
-// }
-//
-// class UserNameProvider extends ChangeNotifier {
-//   String _userName = '';
-//
-//   String get userName => _userName;
-//
-//   void updateUserName(String name) {
-//     _userName = name;
-//     notifyListeners();
-//   }
-// }
-//
-//
-// class MyApp extends StatelessWidget {
-//   // const MyApp({Key? key}) : super(key: key);
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: '도서 추천 서비스',
-//       theme: ThemeData(
-//         primarySwatch: Colors.blue,
-//       ),
-//       debugShowCheckedModeBanner: false,
-//       home: MyHomePage(),
-//     );
-//   }
-// }
-//
-// class MyHomePage extends StatelessWidget {
-//   const MyHomePage({super.key});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       // appBar: AppBar(
-//       //   title: const Text('도서 추천 서비스'),
-//       // ),
-//       body: Container(
-//         margin: const EdgeInsets.all(10),
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             const Text(
-//               '안녕하세요, 지금부터 당신의 에세이 취향 테스트를 시작하겠습니다.',
-//               style: TextStyle(fontSize: 16),
-//             ),
-//             Expanded(child: TextFormFieldExample()),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
 
 
 void main() {
@@ -150,7 +86,7 @@ class NameInputScreen extends StatelessWidget {
                         .updateUserName(userName);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => ChooseMessageScreen()),
+                      MaterialPageRoute(builder: (context) => RecommendationScreen()),
                     );
                   },
                   child: Text('시작하기'),
