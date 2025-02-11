@@ -5,11 +5,11 @@ services:
       dockerfile: Dockerfile
     container_name: fastapi_backend
     ports:
-      - "8000:8000"
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     depends_on:
       - db
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${HOST}:${PORT}/${DATABASE_NAME} # 환경 변수 사용
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${HOST}:${POSTGRES_PORT}/${DATABASE_NAME} # 환경 변수 사용
     env_file:
       - .env # .env 파일 로드
 
@@ -19,11 +19,11 @@ services:
       dockerfile: Dockerfile
     container_name: flutter_frontend
     ports:
-      - "8080:80"
+      - "${FRONTEND_PORT}:${HTTP_PORT}"
     depends_on:
       - backend
     environment:
-      API_BASE_URL: http://backend:8000  # FastAPI의 API 주소를 환경 변수로 지정
+      API_BASE_URL: http://backend:${FRONTEND_PORT}  # FastAPI의 API 주소를 환경 변수로 지정
     env_file:
       - .env
 
@@ -32,11 +32,7 @@ services:
     container_name: postgres_db
     restart: always
     ports:
-      - "5432:5432" # 환경 변수 사용
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${DATABASE_NAME}
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}" # 환경 변수 사용
     env_file:
       - .env # .env 파일 로드
     volumes:
@@ -44,13 +40,3 @@ services:
       - ./app/database/init_database.sql:/docker-entrypoint-initdb.d/init_database.sql
 volumes:
   postgres_data:
-
-
-
-
-
-
-
-
-
-
