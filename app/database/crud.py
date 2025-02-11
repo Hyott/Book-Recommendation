@@ -24,6 +24,7 @@ def add_user_response(response: UserResponseSchema):
     stmt = insert(UserResponseTable).values(
             user_id=user_id,
             question_number=response.question_number,
+            # sentence_id=response.sentence_id,
             sentence_id=response.sentence_id,
             is_positive=response.is_positive,
             datetime=datetime.now(ZoneInfo("Asia/Seoul"))
@@ -31,8 +32,8 @@ def add_user_response(response: UserResponseSchema):
     return stmt
 
 def get_question_number_by_user_id(db: Session, user_id: str):
-    return db.query(UserResponseTable.question_number) \
-        .filter(UserResponseTable.user_id == user_id) \
-        .order_by(UserResponseTable.question_number.desc())  \
-        .first() # 가장 최신 값 가져오기
+    return int(db.query(UserResponseTable.question_number)
+        .filter(UserResponseTable.user_id == user_id)
+        .order_by(UserResponseTable.question_number.desc())
+        .first()[0]) # 가장 최신 값 가져오기
     
