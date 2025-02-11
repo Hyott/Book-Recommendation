@@ -219,43 +219,6 @@ def get_cursor(host, port, user, password, database_name):
     return cursor
 
 
-# @app.get("/recommendation/{user_id}")
-# def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
-#     # question_number = get_question_number(user_id, db)
-#     # question_number = get_question_number_by_user_id(db, user_id)
-    
-#     question_number = get_question_number_by_user_id(db, user_id) or 0
-#     print('question_number:!!!!!!!!!!!!!!!!!!!!!!!!!!!!' , question_number)
-#     # print('question_number--int:!!!!!!!!!!!!!!!!!!!!!!!!!!!!' , int(question_number[0]))
-
-
-#     if user_id and question_number == 0:
-#         ids, book_embeddings, book_data, user_id, question_number, cluster_to_books = first_setting_of_logic(user_id, num_clusters, embedding_save_path, db)
-#         book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor)
-
-#         book_a_isbn =  get_isbn_by_id(ids, ids[book_a], book_data)
-#         book_b_isbn =  get_isbn_by_id(ids, ids[book_b], book_data)
-        
-#         message_a = get_message_by_id(ids, ids[book_a], book_data)
-#         message_b = get_message_by_id(ids, ids[book_b], book_data)
-    
-
-#     elif user_id and question_number > 0 :
-#         try:
-#             print("book_a before assignment:", book_a)
-
-#             book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b)
-#             book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor, book_choice_updated)
-
-#             book_a_isbn =  get_isbn_by_id(ids, ids[book_a], book_data)
-#             book_b_isbn =  get_isbn_by_id(ids, ids[book_b], book_data)
-
-#             message_a = get_message_by_id(ids, ids[book_a], book_data)
-#             message_b = get_message_by_id(ids, ids[book_b], book_data)
-
-#         except Exception as e:
-#             print(f"An error occurred: {e}")
-#             raise HTTPException(status_code=500, detail="Internal Server Error")
 @app.get("/recommendation/{user_id}")
 def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
     question_number = get_question_number_by_user_id(db, user_id)
@@ -277,20 +240,9 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
 
     if user_id and question_number == 0:
         ids, book_embeddings, book_data, user_id, cluster_to_books = first_setting_of_logic(user_id, num_clusters, embedding_save_path, db)
-    if user_id and question_number == 0:
-        ids, book_embeddings, book_data, user_id, question_number, cluster_to_books = first_setting_of_logic(user_id, num_clusters, embedding_save_path, db)
         book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor)
         print("This is if")
-
-    else:
-
-        book_a_isbn =  get_isbn_by_id(ids, ids[book_a], book_data)
-        book_b_isbn =  get_isbn_by_id(ids, ids[book_b], book_data)
-        
-        message_a = get_message_by_id(ids, ids[book_a], book_data)
-        message_b = get_message_by_id(ids, ids[book_b], book_data)
     
-
     elif user_id and question_number > 0 :
         book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b)
         book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor, book_choice_updated)
