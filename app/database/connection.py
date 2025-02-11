@@ -11,7 +11,7 @@ load_dotenv()
 
 # 환경 변수 가져오기
 host = os.getenv("HOST")
-port = os.getenv("PORT")
+port = os.getenv("POSTGRES_PORT")
 user = os.getenv("POSTGRES_USER")
 password = os.getenv("POSTGRES_PASSWORD")
 database_name = os.getenv("DATABASE_NAME")
@@ -48,7 +48,6 @@ def ensure_database_exists(host, port, user, password, database_name):
             port=port,
             user=user,
             password=password,
-            # dbname="postgres"
             dbname=database_name
         )
         conn.autocommit = True
