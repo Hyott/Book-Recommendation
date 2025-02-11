@@ -61,6 +61,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
     }
   }
 
+
   Future<void> sendUserResponse(String selectedIsbn) async {
     bool isBookASelected = selectedIsbn == bookAIsbn;
 
@@ -82,7 +83,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
         headers: {"Content-Type": "application/json"},
         body: json.encode({
           "user_id": userId,
-          "question_number": questionB_num,
+          "question_number": questionA_num,
           "sentence_id": sentenceB_id, // 책 B의 sentence_id 값
           "is_positive": !isBookASelected, // 책 B는 선택되지 않으면 false
           "datetime": DateTime.now().toIso8601String(),
@@ -90,10 +91,11 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
       );
 
       if (responseA.statusCode == 200 && responseB.statusCode == 200) {
-        setState(() {
-          questionA_num++; // 🔹 먼저 증가
-          questionB_num++;
-        });
+        // setState(() {
+        //   questionA_num++; // 🔹 먼저 증가
+        //   // questionB_num++;
+        // });
+        // questionA_num++;
         fetchRecommendations(); // 🔹 이후 새로운 질문 불러오기
       } else {
         print("Failed to save response.");
