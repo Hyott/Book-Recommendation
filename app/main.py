@@ -128,9 +128,9 @@ def first_setting_of_logic(user_id, num_clusters, embedding_save_path, db):
     alpha = np.ones(num_books)
     beta_values = np.ones(num_books)
 
-    round_num = 0
-    question_number = round_num + 1
-    return ids, book_embeddings, book_data, user_id, question_number, cluster_to_books
+    # round_num = 0
+    # question_number = round_num + 1
+    return ids, book_embeddings, book_data, user_id, cluster_to_books
 
 
 def suggest_books(book_embeddings, cluster_to_books, noise_factor, book_choice=None):
@@ -219,34 +219,80 @@ def get_cursor(host, port, user, password, database_name):
     return cursor
 
 
-@app.get("/recommendation/{user_id}")
-def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
-    # question_number = get_question_number(user_id, db)
-    question_number = get_question_number_by_user_id(db, user_id)
-    print('question_number:!!!!!!!!!!!!!!!!!!!!!!!!!!!!' , question_number)
-    # print('question_number--int:!!!!!!!!!!!!!!!!!!!!!!!!!!!!' , int(question_number[0]))
+# @app.get("/recommendation/{user_id}")
+# def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
+#     # question_number = get_question_number(user_id, db)
+#     # question_number = get_question_number_by_user_id(db, user_id)
+    
+#     question_number = get_question_number_by_user_id(db, user_id) or 0
+#     print('question_number:!!!!!!!!!!!!!!!!!!!!!!!!!!!!' , question_number)
+#     # print('question_number--int:!!!!!!!!!!!!!!!!!!!!!!!!!!!!' , int(question_number[0]))
 
 
-    if user_id and question_number:
-        ids, book_embeddings, book_data, user_id, question_number, cluster_to_books = first_setting_of_logic(user_id, num_clusters, embedding_save_path, db)
-        book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor)
+#     if user_id and question_number == 0:
+#         ids, book_embeddings, book_data, user_id, question_number, cluster_to_books = first_setting_of_logic(user_id, num_clusters, embedding_save_path, db)
+#         book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor)
 
-        book_a_isbn =  get_isbn_by_id(ids, ids[book_a], book_data)
-        book_b_isbn =  get_isbn_by_id(ids, ids[book_b], book_data)
+#         book_a_isbn =  get_isbn_by_id(ids, ids[book_a], book_data)
+#         book_b_isbn =  get_isbn_by_id(ids, ids[book_b], book_data)
         
-        message_a = get_message_by_id(ids, ids[book_a], book_data)
-        message_b = get_message_by_id(ids, ids[book_b], book_data)
+#         message_a = get_message_by_id(ids, ids[book_a], book_data)
+#         message_b = get_message_by_id(ids, ids[book_b], book_data)
     
 
-    if user_id and question_number > 0 :
+#     elif user_id and question_number > 0 :
+#         try:
+#             print("book_a before assignment:", book_a)
+
+#             book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b)
+#             book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor, book_choice_updated)
+
+#             book_a_isbn =  get_isbn_by_id(ids, ids[book_a], book_data)
+#             book_b_isbn =  get_isbn_by_id(ids, ids[book_b], book_data)
+
+#             message_a = get_message_by_id(ids, ids[book_a], book_data)
+#             message_b = get_message_by_id(ids, ids[book_b], book_data)
+
+#         except Exception as e:
+#             print(f"An error occurred: {e}")
+#             raise HTTPException(status_code=500, detail="Internal Server Error")
+@app.get("/recommendation/{user_id}")
+def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
+    question_number = get_question_number_by_user_id(db, user_id)
+    print('question_number:!!!!!!!!!!!!!!!!!!!!!!!!!!!!', question_number)
+
+    # 변수 초기화
+    book_a = None
+    book_b = None
+    book_a_isbn = None
+    book_b_isbn = None
+    message_a = None
+    message_b = None
+    book_embeddings = None
+    cluster_to_books = None
+    noise_factor = 0
+    book_data = None
+    ids = 0
+
+
+    if user_id and question_number == 0:
+        ids, book_embeddings, book_data, user_id, cluster_to_books = first_setting_of_logic(user_id, num_clusters, embedding_save_path, db)
+        book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor)
+        print("This is if")
+
+    else:
         book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b)
         book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor, book_choice_updated)
+        print("This is else")
 
-        book_a_isbn =  get_isbn_by_id(ids, ids[book_a], book_data)
-        book_b_isbn =  get_isbn_by_id(ids, ids[book_b], book_data)
+    # book_a, book_b가 None이 아닐 때만 실행
+    if book_a is not None and book_b is not None:
+        book_a_isbn = get_isbn_by_id(ids, ids[book_a], book_data)
+        book_b_isbn = get_isbn_by_id(ids, ids[book_b], book_data)
 
         message_a = get_message_by_id(ids, ids[book_a], book_data)
         message_b = get_message_by_id(ids, ids[book_b], book_data)
+
 
     print('\n')
     print(f"Round {question_number + 1}: Choose between:")
@@ -256,15 +302,11 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
     # ISBN + 문장을 함께 반환
     return JSONResponse(
         content={
-            "bookA": {"sentence_id": str(book_a), "isbn": str(book_a_isbn), "sentence": message_a},
-            "bookB": {"sentence_id": str(book_b), "isbn": str(book_b_isbn), "sentence": message_b}
+            "bookA": {"question_num": question_number, "sentence_id": str(book_a), "isbn": str(book_a_isbn), "sentence": message_a},
+            "bookB": {"question_num": question_number, "sentence_id": str(book_b), "isbn": str(book_b_isbn), "sentence": message_b}
         },
         headers={"Content-Type": "application/json; charset=utf-8"}
     )
-    # return {
-    # "bookA": {"isbn": str(book_a_isbn), "sentence": message_a},
-    # "bookB": {"isbn": str(book_b_isbn), "sentence": message_b}
-    # }
 
 
     

@@ -11,13 +11,19 @@ class RecommendationScreen extends StatefulWidget {
 class _RecommendationScreenState extends State<RecommendationScreen> {
   final String baseUrl = "http://127.0.0.1:8000"; // FastAPI 백엔드 주소
   final String userId = const Uuid().v4(); // UUID 생성
-  int questionNumber = 0; // 현재 질문 번호
+  // int questionNumber = 0; // 현재 질문 번호
   String? sentenceA;
   String? sentenceB;
   String? bookAIsbn;
   String? bookBIsbn;
   String? sentenceA_id;
   String? sentenceB_id;
+  // int sentenceA_id = 0;
+  // int sentenceB_id = 0;
+  late int questionA_num;
+  late int questionB_num;
+  // int questionA_num = 0;
+  // int questionB_num = 0;
 
   @override
   void initState() {
@@ -28,16 +34,18 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
   Future<void> fetchRecommendations() async {
     try {
       final response = await http.get(
-        Uri.parse("$baseUrl/recommendation/$userId/$questionNumber"),
+        Uri.parse("$baseUrl/recommendation/$userId"),
       );
 
-      print("HTTP 요청 URL: $baseUrl/recommendation/$userId/$questionNumber");
+      print("HTTP 요청 URL: $baseUrl/recommendation/$userId");
       print("HTTP 응답 코드: ${response.statusCode}");
       print("HTTP 응답 본문: ${response.body}");
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
+          questionA_num = data["bookA"]["question_num"];
+          questionB_num = data["bookB"]["question_num"];
           bookAIsbn = data["bookA"]["isbn"];
           bookBIsbn = data["bookB"]["isbn"];
           sentenceA = data["bookA"]["sentence"]; // 백엔드에서 문장 데이터 가져오기
@@ -62,8 +70,8 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
         headers: {"Content-Type": "application/json"},
         body: json.encode({
           "user_id": userId,
-          "question_number": questionNumber,
-          "sentence_id": sentenceA_id, // 책 A의 sentence_id 값 (혹은 실제로 DB에서 가져오는 값)
+          "question_number": questionA_num,
+          "sentence_id": sentenceA_id, // 책 A의 sentence_id 값 
           "is_positive": isBookASelected, // 책 A를 선택하면 true
           "datetime": DateTime.now().toIso8601String(),
         }),
@@ -74,8 +82,8 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
         headers: {"Content-Type": "application/json"},
         body: json.encode({
           "user_id": userId,
-          "question_number": questionNumber,
-          "sentence_id": sentenceB_id, // 책 B의 sentence_id 값 (혹은 실제로 DB에서 가져오는 값)
+          "question_number": questionB_num,
+          "sentence_id": sentenceB_id, // 책 B의 sentence_id 값
           "is_positive": !isBookASelected, // 책 B는 선택되지 않으면 false
           "datetime": DateTime.now().toIso8601String(),
         }),
@@ -83,7 +91,8 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
 
       if (responseA.statusCode == 200 && responseB.statusCode == 200) {
         setState(() {
-          questionNumber++; // 🔹 먼저 증가
+          questionA_num++; // 🔹 먼저 증가
+          questionB_num++;
         });
         fetchRecommendations(); // 🔹 이후 새로운 질문 불러오기
       } else {
@@ -104,7 +113,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
             : Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("$questionNumber", style: TextStyle(fontSize: 18)),
+            Text("$questionA_num", style: TextStyle(fontSize: 18)),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () => sendUserResponse(bookAIsbn!),
@@ -121,82 +130,6 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
     );
   }
 }
-
-
-
-// import 'dart:convert';
-// import 'package:http/http.dart' as http;
-// import 'package:flutter/material.dart';
-// import 'message.dart';
-//
-// class ChooseMessageScreen extends StatefulWidget {
-//   @override
-//   _ChooseMessageScreenState createState() => _ChooseMessageScreenState();
-// }
-//
-// class _ChooseMessageScreenState extends State<ChooseMessageScreen> {
-//   static const String apiUrl = 'http://127.0.0.1:8000/sentences/9791189856502';
-//   late Future<Message> _messages;
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     _messages = fetchMessages(); // 메시지 로드
-//   }
-//
-//   Future<Message> fetchMessages() async {
-//     final response = await http.get(Uri.parse(apiUrl));
-//
-//     // 상태 코드 로그
-//     print('Response status code: ${response.statusCode}');
-//
-//     final decodedResponseBody = json.decode(utf8.decode(response.bodyBytes));
-//
-//     if (response.statusCode == 200) {
-//       // 성공 시 응답 데이터 로그
-//       print('Response body: $decodedResponseBody');
-//
-//       return Message.fromJson(decodedResponseBody);
-//     } else {
-//       // 실패 시 오류 로그
-//       print('Failed to load messages. Status code: ${response.statusCode}');
-//       print('Response body: $decodedResponseBody');
-//
-//       throw Exception('Failed to load messages: ${response.statusCode}');
-//     }
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: Text('Choose a Message')),
-//       body: FutureBuilder<Message>(
-//         future: _messages,
-//         builder: (context, snapshot) {
-//           if (snapshot.connectionState == ConnectionState.waiting) {
-//             return Center(child: CircularProgressIndicator());
-//           } else if (snapshot.hasError) {
-//             return Center(child: Text('Error: ${snapshot.error}'));
-//           } else if (!snapshot.hasData) {
-//             return Center(child: Text('No messages found'));
-//           }
-//
-//           final message = snapshot.data!;
-//
-//           return Card(
-//             margin: EdgeInsets.all(16),
-//             child: ListTile(
-//               title: Text(
-//                 message.sentence,
-//                 style: TextStyle(fontSize: 18),
-//               ),
-//             ),
-//           );
-//         },
-//       ),
-//     );
-//   }
-// }
 
 
 

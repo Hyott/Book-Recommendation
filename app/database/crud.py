@@ -33,8 +33,13 @@ def add_user_response(response: UserResponseSchema):
     return stmt
 
 def get_question_number_by_user_id(db: Session, user_id: str):
-    return int(db.query(UserResponseTable.question_number)
-        .filter(UserResponseTable.user_id == user_id)
-        .order_by(UserResponseTable.question_number.desc())
-        .first()[0]) # 가장 최신 값 가져오기
+    result = db.query(UserResponseTable.question_number) \
+            .filter(UserResponseTable.user_id == user_id) \
+            .order_by(UserResponseTable.question_number.desc()) \
+            .first()
+         # .first()[0]) # 가장 최신 값 가져오기
+
+    if result is None:
+        return 0  # 데이터가 없으면 기본값 0 반환
     
+    return int(result.question_number)  # 첫 번째 컬럼 값 반환
