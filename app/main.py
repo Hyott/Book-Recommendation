@@ -105,9 +105,8 @@ def get_recommendations(user_id: str):
     return final_recommendations
 
 def first_setting_of_logic(user_id, num_clusters, embedding_save_path, db):
-    global round_num, alpha, beta_values, presented_books, book_embeddings, ids, book_data, cluster_to_books
-    # embedding_save_path = "notebook/notebook/data/book_embeddings.npz" 
-    embedding_save_path = "embedding/book_embeddings.npz"  # 저장된 파일 경로
+    global round_num, alpha, beta_values, presented_books, book_embeddings, ids, book_data, cluster_to_books 
+    embedding_save_path = "data/book_embeddings.json" 
 
     ids, book_embeddings = load_embeddings(embedding_save_path)
 
@@ -277,9 +276,6 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
     print_nonone(alpha, "alpha")
     print_nonone(beta_values, "beta")
     print('\n')
-    # print_nonone(beta_values, "beta")
-    # for el in alpha:
-    #     print(el)
 
     # ISBN + 문장을 함께 반환
     return JSONResponse(
