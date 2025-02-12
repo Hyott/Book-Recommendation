@@ -97,7 +97,6 @@ def get_recommendations(user_id: str):
     weights = np.arange(1, len(selected_books) + 1)  # 가중치 추가  ######### 다시 볼 필요 있음
     preference_center = np.average(selected_embeddings, axis=0, weights=weights).reshape(1, -1)
 
-
     # 중심과 유사한 책 추천 (코사인 유사도 기준)
     similarities = cosine_similarity(preference_center, book_embeddings).flatten()
     final_recommendations = weighted_sampling(similarities, num_samples=10, temperature=0.2)
@@ -107,10 +106,14 @@ def get_recommendations(user_id: str):
 def first_setting_of_logic(user_id, num_clusters, embedding_save_path, db):
     global round_num, alpha, beta_values, presented_books, book_embeddings, ids, book_data, cluster_to_books
     # embedding_save_path = "notebook/notebook/data/book_embeddings.npz" 
-    embedding_save_path = "embedding/book_embeddings.npz"  # 저장된 파일 경로
+    embedding_save_path = "data/book_embeddings.json"  # 저장된 파일 경로
+    import os 
+    print(os.getcwd())
+    # embedding_save_path = "/Users/hyo-cheolahn/Documents/Projects/Book-Recommendation/data/scraping/book_embeddings.json" # 저장된 파일 경로
+    
 
+    # ids, book_embeddings = load_embeddings(embedding_save_path)
     ids, book_embeddings = load_embeddings(embedding_save_path)
-
     book_data = get_sentence_from_db(db)
 
     books = [f"Book {i}" for i in range(len(ids))]  # books는 ids의 길이에 따라 생성
@@ -254,11 +257,11 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
         book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor)
         print("This is 'if' :", book_a, book_b)
     else:
-        print("This is 'else' - first :", book_a, book_b)
+        print("This is 'else' - idx - before choice! :", book_a, book_b)
         book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b)
         print("book_choice_updated : ", book_choice_updated)
         book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor, book_choice_updated)
-        print("This is 'else' -second :", book_a, book_b)
+        print("This is 'else' - idx - after choice! :", book_a, book_b)
 
     # book_a, book_b가 None이 아닐 때만 실행
     if book_a is not None and book_b is not None:
