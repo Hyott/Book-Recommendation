@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:uuid/uuid.dart';
+import 'dart:io';
 
 class RecommendationScreen extends StatefulWidget {
   @override
@@ -9,7 +10,7 @@ class RecommendationScreen extends StatefulWidget {
 }
 
 class _RecommendationScreenState extends State<RecommendationScreen> {
-  final String baseUrl = "http://127.0.0.1:8000"; // FastAPI 백엔드 주소
+  final String baseUrl = Platform.environment['API_BASE_URL']!;
   final String userId = const Uuid().v4(); // UUID 생성
   // int questionNumber = 0; // 현재 질문 번호
 
