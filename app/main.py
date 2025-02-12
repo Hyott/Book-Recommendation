@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database.connection import get_db
 import psycopg2
-from database.crud import get_book_by_isbn, get_sentence_by_isbn, add_user_response, get_tags_by_isbn, get_question_number_by_user_id
+from database.crud import get_book_by_isbn, get_sentence_by_isbn, add_user_response, get_question_number_by_user_id
 from database.schemas import BookSchema, SentenceSchema, UserResponseSchema
 from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
@@ -228,16 +228,16 @@ def print_nonone(arr, name):
             print(f"Index: {idx}, Value: {arr[idx]}")
 
 
+
+
 @app.get("/recommendation/{user_id}")
 def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
-    global cluster_to_books, book_embeddings, book_data, ids
+    global cluster_to_books, book_embeddings, book_data, ids, book_a, book_b
 
     question_number = get_question_number_by_user_id(db, user_id)
     print('question_number:!!!!!!!!!!!!!!!!!!!!!!!!!!!!', question_number)
 
      # 선택된 책을 저장할 변수
-    book_a = None
-    book_b = None
     book_a_isbn = None
     book_b_isbn = None
     message_a = None
@@ -252,11 +252,13 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
 
     if question_number == 0:
         book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor)
-        print("This is if")
+        print("This is 'if' :", book_a, book_b)
     else:
+        print("This is 'else' - first :", book_a, book_b)
         book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b)
+        print("book_choice_updated : ", book_choice_updated)
         book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor, book_choice_updated)
-        print("This is else")
+        print("This is 'else' -second :", book_a, book_b)
 
     # book_a, book_b가 None이 아닐 때만 실행
     if book_a is not None and book_b is not None:
@@ -272,10 +274,12 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
     print(f"Round {question_number}: Choose between:")
     print(f"a: {message_a}")
     print(f"b: {message_b}")
-    # print_nonone(alpha, "alpha")
+    print_nonone(alpha, "alpha")
+    print_nonone(beta_values, "beta")
+    print('\n')
     # print_nonone(beta_values, "beta")
-    for el in alpha:
-        print(el)
+    # for el in alpha:
+    #     print(el)
 
     # ISBN + 문장을 함께 반환
     return JSONResponse(
