@@ -219,6 +219,15 @@ def get_message_by_id(ids, book_id, book_data):
     idx = np.where(ids == book_id)[0][0]  # book_id의 인덱스 찾기
     return book_data[idx]["sentence"]
 
+def print_nonone(arr, name):
+    """배열에서 1이 아닌 값의 인덱스와 값을 출력하는 함수"""
+    nonone_indices = np.where(arr != 1)[0]  # 1이 아닌 값들의 인덱스
+    if len(nonone_indices) == 0:
+        print(f"{name} 배열에 1이 아닌 값이 없습니다.")
+    else:
+        print(f"{name} 배열의 1이 아닌 값들:")
+        for idx in nonone_indices:
+            print(f"Index: {idx}, Value: {arr[idx]}")
 ########################################################################
     # === 메인 루프 ===
 
@@ -281,8 +290,10 @@ for round_num in range(12):
     if not choice:
         print("/////// No choice ////////")
     print(f"{book_choice = }")
+    print_nonone(alpha, "alpha")
 
 ####################################################################
+
     # === 최종 추천 ===
 
 # 사용자 선택 데이터를 기반으로 선호 중심 계산
