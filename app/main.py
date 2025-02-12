@@ -171,7 +171,7 @@ def get_question_number(user_id: str, db: Session = Depends(get_db)):
 
 def choice_arrange(user_id, question_number, book_a, book_b):
     cursor = get_cursor(host, port, user, password, database_name)
-    choice_bool = get_choice_bool(cursor,user_id, question_number)
+    choice_bool = get_choice_bool(cursor, user_id, question_number)
 
     if choice_bool[0]:
         choice = 'a'
@@ -221,14 +221,12 @@ def get_cursor(host, port, user, password, database_name):
 
 @app.get("/recommendation/{user_id}")
 def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
-    global cluster_to_books, book_embeddings, book_data, ids
+    global cluster_to_books, book_embeddings, book_data, ids, book_a, book_b
 
     question_number = get_question_number_by_user_id(db, user_id)
     print('question_number:!!!!!!!!!!!!!!!!!!!!!!!!!!!!', question_number)
 
     # 선택된 책을 저장할 변수
-    book_a = None
-    book_b = None
     book_a_isbn = None
     book_b_isbn = None
     message_a = None
@@ -241,23 +239,22 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
             user_id, num_clusters, embedding_save_path, db
         )
 
+    if question_number == 0:
+        book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor)
+        print("This is if")
     else:
-        if question_number == 0:
-            book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor)
-            print("This is if")
-        else:
-            book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b)
-            book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor, book_choice_updated)
-            print("This is else")
+        book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b)
+        book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor, book_choice_updated)
+        print("This is else")
 
-        # book_a, book_b가 None이 아닐 때만 실행
-        if book_a is not None and book_b is not None:
-            question_number += 1
-            book_a_isbn = get_isbn_by_id(ids, ids[book_a], book_data)
-            book_b_isbn = get_isbn_by_id(ids, ids[book_b], book_data)
+    # book_a, book_b가 None이 아닐 때만 실행
+    if book_a is not None and book_b is not None:
+        question_number += 1
+        book_a_isbn = get_isbn_by_id(ids, ids[book_a], book_data)
+        book_b_isbn = get_isbn_by_id(ids, ids[book_b], book_data)
 
-            message_a = get_message_by_id(ids, ids[book_a], book_data)
-            message_b = get_message_by_id(ids, ids[book_b], book_data)
+        message_a = get_message_by_id(ids, ids[book_a], book_data)
+        message_b = get_message_by_id(ids, ids[book_b], book_data)
 
 
     print('\n')
