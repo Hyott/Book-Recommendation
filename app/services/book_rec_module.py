@@ -158,9 +158,14 @@ def update_data(choice, book_a, book_b, alpha, beta_values):
     """
     사용자 선택 데이터를 기반으로 베타 분포 업데이트.
     """
+    print("book_a:", book_a)
+    print("book_b:", book_b)
     if choice == "a":
         alpha[book_a] += 1
         beta_values[book_b] += 1
+        # alpha[-1] += 1
+        # alpha[0] += 1
+        print(book_a)
         return book_a
     elif choice == "b":
         alpha[book_b] += 1
