@@ -42,8 +42,8 @@ app.add_middleware(
 # Global variables for the session
 presented_books = set()
 round_num = 0
-alpha = None
-beta_values = None
+alpha = []
+beta_values = []
 book_data = None
 user_id = None
 question_number = 0
@@ -128,8 +128,6 @@ def first_setting_of_logic(user_id, num_clusters, embedding_save_path, db):
     alpha = np.ones(num_books)
     beta_values = np.ones(num_books)
 
-    # round_num = 0
-    # question_number = round_num + 1
     return ids, book_embeddings, book_data, user_id, cluster_to_books
 
 
@@ -218,6 +216,17 @@ def get_cursor(host, port, user, password, database_name):
     
     return cursor
 
+# 알파, 베타 업데이트 여부 확인을 위한 함수
+def print_nonone(arr, name):
+    """배열에서 1이 아닌 값의 인덱스와 값을 출력하는 함수"""
+    nonone_indices = np.where(arr != 1)[0]  # 1이 아닌 값들의 인덱스
+    if len(nonone_indices) == 0:
+        print(f"{name} 배열에 1이 아닌 값이 없습니다.")
+    else:
+        print(f"{name} 배열의 1이 아닌 값들:")
+        for idx in nonone_indices:
+            print(f"Index: {idx}, Value: {arr[idx]}")
+
 
 @app.get("/recommendation/{user_id}")
 def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
@@ -241,29 +250,32 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
             user_id, num_clusters, embedding_save_path, db
         )
 
+    if question_number == 0:
+        book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor)
+        print("This is if")
     else:
-        if question_number == 0:
-            book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor)
-            print("This is if")
-        else:
-            book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b)
-            book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor, book_choice_updated)
-            print("This is else")
+        book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b)
+        book_a, book_b = suggest_books(book_embeddings, cluster_to_books, noise_factor, book_choice_updated)
+        print("This is else")
 
-        # book_a, book_b가 None이 아닐 때만 실행
-        if book_a is not None and book_b is not None:
-            question_number += 1
-            book_a_isbn = get_isbn_by_id(ids, ids[book_a], book_data)
-            book_b_isbn = get_isbn_by_id(ids, ids[book_b], book_data)
+    # book_a, book_b가 None이 아닐 때만 실행
+    if book_a is not None and book_b is not None:
+        question_number += 1
+        book_a_isbn = get_isbn_by_id(ids, ids[book_a], book_data)
+        book_b_isbn = get_isbn_by_id(ids, ids[book_b], book_data)
 
-            message_a = get_message_by_id(ids, ids[book_a], book_data)
-            message_b = get_message_by_id(ids, ids[book_b], book_data)
+        message_a = get_message_by_id(ids, ids[book_a], book_data)
+        message_b = get_message_by_id(ids, ids[book_b], book_data)
 
 
     print('\n')
     print(f"Round {question_number}: Choose between:")
     print(f"a: {message_a}")
     print(f"b: {message_b}")
+    # print_nonone(alpha, "alpha")
+    # print_nonone(beta_values, "beta")
+    for el in alpha:
+        print(el)
 
     # ISBN + 문장을 함께 반환
     return JSONResponse(
