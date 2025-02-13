@@ -7,6 +7,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".
 from psycopg2 import sql
 from sqlalchemy.orm import Session
 from app.database.models import SentenceTable
+import json
 
 
 def get_choice_bool(cursor, user_id, question_number):
@@ -44,15 +45,13 @@ def get_sentence_from_db(db: Session):
 
 # === 임베딩 로드 함수 ===
 def load_embeddings(file_path):
-    """
-    npz 파일에서 저장된 임베딩과 관련 데이터를 로드합니다.
-    """
-    # 저장된 데이터를 불러옴
-    data = np.load(file_path, allow_pickle=True)
-    ids = data['ids']  # ISBN 또는 기타 ID
-    embeddings = data['embeddings']  # 임베딩 벡터
-    return ids, embeddings
 
+    with open(file_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    embeddings = [inner_dict["embedding"] for inner_dict in data.values()]
+    ids = np.arange(1, len(embeddings) + 1)
+    print("len(ids)!!!!!!!!!!!!!!!!!!!!!!!", len(ids))
+    return ids, embeddings
 
 def thompson_sampling(alpha, beta_values):
     """
