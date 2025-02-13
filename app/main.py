@@ -56,6 +56,7 @@ embedding_save_path = "notebook/notebook/data/book_embeddings.npz"
 
 num_clusters = 10
 
+#API 1) 특정 책 정보 조회
 @app.get("/books/{isbn}")
 def get_book(isbn: str, db: Session = Depends(get_db)):
     if len(isbn) != 13 or not isbn.isdigit():
@@ -72,7 +73,18 @@ def get_book(isbn: str, db: Session = Depends(get_db)):
         )
     return book
 
+#API 1-1) 책 정보 조회 - 이건 두개임?
+@app.get("/books/{isbn}", response_model=BookSchema)
+def read_book(isbn: str, db: Session = Depends(get_db)):
+    book = get_book_by_isbn(db, isbn)
+    if book is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Book with ISBN {isbn} not found."
+        )
+    return book
 
+#API 2) 책의 문장 조회
 @app.get("/sentences/{isbn}", response_model=SentenceSchema)
 def read_sentence(isbn: str, db: Session = Depends(get_db)):
     sentence = get_sentence_by_isbn(db, isbn)
@@ -81,7 +93,7 @@ def read_sentence(isbn: str, db: Session = Depends(get_db)):
     return sentence
 
 
-
+#API 3) 사용자 선택 데이터 저장
 @app.post("/user_responses/")
 def create_user_response(response: UserResponseSchema, db: Session = Depends(get_db)):
     stmt = add_user_response(response)
@@ -90,6 +102,7 @@ def create_user_response(response: UserResponseSchema, db: Session = Depends(get
     return response
 
 
+#API 4)최종 추천 리스트 반환
 @app.get("/final_recommendation/{user_id}")
 def get_recommendations(user_id: str):
     selected_books = np.array(list(presented_books)[-5:])
@@ -104,57 +117,7 @@ def get_recommendations(user_id: str):
 
     return final_recommendations
 
-def first_setting_of_logic(user_id, num_clusters, embedding_save_path, db):
-    global round_num, alpha, beta_values, presented_books, book_embeddings, ids, book_data, cluster_to_books
-    # embedding_save_path = "notebook/notebook/data/book_embeddings.npz" 
-    embedding_save_path = "embedding/book_embeddings.npz"  # 저장된 파일 경로
-
-    ids, book_embeddings = load_embeddings(embedding_save_path)
-
-    book_data = get_sentence_from_db(db)
-
-    books = [f"Book {i}" for i in range(len(ids))]  # books는 ids의 길이에 따라 생성
-    assert len(books) == len(ids), "Books length mismatch with IDs! "
-    num_books = len(book_embeddings)
-
-    kmeans = KMeans(n_clusters=num_clusters, random_state=42)
-    clusters = kmeans.fit_predict(book_embeddings)
-
-    # 각 클러스터의 책 인덱스 저장
-    cluster_to_books = {i: [] for i in range(num_clusters)}
-    for idx, cluster_id in enumerate(clusters):
-        cluster_to_books[cluster_id].append(idx)
-
-    alpha = np.ones(num_books)
-    beta_values = np.ones(num_books)
-
-    return ids, book_embeddings, book_data, user_id, cluster_to_books
-
-
-def suggest_books(book_embeddings, cluster_to_books, noise_factor, book_choice=None):
-    global round_num
-    if round_num < 30:  # 초반 10 라운드 동안 지수적 감소
-        exploration_prob = initial_prob * (decay_factor ** round_num)
-    else:  # 이후에는 UCB 기반 조정
-        total_selections = len(presented_books)
-        exploration_prob = uncertainty_factor / (uncertainty_factor + total_selections)
-
-    book_a, book_b = select_books(book_embeddings, cluster_to_books, alpha, 
-                                    beta_values, presented_books, exploration_prob, 
-                                    noise_factor, book_choice)
-    return book_a, book_b
-
-
-@app.get("/books/{isbn}", response_model=BookSchema)
-def read_book(isbn: str, db: Session = Depends(get_db)):
-    book = get_book_by_isbn(db, isbn)
-    if book is None:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Book with ISBN {isbn} not found."
-        )
-    return book
-
+#API 5) 현재 질문 번호 조회
 @app.get("/question_number/{user_id}", response_model=BookSchema)
 def get_question_number(user_id: str, db: Session = Depends(get_db)):
     question_number = get_question_number_by_user_id(db, user_id)
@@ -165,71 +128,7 @@ def get_question_number(user_id: str, db: Session = Depends(get_db)):
         )
     return question_number
 
-
-
-def choice_arrange(user_id, question_number, book_a, book_b):
-    cursor = get_cursor(host, port, user, password, database_name)
-    choice_bool = get_choice_bool(cursor, user_id, question_number)
-
-    if choice_bool[0]:
-        choice = 'a'
-    elif choice_bool[1]:
-        choice = 'b'
-    else:
-        choice = None
-
-    # 데이터 업데이트
-    if choice:
-        book_choice = update_data(choice, book_a, book_b, alpha, beta_values)
-        return book_choice
-    else:
-        update_data(choice, book_a, book_b, alpha, beta_values)
-        return None
-
-
-def get_message_by_id(ids, book_id, book_data):
-    """
-    ids와 book_data를 이용해 특정 book_id의 메시지를 조회합니다.
-    """
-    idx = np.where(ids == book_id)[0][0]  # book_id의 인덱스 찾기
-    return book_data[idx]["sentence"]
-
-
-def get_isbn_by_id(ids, book_id, book_data):
-    """
-    ids와 book_data를 이용해 특정 book_id의 메시지를 조회합니다.
-    """
-    idx = np.where(ids == book_id)[0][0]  # book_id의 인덱스 찾기
-    return book_data[idx]["isbn"]
-
-
-def get_cursor(host, port, user, password, database_name):
-    conn = psycopg2.connect(
-            host=host,
-            port=port,
-            user=user,
-            password=password,
-            dbname=database_name
-        )
-    conn.autocommit = True
-    cursor = conn.cursor()
-    
-    return cursor
-
-# 알파, 베타 업데이트 여부 확인을 위한 함수
-def print_nonone(arr, name):
-    """배열에서 1이 아닌 값의 인덱스와 값을 출력하는 함수"""
-    nonone_indices = np.where(arr != 1)[0]  # 1이 아닌 값들의 인덱스
-    if len(nonone_indices) == 0:
-        print(f"{name} 배열에 1이 아닌 값이 없습니다.")
-    else:
-        print(f"{name} 배열의 1이 아닌 값들:")
-        for idx in nonone_indices:
-            print(f"Index: {idx}, Value: {arr[idx]}")
-
-
-
-
+#API 6) 추천 시스템을 통한 책 추천
 @app.get("/recommendation/{user_id}")
 def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
     global cluster_to_books, book_embeddings, book_data, ids, book_a, book_b
@@ -289,3 +188,112 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
         },
         headers={"Content-Type": "application/json; charset=utf-8"}
     )
+
+
+#------------------------------------------------
+# 추천 로직 분석
+
+# 추천 시스템 초기 설정 - 10개의 클러스터로 분류 후 클러스터별 책 리스트 저장
+def first_setting_of_logic(user_id, num_clusters, embedding_save_path, db):
+    global round_num, alpha, beta_values, presented_books, book_embeddings, ids, book_data, cluster_to_books
+    # embedding_save_path = "notebook/notebook/data/book_embeddings.npz" 
+    embedding_save_path = "embedding/book_embeddings.npz"  # 저장된 파일 경로
+
+    ids, book_embeddings = load_embeddings(embedding_save_path)
+
+    book_data = get_sentence_from_db(db)
+
+    books = [f"Book {i}" for i in range(len(ids))]  # books는 ids의 길이에 따라 생성
+    assert len(books) == len(ids), "Books length mismatch with IDs! "
+    num_books = len(book_embeddings)
+
+    kmeans = KMeans(n_clusters=num_clusters, random_state=42)
+    clusters = kmeans.fit_predict(book_embeddings)
+
+    # 각 클러스터의 책 인덱스 저장
+    cluster_to_books = {i: [] for i in range(num_clusters)}
+    for idx, cluster_id in enumerate(clusters):
+        cluster_to_books[cluster_id].append(idx)
+
+    alpha = np.ones(num_books)
+    beta_values = np.ones(num_books)
+
+    return ids, book_embeddings, book_data, user_id, cluster_to_books
+
+# 다음 추천 책 선택
+def suggest_books(book_embeddings, cluster_to_books, noise_factor, book_choice=None):
+    global round_num
+    if round_num < 30:  # 초반 10 라운드 동안 지수적 감소
+        exploration_prob = initial_prob * (decay_factor ** round_num)
+    else:  # 이후에는 UCB 기반 조정
+        total_selections = len(presented_books)
+        exploration_prob = uncertainty_factor / (uncertainty_factor + total_selections)
+
+    book_a, book_b = select_books(book_embeddings, cluster_to_books, alpha, 
+                                    beta_values, presented_books, exploration_prob, 
+                                    noise_factor, book_choice)
+    return book_a, book_b
+
+
+
+# 사용자 선택 반영
+def choice_arrange(user_id, question_number, book_a, book_b):
+    cursor = get_cursor(host, port, user, password, database_name)
+    choice_bool = get_choice_bool(cursor, user_id, question_number)
+
+    if choice_bool[0]:
+        choice = 'a'
+    elif choice_bool[1]:
+        choice = 'b'
+    else:
+        choice = None
+
+    # 데이터 업데이트
+    if choice:
+        book_choice = update_data(choice, book_a, book_b, alpha, beta_values)
+        return book_choice
+    else:
+        update_data(choice, book_a, book_b, alpha, beta_values)
+        return None
+
+# 특정 책의 생성문장 가져오기
+def get_message_by_id(ids, book_id, book_data):
+    """
+    ids와 book_data를 이용해 특정 book_id의 메시지를 조회합니다.
+    """
+    idx = np.where(ids == book_id)[0][0]  # book_id의 인덱스 찾기
+    return book_data[idx]["sentence"]
+
+
+# 특정 책의 ISBN 가져오기
+def get_isbn_by_id(ids, book_id, book_data):
+    """
+    ids와 book_data를 이용해 특정 book_id의 메시지를 조회합니다.
+    """
+    idx = np.where(ids == book_id)[0][0]  # book_id의 인덱스 찾기
+    return book_data[idx]["isbn"]
+
+# PostgreSQL 연결
+def get_cursor(host, port, user, password, database_name):
+    conn = psycopg2.connect(
+            host=host,
+            port=port,
+            user=user,
+            password=password,
+            dbname=database_name
+        )
+    conn.autocommit = True
+    cursor = conn.cursor()
+    
+    return cursor
+
+# 알파, 베타 업데이트 여부 확인을 위한 함수
+def print_nonone(arr, name):
+    """배열에서 1이 아닌 값의 인덱스와 값을 출력하는 함수"""
+    nonone_indices = np.where(arr != 1)[0]  # 1이 아닌 값들의 인덱스
+    if len(nonone_indices) == 0:
+        print(f"{name} 배열에 1이 아닌 값이 없습니다.")
+    else:
+        print(f"{name} 배열의 1이 아닌 값들:")
+        for idx in nonone_indices:
+            print(f"Index: {idx}, Value: {arr[idx]}")
