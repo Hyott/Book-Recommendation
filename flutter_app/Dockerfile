@@ -8,7 +8,7 @@ RUN apt-get install -y curl git unzip
 # Flutter SDK 및 프로젝트 변수 정의
 ARG FLUTTER_SDK=/usr/local/flutter
 ARG FLUTTER_VERSION=3.27.1
-ARG APP=/flutter_app/
+ARG APP=/app
 
 # Flutter 설치 및 버전 체크아웃
 RUN git clone https://github.com/flutter/flutter.git $FLUTTER_SDK
@@ -28,13 +28,13 @@ WORKDIR $APP
 # Flutter 빌드 수행
 RUN flutter clean
 RUN flutter pub get
-RUN flutter build web 
+RUN flutter build web
 
 # Nginx로 배포 설정
 FROM nginx:1.25.2-alpine
 
 # 빌드된 웹 파일을 올바른 경로에서 복사
-COPY --from=build-env /flutter_app/build/web /usr/share/nginx/html
+COPY --from=build-env /app/build/web /usr/share/nginx/html
 
 # Nginx 실행
 EXPOSE 80
