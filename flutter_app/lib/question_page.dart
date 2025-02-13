@@ -12,7 +12,7 @@ class RecommendationScreen extends StatefulWidget {
 }
 
 class _RecommendationScreenState extends State<RecommendationScreen> {
-  final baseUrl = dotenv.env['API_BASE_URL'] ?? 'https://localhost';
+  final baseUrl = dotenv.env['API_BASE_URL'] ?? 'https://localhost:8000';
   final String userId = const Uuid().v4(); // UUID 생성
   // int questionNumber = 0; // 현재 질문 번호
 

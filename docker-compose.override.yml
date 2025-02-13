@@ -1,4 +1,8 @@
 services:
   nginx:
     volumes:
-      - ./nginx/local_nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/local_nginx.conf:/etc/nginx/nginx.conf:ro
+
+  certbot:
+    profiles:
+      - never  # certbot 컨테이너를 기본 실행에서 제외
