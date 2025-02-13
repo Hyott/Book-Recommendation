@@ -3,6 +3,22 @@ import 'package:project/loading.dart';
 import 'package:project/question_page.dart';
 import 'package:provider/provider.dart';
 
+// 색상 팔레트 정의
+Map<int, Color> colorSwatch = {
+  50: Color(0xFFF0D8D7),
+  100: Color(0xFFD99E9D),
+  200: Color(0xFFB87776),
+  300: Color(0xFF9F4F4F),
+  400: Color(0xFF8A3838),
+  500: Color(0xFF6D0003), // 기본 색상
+  600: Color(0xFF660002),
+  700: Color(0xFF550001),
+  800: Color(0xFF440001),
+  900: Color(0xFF330000),
+};
+
+// MaterialColor로 만든 팔레트
+MaterialColor primarySwatch = MaterialColor(0xFF6D0003, colorSwatch);
 
 void main() {
   runApp(
@@ -20,7 +36,7 @@ class MyApp extends StatelessWidget {
       // title: '사용자 이름 저장 앱',
       theme: ThemeData(
         useMaterial3: false,
-        primarySwatch: Colors.amber,
+        primarySwatch: primarySwatch, // 정의한 MaterialColor 사용
       ),
       home: NameInputScreen(),
       debugShowCheckedModeBanner: false,
@@ -29,13 +45,13 @@ class MyApp extends StatelessWidget {
 }
 
 class UserNameProvider extends ChangeNotifier {
-  String _userName = '사용자'; // 기본값 설정
+  String _userName = '당신'; // 기본값 설정
 
   String get userName => _userName;
 
   void updateUserName(String name) {
     // 빈 문자열 처리
-    _userName = name.isNotEmpty ? name : '사용자';
+    _userName = name.isNotEmpty ? name : '당신';
     notifyListeners();
   }
 }
@@ -46,9 +62,9 @@ class NameInputScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('도서 추천 서비스'),
-      ),
+      // appBar: AppBar(
+      //   title: Text('도서 추천 서비스'),
+      // ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -57,28 +73,46 @@ class NameInputScreen extends StatelessWidget {
               children: [
                 SizedBox(height: 10),
                 Center(
-                  child: Text(
-                    '안녕하세요, 지금부터 당신의 에세이 취향을 알아보겠습니다.',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
+                  // child: Text(
+                  //   '문장으로부터 책으로 이끄는 순간까지',
+                  //   style: TextStyle(fontSize: 20, fontWeight: FontWeight.normal),
+                  // ),
+                ),
+                // SizedBox(height: 150),
+                Image.asset(
+                  'assets/images/splash_image.png'
+                ),
+                Text(
+                  '문장으로부터\n책으로 이끄는 순간까지',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.normal),
+                  textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 150),
-                Text(
-                  '이름을 입력해주세요. 입력하고 싶지 않으면 바로 시작하기 버튼을 누르세요.',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.normal),
-                ),
-                SizedBox(height: 10),
-                TextField(
-                  controller: _nameController,
-                  decoration: InputDecoration(
-                    hintText: '이름을 입력하세요',
-                    border: OutlineInputBorder(),
+                SizedBox(
+                  width: 355,
+                  height: 60,
+                  child: TextField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                        hintText: '이름 입력하기',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        // contentPadding: EdgeInsets.symmetric(vertical: 60, horizontal: 355)
+                    ),
+                    style: TextStyle(fontSize: 24),
+                    textAlign: TextAlign.center,
                   ),
                 ),
                 SizedBox(height: 20),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    minimumSize: Size(300, 50),
+                    minimumSize: Size(355, 70),
+                    backgroundColor: Color(0xFFF8F8F8),
+                    side: BorderSide(color: Color(0xFF484637), width: 0.5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)
+                    )
                   ),
                   onPressed: () {
                     final userName = _nameController.text;
@@ -89,7 +123,10 @@ class NameInputScreen extends StatelessWidget {
                       MaterialPageRoute(builder: (context) => RecommendationScreen()),
                     );
                   },
-                  child: Text('시작하기'),
+                  child: Text(
+                    '시작하기',
+                    style: TextStyle(fontSize: 30, color: Color(0xFF280404)),
+                  ),
               ),
             ],
           ),
@@ -98,119 +135,3 @@ class NameInputScreen extends StatelessWidget {
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// class FilterChipExample extends StatefulWidget {
-//   const FilterChipExample({super.key});
-//
-//   @override
-//   State<FilterChipExample> createState() => _FilterChipExampleState();
-// }
-//
-// class _FilterChipExampleState extends State<FilterChipExample> {
-//   final Map<String, List<String>> categories = {
-//     '감정': ['행복', '기쁨', '슬픔', '차분'],
-//     '가족': ['엄마', '아빠', '형제', '자매'],
-//     '쉼': ['여행', '여가활동', '힐링', '소풍'],
-//   };
-//
-//   final Map<String, Set<String>> selectedFilters = {};
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     for (var category in categories.keys) {
-//       selectedFilters[category] = <String>{};
-//     }
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Column(
-//       children: [
-//         Expanded(
-//           child: ListView(
-//             children: categories.entries.map((entry) {
-//               String category = entry.key;
-//               List<String> filters = entry.value;
-//
-//               return Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   Text(
-//                     category,
-//                     style: Theme.of(context).textTheme.titleLarge,
-//                   ),
-//                   const SizedBox(height: 10),
-//                   Wrap(
-//                     spacing: 5.0,
-//                     children: filters.map((String filter) {
-//                       return FilterChip(
-//                         label: Text(filter),
-//                         selected: selectedFilters[category]?.contains(filter) ?? false,
-//                         onSelected: (bool selected) {
-//                           setState(() {
-//                             if (selected) {
-//                               selectedFilters[category]?.add(filter);
-//                             } else {
-//                               selectedFilters[category]?.remove(filter);
-//                             }
-//                           });
-//                         },
-//                       );
-//                     }).toList(),
-//                   ),
-//                   const SizedBox(height: 20),
-//                 ],
-//               );
-//             }).toList(),
-//           ),
-//         ),
-//         Center(
-//           child: TextButton(
-//             onPressed: () {
-//               // 선택한 모든 해시태그를 리스트로 변환
-//               final selectedTags = selectedFilters.values.expand((set) => set).toList();
-//               if (selectedTags.isNotEmpty) {
-//                 Navigator.push(
-//                   context,
-//                   MaterialPageRoute(
-//                     builder: (context) => Loading(selectedTags: selectedTags),
-//                   ),
-//                 );
-//               } else {
-//                 ScaffoldMessenger.of(context).showSnackBar(
-//                   const SnackBar(content: Text('해시태그를 선택해주세요!')),
-//                 );
-//               }
-//             },
-//             child: const Text('선택 완료', style: TextStyle(fontSize: 16)),
-//           ),
-//         ),
-//       ],
-//     );
-//   }
-// }
-
-// Text(
-//   '${filters.map((ExerciseFilter e) => filterNames[e]).join(', ')}을 선택하셨습니다.',
-//   style: textTheme.labelLarge,
-// ),
