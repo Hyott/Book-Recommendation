@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:uuid/uuid.dart';
-import 'dart:io';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'main.dart';
 
@@ -12,7 +12,7 @@ class RecommendationScreen extends StatefulWidget {
 }
 
 class _RecommendationScreenState extends State<RecommendationScreen> {
-  final String baseUrl = Platform.environment['API_BASE_URL']!;
+  final baseUrl = dotenv.env['API_BASE_URL'] ?? 'https://localhost';
   final String userId = const Uuid().v4(); // UUID 생성
   // int questionNumber = 0; // 현재 질문 번호
 
