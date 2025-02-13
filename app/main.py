@@ -168,7 +168,7 @@ def get_question_number(user_id: str, db: Session = Depends(get_db)):
 
 def choice_arrange(user_id, question_number, book_a, book_b):
     cursor = get_cursor(host, port, user, password, database_name)
-    choice_bool = get_choice_bool(cursor,user_id, question_number)
+    choice_bool = get_choice_bool(cursor, user_id, question_number)
 
     if choice_bool[0]:
         choice = 'a'
