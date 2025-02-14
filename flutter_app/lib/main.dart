@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:project/loading.dart';
-import 'package:project/question_page.dart';
+import 'package:project/page/question_page.dart';
 import 'package:provider/provider.dart';
 
 // 색상 팔레트 정의
@@ -120,7 +119,7 @@ class NameInputScreen extends StatelessWidget {
                         .updateUserName(userName);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => RecommendationScreen()),
+                      MaterialPageRoute(builder: (context) => QuestionScreen()),
                     );
                   },
                   child: Text(
