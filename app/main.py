@@ -47,6 +47,7 @@ user_books_chosen = defaultdict(list)
 user_round_num = defaultdict(int)
 user_alpha = defaultdict()
 user_beta_values = defaultdict()
+user_book_chosen_dict = defaultdict(lambda: defaultdict(list))
 
 embedding_save_path = "notebook/notebook/data/book_embeddings.npz"
 book_data = None
@@ -59,10 +60,6 @@ initial_prob = 0.3
 decay_factor = 0.9
 uncertainty_factor = 10
 noise_factor = 0.01
-
-
-
-
 
 
 
@@ -163,7 +160,7 @@ def first_setting_of_logic(user_id, num_clusters, embedding_save_path, db, user_
     return ids, book_embeddings, book_data, user_id, cluster_to_books
 
 
-def suggest_books(question_number, book_embeddings, cluster_to_books, noise_factor, presented_books, suggested_books, books_chosen, book_choice=None):
+def suggest_books(question_number, book_embeddings, cluster_to_books, noise_factor, presented_books, suggested_books, books_chosen, book_chosen_dict, book_choice=None):
     if question_number < 30:  # 초반 10 라운드 동안 지수적 감소
         exploration_prob = initial_prob * (decay_factor ** question_number)
     else:  # 이후에는 UCB 기반 조정
@@ -180,6 +177,16 @@ def suggest_books(question_number, book_embeddings, cluster_to_books, noise_fact
         return book_a, book_b
     
     else:
+        # 가장 많이 선택된 {클러스터 번호 : 책 인덱스} 반환
+        def get_top_two_longest_lists(book_chosen_dict):
+            # 리스트 길이를 기준으로 정렬 (길이가 같으면 키가 작은 순서)
+            sorted_items = sorted(book_chosen_dict.items(), key=lambda x: (len(x[1]), -x[0]), reverse=True)
+            # 상위 2개 반환 (최대 2개만)
+            return dict(sorted_items[:2])
+
+        sorted_cluster_books = get_top_two_longest_lists(book_chosen_dict)
+        print("sorted_cluster_books : ", sorted_cluster_books)
+        
         return 1111, 1112
 
 @app.get("/books/{isbn}", response_model=BookSchema)
@@ -204,7 +211,7 @@ def get_question_number(user_id: str, db: Session = Depends(get_db)):
     return question_number
 
 
-def choice_arrange(user_id, question_number, book_a, book_b, books_chosen, alpha, beta_values):
+def choice_arrange(user_id, question_number, book_a, book_b, books_chosen, cluster_to_books, alpha, beta_values, book_chosen_dict):
     cursor = get_cursor(host, port, user, password, database_name)
     choice_bool = get_choice_bool(cursor, user_id, question_number)
 
@@ -218,7 +225,17 @@ def choice_arrange(user_id, question_number, book_a, book_b, books_chosen, alpha
     # 데이터 업데이트
     if choice:
         book_choice = update_data(choice, book_a, book_b, alpha, beta_values)
+
+        cluster_of_choice = None
+        for cluster_id, book_list in cluster_to_books.items():
+            if book_choice in book_list:
+                cluster_of_choice = cluster_id
+                break
+
         books_chosen.append(book_choice)
+        
+        book_chosen_dict[cluster_of_choice].append(book_choice)
+        print("book_chosen_dict: ", book_chosen_dict)
         return book_choice
     else:
         update_data(choice, book_a, book_b, alpha, beta_values)
@@ -271,7 +288,8 @@ def print_nonone(arr, name):
 def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
     global cluster_to_books, book_embeddings, book_data, ids, book_a, book_b, \
         exploration_prob, book_choice, \
-            user_presented_books, user_suggested_books, user_books_chosen, user_alpha, user_beta_values
+            user_presented_books, user_suggested_books, user_books_chosen, user_alpha, user_beta_values, user_book_chosen_dict
+    
     if user_id not in user_presented_books:
         print(f"New user detected: {user_id}. Initializing presented_books, cluster_to_books and embeddings...")  
         ids, book_embeddings, book_data, user_id, cluster_to_books = first_setting_of_logic(
@@ -284,6 +302,7 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
     presented_books = user_presented_books[user_id]
     suggested_books = user_suggested_books[user_id]
     books_chosen = user_books_chosen[user_id]
+    book_chosen_dict = user_book_chosen_dict[user_id]
     round_num = user_round_num[user_id]
 
     book_a_isbn = None
@@ -292,14 +311,16 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
     message_b = None
 
     if question_number == 0:
-        book_a, book_b = suggest_books(question_number, book_embeddings, cluster_to_books, noise_factor, presented_books, suggested_books, books_chosen)
+        book_a, book_b = suggest_books(question_number, book_embeddings, cluster_to_books, noise_factor, presented_books, suggested_books, books_chosen, book_chosen_dict)
         print("This is 'if' :", book_a, book_b)
     else:
         print("This is 'else' - first :", book_a, book_b)
-        book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b, books_chosen, alpha, beta_values)
+        book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b, books_chosen, cluster_to_books,  alpha, beta_values, book_chosen_dict)
         print("book_choice_updated : ", book_choice_updated)
-        book_a, book_b = suggest_books(question_number, book_embeddings, cluster_to_books, noise_factor, presented_books, suggested_books, books_chosen, book_choice_updated)
+        book_a, book_b = suggest_books(question_number, book_embeddings, cluster_to_books, noise_factor, presented_books, suggested_books, books_chosen, book_chosen_dict, book_choice_updated)
         print("This is 'else' -second :", book_a, book_b)
+
+    
 
 
 
