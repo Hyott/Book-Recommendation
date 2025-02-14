@@ -28,7 +28,7 @@ WORKDIR $APP
 # Flutter 빌드 수행
 RUN flutter clean
 RUN flutter pub get
-RUN flutter build web --release --source-maps
+RUN flutter build web --release
 
 # Nginx로 배포 설정
 FROM nginx:1.25.2-alpine
