@@ -1,3 +1,6 @@
+networks:
+  app_networks:
+
 services:
   nginx:
     image: nginx:latest
@@ -5,6 +8,8 @@ services:
     depends_on:
       - backend
       - frontend
+    networks:
+      - app_networks
     ports:
       - "80:80"
       - "443:443"
@@ -19,6 +24,8 @@ services:
   certbot:
     image: certbot/certbot
     container_name: certbot
+    networks:
+      - app_networks
     volumes:
       - ./certbot/www:/var/www/certbot
       - ./certbot/conf:/etc/letsencrypt
@@ -33,6 +40,8 @@ services:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
     depends_on:
       - db
+    networks:
+      - app_networks
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${HOST}:${POSTGRES_PORT}/${DATABASE_NAME} # 환경 변수 사용
     env_file:
@@ -47,6 +56,8 @@ services:
       - "${FRONTEND_PORT}:${HTTP_PORT}"
     depends_on:
       - backend
+    networks:
+      - app_networks
     environment:
       API_BASE_URL: http://backend:${BACKEND_PORT}  # FastAPI의 API 주소를 환경 변수로 지정
     env_file:
@@ -58,6 +69,8 @@ services:
     restart: always
     ports:
       - "${POSTGRES_PORT}:${POSTGRES_PORT}" # 환경 변수 사용
+    networks:
+      - app_networks
     env_file:
       - .env # .env 파일 로드
     volumes:
