@@ -1,4 +1,4 @@
-FROM python:3.9-slim
+FROM python:3.9
 WORKDIR /app
 
 # 필요한 패키지 설치
