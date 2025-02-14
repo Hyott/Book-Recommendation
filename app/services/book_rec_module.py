@@ -78,7 +78,14 @@ def select_books(book_embeddings, cluster_to_books, alpha, beta_values, presente
     # Thompson Sampling을 통해 각 책의 샘플링 값 계산
         # 클러스터별 대표 책 선택 (확률 값이 높은 책)
         representative_books = []
+        # 정수 → 집합(set) 변환
+        if isinstance(presented_books, int):
+            presented_books = {presented_books}
+        print("type(presented_books): ", type(presented_books))
+        print("presented_books: ", presented_books)
         for cluster_id, books_in_cluster in cluster_to_books.items():
+            print(f"type(books_in_cluster): {type(books_in_cluster)}")
+            # print(f"books_in_cluster: {books_in_cluster}")
             cluster_samples = [(idx, noisy_samples[idx]) for idx in books_in_cluster if idx not in presented_books]
             if cluster_samples:
                 best_book = max(cluster_samples, key=lambda x: x[1])
