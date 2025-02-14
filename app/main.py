@@ -108,29 +108,24 @@ def create_user_response(response: UserResponseSchema, db: Session = Depends(get
     db.commit()
     return response
 
-
-@app.get("/books/{isbn}", response_model=BookSchema)
-def read_book(isbn: str, db: Session = Depends(get_db)):
-    book = get_book_by_isbn(db, isbn)
-    if book is None:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Book with ISBN {isbn} not found."
-        )
-    return book
+@app.get("/final_recommendation/{user_id}")
+def get_recommendations(user_id: str, db: Session = Depends(get_db)):
+    selected_books = np.array(list(presented_books)[-5:])
+    selected_embeddings = book_embeddings[selected_books]
+    weights = np.arange(1, len(selected_books) + 1)  # 가중치 추가  ######### 다시 볼 필요 있음
+    preference_center = np.average(selected_embeddings, axis=0, weights=weights).reshape(1, -1)
 
 
-@app.get("/question_number/{user_id}", response_model=BookSchema)
-def get_question_number(user_id: str, db: Session = Depends(get_db)):
-    question_number = get_question_number_by_user_id(db, user_id)
-    if question_number is None:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Book with ISBN {user_id} not found."
-        )
-    return question_number
+    # 중심과 유사한 책 추천 (코사인 유사도 기준)
+    similarities = cosine_similarity(preference_center, book_embeddings).flatten()
+    final_recommendations = weighted_sampling(similarities, num_samples=5, temperature=0.2)
 
+    isbn_list = []
+    for idx in final_recommendations:
+        isbn = str(ids[idx])
+        isbn_list.append(isbn)
 
+    return isbn_list
 
 def first_setting_of_logic(user_id, num_clusters, embedding_save_path, db):
     global round_num, alpha, beta_values, presented_books, book_embeddings, ids, book_data, cluster_to_books 
@@ -170,6 +165,31 @@ def suggest_books(book_embeddings, cluster_to_books, noise_factor, presented_boo
                                     beta_values, presented_books, exploration_prob, 
                                     noise_factor, book_choice)
     return book_a, book_b
+
+@app.get("/books/{isbn}", response_model=BookSchema)
+def read_book(isbn: str, db: Session = Depends(get_db)):
+    book = get_book_by_isbn(db, isbn)
+    if book is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Book with ISBN {isbn} not found."
+        )
+    return book
+
+
+@app.get("/question_number/{user_id}", response_model=BookSchema)
+def get_question_number(user_id: str, db: Session = Depends(get_db)):
+    question_number = get_question_number_by_user_id(db, user_id)
+    if question_number is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Book with ISBN {user_id} not found."
+        )
+    return question_number
+
+
+
+
 
 
 def choice_arrange(user_id, question_number, book_a, book_b):
@@ -290,24 +310,7 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
     )
 
 
-@app.get("/final_recommendation/{user_id}")
-def get_recommendations(user_id: str, db: Session = Depends(get_db)):
-    selected_books = np.array(list(presented_books)[-5:])
-    selected_embeddings = book_embeddings[selected_books]
-    weights = np.arange(1, len(selected_books) + 1)  # 가중치 추가  ######### 다시 볼 필요 있음
-    preference_center = np.average(selected_embeddings, axis=0, weights=weights).reshape(1, -1)
 
-
-    # 중심과 유사한 책 추천 (코사인 유사도 기준)
-    similarities = cosine_similarity(preference_center, book_embeddings).flatten()
-    final_recommendations = weighted_sampling(similarities, num_samples=5, temperature=0.2)
-
-    isbn_list = []
-    for idx in final_recommendations:
-        isbn = str(ids[idx])
-        isbn_list.append(isbn)
-
-    return isbn_list
 
 
 
