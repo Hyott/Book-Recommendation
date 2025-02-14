@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:uuid/uuid.dart';
 import '../main.dart';
+import 'loading_page.dart';
 
 class QuestionScreen extends StatefulWidget {
   @override
@@ -21,7 +22,8 @@ class _QuestionScreenState extends State<QuestionScreen> {
   String? bookBIsbn;
   String? sentenceA_id;
   String? sentenceB_id;
-  late int question_number;
+  // late int question_number;
+  int question_number = 0;
 
   @override
   void initState() {
@@ -90,7 +92,15 @@ class _QuestionScreenState extends State<QuestionScreen> {
       );
 
       if (responseA.statusCode == 200 && responseB.statusCode == 200) {
-        fetchRecommendations(); // 🔹 이후 새로운 질문 불러오기
+        if (question_number == 10) {
+          // 마지막 질문에서 결과 페이지로 이동
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => LoadingScreen(userId: userId)), // 로딩 화면으로 이동
+          );
+        } else {
+          fetchRecommendations(); // 🔹 이후 새로운 질문 불러오기
+        }
       } else {
         print("Failed to save response.");
       }
@@ -169,25 +179,6 @@ class _QuestionScreenState extends State<QuestionScreen> {
                 ),
               ),
             ),
-            // "결과보기" 버튼을 10번째 질문에서만 표시
-            if (question_number == 10)
-              Padding(
-                padding: EdgeInsets.all(20),
-                child: ElevatedButton(
-                  onPressed: () {
-                    // 결과 보기 페이지로 이동하는 로직 작성
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFFEADACD),
-                    padding: EdgeInsets.symmetric(vertical: 15, horizontal: 40),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  ),
-                  child: Text(
-                    "결과 보기",
-                    style: TextStyle(fontSize: 18, color: Color(0xFF280404)),
-                  ),
-                ),
-              ),
           ],
         ),
       ),

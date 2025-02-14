@@ -99,6 +99,8 @@ def get_sentence_and_letter(isbn: str, db: Session = Depends(get_db)):
     if sentence is None:
         raise HTTPException(status_code=404, detail="해당 ISBN의 생성문장을 찾을 수 없습니다.")
     return sentence
+    # return JSONResponse(content=sentence, headers={"Content-Type": "application/json; charset=utf-8"})
+
 
 
 @app.post("/user_responses/")
@@ -108,22 +110,34 @@ def create_user_response(response: UserResponseSchema, db: Session = Depends(get
     db.commit()
     return response
 
+
 @app.get("/final_recommendation/{user_id}")
 def get_recommendations(user_id: str, db: Session = Depends(get_db)):
-    selected_books = np.array(list(presented_books)[-5:])
-    selected_embeddings = book_embeddings[selected_books]
-    weights = np.arange(1, len(selected_books) + 1)  # 가중치 추가  ######### 다시 볼 필요 있음
-    preference_center = np.average(selected_embeddings, axis=0, weights=weights).reshape(1, -1)
+#     selected_books = np.array(list(presented_books)[-5:])
+
+#     print("selected_books:", selected_books)
+#     print("Type of selected_books:", type(selected_books))
+#     print("selected_books elements:", [type(i) for i in selected_books])
+
+# #     2025-02-14 18:25:41 selected_books: [1488  916]
+# # 2025-02-14 18:25:41 Type of selected_books: <class 'numpy.ndarray'>
+# # 2025-02-14 18:25:41 selected_books elements: [<class 'numpy.int64'>, <class 'numpy.int64'>]
+
+#     # selected_embeddings = book_embeddings[selected_books]
+#     selected_embeddings = np.array([book_embeddings[idx] for idx in selected_books])
+
+#     weights = np.arange(1, len(selected_books) + 1)  # 가중치 추가  ######### 다시 볼 필요 있음
+#     preference_center = np.average(selected_embeddings, axis=0, weights=weights).reshape(1, -1)
 
 
-    # 중심과 유사한 책 추천 (코사인 유사도 기준)
-    similarities = cosine_similarity(preference_center, book_embeddings).flatten()
-    final_recommendations = weighted_sampling(similarities, num_samples=5, temperature=0.2)
+#     # 중심과 유사한 책 추천 (코사인 유사도 기준)
+#     similarities = cosine_similarity(preference_center, book_embeddings).flatten()
+#     final_recommendations = weighted_sampling(similarities, num_samples=5, temperature=0.2)
 
-    isbn_list = []
-    for idx in final_recommendations:
-        isbn = str(ids[idx])
-        isbn_list.append(isbn)
+    isbn_list = [9791169851053, 9788930041683, 9791193383193, 9788954693462, 9791189352745]
+
+    # 각 ISBN을 문자열로 변환
+    isbn_list = [str(isbn) for isbn in isbn_list]
 
     return isbn_list
 
