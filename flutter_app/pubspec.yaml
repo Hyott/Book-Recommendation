@@ -41,6 +41,7 @@ dependencies:
   http: ^1.2.2
   provider: ^6.1.2
   uuid: ^4.5.1
+  carousel_slider: ^5.0.0
 
 flutter_native_splash:
   color: "#FFFFFF" # 스플래시 화면의 배경색 설정 (흰색)

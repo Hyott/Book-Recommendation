@@ -1,21 +1,20 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:uuid/uuid.dart';
-import 'dart:io';
+import '../main.dart';
+import 'loading_page.dart';
 
-import 'main.dart';
-
-class RecommendationScreen extends StatefulWidget {
+class QuestionScreen extends StatefulWidget {
   @override
-  _RecommendationScreenState createState() => _RecommendationScreenState();
+  _QuestionScreenState createState() => _QuestionScreenState();
 }
 
-class _RecommendationScreenState extends State<RecommendationScreen> {
+class _QuestionScreenState extends State<QuestionScreen> {
   // final String baseUrl = Platform.environment['API_BASE_URL']!;
   final String baseUrl = "http://127.0.0.1:8000"; // FastAPI 백엔드 주소
   final String userId = const Uuid().v4(); // UUID 생성
-  // int questionNumber = 0; // 현재 질문 번호
 
   String? sentenceA;
   String? sentenceB;
@@ -23,13 +22,8 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
   String? bookBIsbn;
   String? sentenceA_id;
   String? sentenceB_id;
-  // int sentenceA_id = 0;
-  // int sentenceB_id = 0;
-  // late int questionA_num;
-  // late int questionB_num;
-  late int question_number;
-  // int questionA_num = 0;
-  // int questionB_num = 0;
+  // late int question_number;
+  int question_number = 0;
 
   @override
   void initState() {
@@ -38,6 +32,8 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
   }
 
   Future<void> fetchRecommendations() async {
+    if (question_number >= 10) return;
+
     try {
       final response = await http.get(
         Uri.parse("$baseUrl/recommendation/$userId"),
@@ -50,8 +46,6 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
-          // questionA_num = data["bookA"]["question_num"];
-          // questionB_num = data["bookB"]["question_num"];
           question_number = data["bookA"]["question_num"];
           bookAIsbn = data["bookA"]["isbn"];
           bookBIsbn = data["bookB"]["isbn"];
@@ -98,7 +92,15 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
       );
 
       if (responseA.statusCode == 200 && responseB.statusCode == 200) {
-        fetchRecommendations(); // 🔹 이후 새로운 질문 불러오기
+        if (question_number == 10) {
+          // 마지막 질문에서 결과 페이지로 이동
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => LoadingScreen(userId: userId)), // 로딩 화면으로 이동
+          );
+        } else {
+          fetchRecommendations(); // 🔹 이후 새로운 질문 불러오기
+        }
       } else {
         print("Failed to save response.");
       }
@@ -109,7 +111,6 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 화면의 너비를 가져옴
     double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
@@ -121,13 +122,13 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
           backgroundColor: primarySwatch,
           flexibleSpace: Center(
             child: Text(
-                "from\n    Sentence",
-                style: TextStyle(fontSize: 36, color: Color(0xFFF8F8F8))
-              ),
+              "from\n    Sentence",
+              style: TextStyle(fontSize: 36, color: Color(0xFFF8F8F8)),
             ),
           ),
         ),
-        body: Center(
+      ),
+      body: Center(
         child: sentenceA == null || sentenceB == null
             ? CircularProgressIndicator()
             : Column(
@@ -144,8 +145,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                   padding: EdgeInsets.all(30),
                   backgroundColor: Color(0xFFEADACD),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  // minimumSize: Size(screenWidth * 0.8, 50), // 버튼 너비는 화면의 80%로 설정
-                  minimumSize: Size(355, 70), // 고정된 크기
+                  minimumSize: Size(355, 70),
                 ),
                 onPressed: () => sendUserResponse(bookAIsbn!),
                 child: IntrinsicHeight(
@@ -166,8 +166,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                   padding: EdgeInsets.all(30),
                   backgroundColor: Color(0xFFEADACD),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  // minimumSize: Size(screenWidth * 0.8, 50), // 버튼 너비는 화면의 80%로 설정
-                  minimumSize: Size(355, 70), // 고정된 크기
+                  minimumSize: Size(355, 70),
                 ),
                 onPressed: () => sendUserResponse(bookBIsbn!),
                 child: IntrinsicHeight(
