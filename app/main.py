@@ -102,9 +102,12 @@ def get_sentence_and_letter(isbn: str, db: Session = Depends(get_db)):
     sentence = get_sentence_by_isbn(db, isbn)
     if sentence is None:
         raise HTTPException(status_code=404, detail="해당 ISBN의 생성문장을 찾을 수 없습니다.")
-    return sentence
-    # return JSONResponse(content=sentence, headers={"Content-Type": "application/json; charset=utf-8"})
+    # return sentence
 
+    # SQLAlchemy 객체를 Pydantic 모델로 변환
+    sentence_data = SentenceSchema(id=sentence.id, isbn=sentence.isbn, sentence=sentence.sentence)
+    
+    return JSONResponse(content=sentence_data.model_dump(), headers={"Content-Type": "application/json; charset=utf-8"})
 
 
 @app.post("/user_responses/")
