@@ -81,10 +81,11 @@ def select_books(book_embeddings, cluster_to_books, alpha, beta_values, presente
         # 정수 → 집합(set) 변환
         if isinstance(presented_books, int):
             presented_books = {presented_books}
-        print("type(presented_books): ", type(presented_books))
-        print("presented_books: ", presented_books)
+        # print("type(presented_books): ", type(presented_books))
+        # print("presented_books: ", presented_books)
+
         for cluster_id, books_in_cluster in cluster_to_books.items():
-            print(f"type(books_in_cluster): {type(books_in_cluster)}")
+            # print(f"type(books_in_cluster): {type(books_in_cluster)}")
             # print(f"books_in_cluster: {books_in_cluster}")
             cluster_samples = [(idx, noisy_samples[idx]) for idx in books_in_cluster if idx not in presented_books]
             if cluster_samples:
@@ -158,6 +159,102 @@ def select_books(book_embeddings, cluster_to_books, alpha, beta_values, presente
     presented_books.add(random_book_b)
 
     return best_book_a, random_book_b
+
+
+def get_tournament_winner_cluster_until_round5(book_embeddings, cluster_to_books, alpha, beta_values, 
+                                        presented_books, exploration_prob, noise_factor, book_choice, 
+                                        question_number, books_chosen, suggested_books):
+
+    if question_number == 0:
+        book_a = int(np.random.choice([
+            idx for idx in cluster_to_books[0] if idx not in presented_books]))
+        
+        book_b = int(np.random.choice([
+            idx for idx in cluster_to_books[1] if idx not in presented_books]))
+
+    elif question_number == 1:
+        book_a = int(np.random.choice([
+            idx for idx in cluster_to_books[2] if idx not in presented_books]))
+        
+        book_b = int(np.random.choice([
+            idx for idx in cluster_to_books[3] if idx not in presented_books]))
+        
+    elif question_number == 2:
+        book_a = int(np.random.choice([
+            idx for idx in cluster_to_books[4] if idx not in presented_books]))
+        
+        book_b = int(np.random.choice([
+            idx for idx in cluster_to_books[5] if idx not in presented_books]))
+
+    elif question_number == 3:
+        winner_of_1 = books_chosen[0]
+        cluster_of_winner_1 = None
+
+        for cluster_id, book_list in cluster_to_books.items():
+            if winner_of_1 in book_list:
+                cluster_of_winner_1 = cluster_id
+                break
+        print("winner_of_1: ", winner_of_1)
+        print("cluster_of_winner_1", cluster_of_winner_1)
+
+
+        winner_of_2 = books_chosen[1]
+        cluster_of_winner_2 = None
+
+        for cluster_id, book_list in cluster_to_books.items():
+            if winner_of_2 in book_list:
+                cluster_of_winner_2 = cluster_id
+                break
+        print("winner_of_2: ", winner_of_2)
+        print("cluster_of_winner_2", cluster_of_winner_2)
+
+        book_a = int(np.random.choice([
+            idx for idx in cluster_to_books[cluster_of_winner_1] if idx not in presented_books]))
+        book_b = int(np.random.choice([
+            idx for idx in cluster_to_books[cluster_of_winner_2] if idx not in presented_books]))
+        
+    elif question_number == 4:
+        winner_of_3 = books_chosen[2]
+        cluster_of_winner_3 = None
+
+        for cluster_id, book_list in cluster_to_books.items():
+            if winner_of_3 in book_list:
+                cluster_of_winner_3 = cluster_id
+                break
+        print("winner_of_3: ", winner_of_3)
+        print("cluster_of_winner_3", cluster_of_winner_3)
+
+        winner_of_4 = books_chosen[3]
+        cluster_of_winner_4 = None
+
+        for cluster_id, book_list in cluster_to_books.items():
+            if winner_of_4 in book_list:
+                cluster_of_winner_4 = cluster_id
+                break
+        print("winner_of_4: ", winner_of_4)
+        print("cluster_of_winner_4", cluster_of_winner_4)
+
+        book_a = int(np.random.choice([
+            idx for idx in cluster_to_books[cluster_of_winner_3] if idx not in presented_books]))
+        book_b = int(np.random.choice([
+            idx for idx in cluster_to_books[cluster_of_winner_4] if idx not in presented_books]))   
+
+    else:
+        raise ValueError("Question number out of range 5")
+    
+
+
+    print("suggested_books : ", suggested_books)
+    print("presented_books : ", presented_books)
+    print("books_chosen : ", books_chosen)
+    presented_books.add(book_a)
+    presented_books.add(book_b)
+    suggested_books.append(book_a)
+    suggested_books.append(book_b) 
+
+
+    return book_a, book_b
+
 
 
 def update_data(choice, book_a, book_b, alpha, beta_values):
