@@ -117,33 +117,35 @@ def create_user_response(response: UserResponseSchema, db: Session = Depends(get
 
 @app.get("/final_recommendation/{user_id}")
 def get_recommendations(user_id: str, db: Session = Depends(get_db)):
-#     selected_books = np.array(list(presented_books)[-5:])
+    global user_presented_books, book_data
+    
+    presented_books = user_presented_books[user_id]
+    presented_books = list(presented_books)
+    print("presented_books : ", presented_books)
+    selected_books = presented_books[-5:]
+    # selected_embeddings = book_embeddings[selected_books]
+    selected_embeddings = np.array([book_embeddings[idx] for idx in selected_books])
 
-#     print("selected_books:", selected_books)
-#     print("Type of selected_books:", type(selected_books))
-#     print("selected_books elements:", [type(i) for i in selected_books])
+    # selected_books = [int(book) for book in selected_books]
+    print("selected_books:", selected_books)
+    # print("Type of selected_books:", type(selected_books))
+    # print("selected_books elements:", [type(i) for i in selected_books])
 
-# #     2025-02-14 18:25:41 selected_books: [1488  916]
-# # 2025-02-14 18:25:41 Type of selected_books: <class 'numpy.ndarray'>
-# # 2025-02-14 18:25:41 selected_books elements: [<class 'numpy.int64'>, <class 'numpy.int64'>]
+    weights = np.arange(1, len(selected_books) + 1)  # 가중치 추가  ######### 다시 볼 필요 있음
+    preference_center = np.average(selected_embeddings, axis=0, weights=weights).reshape(1, -1)
 
-#     # selected_embeddings = book_embeddings[selected_books]
-#     selected_embeddings = np.array([book_embeddings[idx] for idx in selected_books])
+    # 중심과 유사한 책 추천 (코사인 유사도 기준)
+    similarities = cosine_similarity(preference_center, book_embeddings).flatten()
+    final_recommendations = weighted_sampling(similarities, num_samples=5, temperature=0.2)
 
-#     weights = np.arange(1, len(selected_books) + 1)  # 가중치 추가  ######### 다시 볼 필요 있음
-#     preference_center = np.average(selected_embeddings, axis=0, weights=weights).reshape(1, -1)
+    print("final_recommendations: ", final_recommendations)
+    # print("type el final_recommendations :", [type(el) for el in final_recommendations])
 
+    final_recommendations = [get_isbn_by_id(ids, ids[element], book_data) for element in final_recommendations]
+    print("final_recommendations: ", final_recommendations)
+    print("type el final_recommendations :", [type(el) for el in final_recommendations])
 
-#     # 중심과 유사한 책 추천 (코사인 유사도 기준)
-#     similarities = cosine_similarity(preference_center, book_embeddings).flatten()
-#     final_recommendations = weighted_sampling(similarities, num_samples=5, temperature=0.2)
-
-    isbn_list = [9791169851053, 9788930041683, 9791193383193, 9788954693462, 9791189352745]
-
-    # 각 ISBN을 문자열로 변환
-    isbn_list = [str(isbn) for isbn in isbn_list]
-
-    return isbn_list
+    return final_recommendations
 
 def first_setting_of_logic(user_id, num_clusters, embedding_save_path, db, user_alpha, user_beta_values ):
     global round_num, alpha, beta_values, presented_books, book_embeddings, ids, book_data, cluster_to_books 
@@ -333,26 +335,6 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
         print("book_choice_updated : ", book_choice_updated)
         book_a, book_b = suggest_books(question_number, book_embeddings, cluster_to_books, noise_factor, presented_books, suggested_books, books_chosen, book_chosen_dict, book_choice_updated)
         print("This is 'else' -second :", book_a, book_b)
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     # book_a, book_b가 None이 아닐 때만 실행
     if book_a is not None and book_b is not None:
