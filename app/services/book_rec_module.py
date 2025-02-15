@@ -1,4 +1,7 @@
 import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import normalize
 from numpy.linalg import norm 
 import os
 print("os.getcwd: ", os.getcwd())
@@ -160,6 +163,283 @@ def select_books(book_embeddings, cluster_to_books, alpha, beta_values, presente
 
     return best_book_a, random_book_b
 
+# def get_centroid_after_round5(sorted_cluster_books, book_embeddings, centroid_weight, cluster_of_winner_5):
+#     """
+#     1위 클러스터의 책 수가 3개인 경우는 2위 개수는 1개이고 3위는 1개이다. -> sorted 는  동률일 경우, 값이 작은 순으로 정렬이므로, 최종연산에서 2위와 3위의 구분이 없을 예정이다.
+#     1위 클러스터의 책 수가 2개인 경우, 2위의 개수는 2개이고 3위는 1개이다. -> 2위에 weight를 3위보다 많이 줄 예정이다.
+#     """
+
+#     book_values_of_cluster = list(sorted_cluster_books.values())
+#     book_keys_of_cluster = list(sorted_cluster_books.keys())
+#     print("book_values_of_cluster : ", book_values_of_cluster)
+#     print(f"book_keys_of_cluster : {book_keys_of_cluster}")
+
+#     first_cluster_num = cluster_of_winner_5
+#     first_cluster_indices = book_values_of_cluster[cluster_of_winner_5]
+
+#     # 🛑 클러스터 추출 로직 수정 (pop 대신 차집합 사용)
+#     remaining_clusters = [key for key in book_keys_of_cluster if key != first_cluster_num]
+
+#     if len(book_values_of_cluster[cluster_of_winner_5]) == 3:
+#         book_keys_of_cluster.pop(cluster_of_winner_5)
+#         print(f"book_keys_of_cluster after pop: {book_keys_of_cluster}")
+#         second_cluster_num = book_keys_of_cluster[0]
+#         third_cluster_num = book_keys_of_cluster[1]
+#         second_cluster_indices = book_values_of_cluster[second_cluster_num]
+#         third_cluster_indices = book_values_of_cluster[third_cluster_num]
+
+#         # 2위와 3위 모두 선택된 것은 1번뿐이므로 가중치는 같다
+#         weight_first = centroid_weight
+#         weight_second = 1 - weight_first * 0.5
+#         weight_third = 1 - weight_first * 0.5
+
+#     else:
+#         second_cluster_num = book_keys_of_cluster[1]
+#         third_cluster_num = book_keys_of_cluster[2]
+#         second_cluster_indices = book_values_of_cluster[second_cluster_num]
+#         third_cluster_indices = book_values_of_cluster[third_cluster_num]
+
+#         weight_first = centroid_weight
+#         weight_second = 1 - weight_first * 0.66
+#         weight_third = 1 - weight_first * 0.34
+    
+#     print(f"first_cluster_num : {first_cluster_num}")
+#     print(f"second_cluster_num: {second_cluster_num}")
+#     print(f"third_cluster_num: {third_cluster_num}")
+    
+
+#     print("type of book_embeddings: ", type(book_embeddings))
+#     print("shape of book_embeddings: ", book_embeddings.shape)
+
+#         # 각 클러스터별 벡터 평균 (centroid)
+#     centroid_first = np.mean([book_embeddings[idx] for idx in first_cluster_indices], axis=0)
+#     centroid_second = np.mean([book_embeddings[idx] for idx in second_cluster_indices], axis=0)
+#     centroid_third = np.mean([book_embeddings[idx] for idx in third_cluster_indices], axis=0)
+
+#     # 가중 평균 (Weighted Centroid)
+#     weighted_centroid = (centroid_first * weight_first + centroid_second * weight_first + centroid_third * weight_third) / (weight_first + weight_second + weight_third)
+
+
+#     if isinstance(weighted_centroid, list):
+#         weighted_centroid = np.array(weighted_centroid)
+
+# # 2️⃣ 1차원 배열을 2차원 배열로 변환
+#     if len(weighted_centroid.shape) == 1:
+#         weighted_centroid = weighted_centroid.reshape(1, -1)
+
+#     print("1위 클러스터 중심점:", centroid_first)
+#     print("2위 클러스터 중심점:", centroid_second)
+#     print("가중 평균 중심점:", weighted_centroid)
+#     print(f"shape of weighted_centroid:  {weighted_centroid.shape} ")
+
+#     return weighted_centroid
+
+
+
+# import numpy as np
+
+def get_centroid_after_round5(sorted_cluster_books, book_embeddings, centroid_weight, cluster_of_winner_5):
+    """
+    클러스터 기반 가중 평균 중심점 계산
+    """
+    # 📌 클러스터 및 책 인덱스 정리
+    book_values_of_cluster = list(sorted_cluster_books.values())
+    book_keys_of_cluster = list(sorted_cluster_books.keys())
+
+    print("book_values_of_cluster:", book_values_of_cluster)
+    print("book_keys_of_cluster:", book_keys_of_cluster)
+
+    first_cluster_num = cluster_of_winner_5
+    first_cluster_indices = sorted_cluster_books[first_cluster_num]
+
+    # 🛑 클러스터 추출 로직 수정 (pop 대신 차집합 사용)
+    remaining_clusters = [key for key in book_keys_of_cluster if key != first_cluster_num]
+
+    if len(first_cluster_indices) == 3:
+        second_cluster_num = remaining_clusters[0]
+        third_cluster_num = remaining_clusters[1]
+
+        weight_first = centroid_weight
+        weight_second = 0.5 * (1 - weight_first)
+        weight_third = 0.5 * (1 - weight_first)
+
+    else:
+        second_cluster_num = remaining_clusters[0]
+        third_cluster_num = remaining_clusters[1]
+
+        weight_first = centroid_weight
+        weight_second = 0.67 * (1 - weight_first)
+        weight_third = 0.33 * (1 - weight_first)
+
+    second_cluster_indices = sorted_cluster_books[second_cluster_num]
+    third_cluster_indices = sorted_cluster_books[third_cluster_num]
+
+    print(f"first_cluster_num: {first_cluster_num}")
+    print(f"second_cluster_num: {second_cluster_num}")
+    print(f"third_cluster_num: {third_cluster_num}")
+    print(f"weight_first: {weight_first}, weight_second: {weight_second}, weight_third: {weight_third}")
+    print(f"first_cluster_indices : {first_cluster_indices}")
+    print(f"second_cluster_indices : {second_cluster_indices}")
+    print(f"third_cluster_indices : {third_cluster_indices}")
+
+
+    # ✅ NumPy 슬라이싱 최적화
+    centroid_first = np.mean(book_embeddings[first_cluster_indices], axis=0)
+    centroid_second = np.mean(book_embeddings[second_cluster_indices], axis=0)
+    centroid_third = np.mean(book_embeddings[third_cluster_indices], axis=0)
+
+    # ✅ 가중 평균 계산 수정 (weight_second 사용)
+    weighted_centroid = (
+        centroid_first * weight_first +
+        centroid_second * weight_second +
+        centroid_third * weight_third
+    ) / (weight_first + weight_second + weight_third)
+
+    # 🛡️ NumPy 배열 변환 및 차원 정리
+    if isinstance(weighted_centroid, list):
+        weighted_centroid = np.array(weighted_centroid)
+
+    if len(weighted_centroid.shape) == 1:
+        weighted_centroid = weighted_centroid.reshape(1, -1)
+
+    print("1위 클러스터 중심점:", centroid_first)
+    print("2위 클러스터 중심점:", centroid_second)
+    print("3위 클러스터 중심점:", centroid_third)
+    print("가중 평균 중심점:", weighted_centroid)
+    print(f"shape of weighted_centroid: {weighted_centroid.shape}")
+
+    return weighted_centroid
+
+
+
+# import numpy as np
+
+# def get_centroid_after_round5(sorted_cluster_books, book_embeddings, centroid_weight, cluster_of_winner_5):
+#     """
+#     클러스터 기반 가중 평균 중심점 계산
+#     """
+#     # 📌 클러스터 및 책 인덱스 정리
+#     book_values_of_cluster = list(sorted_cluster_books.values())
+#     book_keys_of_cluster = list(sorted_cluster_books.keys())
+
+#     print("📊 book_values_of_cluster:", book_values_of_cluster)
+#     print("📊 book_keys_of_cluster:", book_keys_of_cluster)
+
+#     # ✅ 데이터 유효성 검사
+#     if not book_values_of_cluster or len(book_values_of_cluster) < 3:
+#         print("❌ 클러스터 데이터가 충분하지 않습니다. 기본값 반환.")
+#         return np.zeros((1, book_embeddings.shape[1]))
+
+#     # ✅ cluster_of_winner_5 유효성 확인
+#     if cluster_of_winner_5 >= len(book_values_of_cluster):
+#         print(f"❌ cluster_of_winner_5({cluster_of_winner_5})가 클러스터 범위를 벗어났습니다.")
+#         return np.zeros((1, book_embeddings.shape[1]))
+
+#     first_cluster_num = cluster_of_winner_5
+#     first_cluster_indices = book_values_of_cluster[first_cluster_num]
+
+#     # ✅ remaining_clusters 계산
+#     remaining_clusters = [key for key in book_keys_of_cluster if key != first_cluster_num]
+
+#     # ✅ remaining_clusters 길이 점검
+#     if len(remaining_clusters) < 2:
+#         print("❌ remaining_clusters의 클러스터 개수가 부족합니다. 기본값 반환.")
+#         return np.zeros((1, book_embeddings.shape[1]))
+
+#     if len(first_cluster_indices) == 3:
+#         second_cluster_num = remaining_clusters[0]
+#         third_cluster_num = remaining_clusters[1]
+
+#         weight_first = centroid_weight
+#         weight_second = 1 - weight_first * 0.5
+#         weight_third = 1 - weight_first * 0.5
+#     else:
+#         second_cluster_num = remaining_clusters[0]
+#         third_cluster_num = remaining_clusters[1]
+
+#         weight_first = centroid_weight
+#         weight_second = 1 - weight_first * 0.66
+#         weight_third = 1 - weight_first * 0.34
+
+#     # ✅ second_cluster_indices, third_cluster_indices 유효성 점검
+#     if (
+#         second_cluster_num >= len(book_values_of_cluster) or 
+#         third_cluster_num >= len(book_values_of_cluster)
+#     ):
+#         print(f"❌ 클러스터 번호({second_cluster_num}, {third_cluster_num})가 유효하지 않습니다. 기본값 반환.")
+#         return np.zeros((1, book_embeddings.shape[1]))
+
+#     second_cluster_indices = book_values_of_cluster[second_cluster_num]
+#     third_cluster_indices = book_values_of_cluster[third_cluster_num]
+
+#     print(f"first_cluster_num: {first_cluster_num}")
+#     print(f"second_cluster_num: {second_cluster_num}")
+#     print(f"third_cluster_num: {third_cluster_num}")
+#     print(f"weight_first: {weight_first}, weight_second: {weight_second}, weight_third: {weight_third}")
+
+#     # ✅ 클러스터별 평균 벡터 계산
+#     if len(first_cluster_indices) == 0 or len(second_cluster_indices) == 0 or len(third_cluster_indices) == 0:
+#         print("❌ 일부 클러스터에 책이 없습니다. 기본값 반환.")
+#         return np.zeros((1, book_embeddings.shape[1]))
+
+#     centroid_first = np.mean(book_embeddings[first_cluster_indices], axis=0)
+#     centroid_second = np.mean(book_embeddings[second_cluster_indices], axis=0)
+#     centroid_third = np.mean(book_embeddings[third_cluster_indices], axis=0)
+
+#     # ✅ 가중 평균 계산
+#     weighted_centroid = (
+#         centroid_first * weight_first +
+#         centroid_second * weight_second +
+#         centroid_third * weight_third
+#     ) / (weight_first + weight_second + weight_third)
+
+#     # 🛡️ NumPy 배열 변환 및 차원 정리
+#     if isinstance(weighted_centroid, list):
+#         weighted_centroid = np.array(weighted_centroid)
+
+#     if len(weighted_centroid.shape) == 1:
+#         weighted_centroid = weighted_centroid.reshape(1, -1)
+
+#     print("✅ 1위 클러스터 중심점:", centroid_first)
+#     print("✅ 2위 클러스터 중심점:", centroid_second)
+#     print("✅ 3위 클러스터 중심점:", centroid_third)
+#     print("✅ 가중 평균 중심점:", weighted_centroid)
+#     print(f"✅ shape of weighted_centroid: {weighted_centroid.shape}")
+
+#     return weighted_centroid
+
+
+def neighborhood_based_clustering(weighted_centroid, book_embeddings):
+    # ✅ 1. 입력 벡터 차원 확인
+    assert weighted_centroid.shape[1] == book_embeddings.shape[1], "차원이 일치하지 않습니다."
+
+    # ✅ 2. 코사인 유사도 계산 및 상위 300개 선택
+    cosine_similarities = cosine_similarity(book_embeddings, weighted_centroid).flatten()
+    
+    # ✅ 성능 향상: np.argpartition() 사용
+    top_300_indices = np.argpartition(cosine_similarities, -300)[-300:]
+    selected_vectors = book_embeddings[top_300_indices]
+
+    # ✅ 3. 선택된 벡터 정규화 (코사인 거리 기반 KMeans)
+    normalized_vectors = normalize(selected_vectors)
+
+    # ✅ 4. KMeans 클러스터링 (최신 옵션 적용)
+    num_clusters = 5
+    kmeans = KMeans(n_clusters=num_clusters, random_state=42, n_init='auto')
+    clusters = kmeans.fit_predict(normalized_vectors)
+
+    # 각 클러스터의 책 인덱스 저장
+    cluster_to_books = {i: [] for i in range(num_clusters)}
+    for idx, cluster_id in enumerate(clusters):
+        cluster_to_books[cluster_id].append(idx)
+
+    # ✅ 5. 클러스터 결과 출력
+    unique, counts = np.unique(clusters, return_counts=True)
+    print("K-Means 클러스터 결과:")
+    for label, count in zip(unique, counts):
+        print(f"클러스터 {label}: {count}개")
+
+    return cluster_to_books, top_300_indices
 
 def get_tournament_winner_cluster_until_round5(book_embeddings, cluster_to_books, alpha, beta_values, 
                                         presented_books, exploration_prob, noise_factor, book_choice, 
@@ -237,12 +517,13 @@ def get_tournament_winner_cluster_until_round5(book_embeddings, cluster_to_books
         book_a = int(np.random.choice([
             idx for idx in cluster_to_books[cluster_of_winner_3] if idx not in presented_books]))
         book_b = int(np.random.choice([
-            idx for idx in cluster_to_books[cluster_of_winner_4] if idx not in presented_books]))   
+            idx for idx in cluster_to_books[cluster_of_winner_4] if idx not in presented_books]))
+           
 
     else:
         raise ValueError("Question number out of range 5")
     
-
+    winner_of_q = {f"winner_of_{question_number}"}
 
     print("suggested_books : ", suggested_books)
     print("presented_books : ", presented_books)
