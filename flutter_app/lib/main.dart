@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:project/page/question_page.dart';
 import 'package:provider/provider.dart';
 
@@ -92,11 +93,13 @@ class NameInputScreen extends StatelessWidget {
                   height: 60,
                   child: TextField(
                     controller: _nameController,
+                    inputFormatters: [LengthLimitingTextInputFormatter(10)], // 최대 10자 제한
                     decoration: InputDecoration(
                         hintText: '이름 입력하기',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
+                      counterText: "", // 기본 글자 수 카운터 숨기기 (선택 사항)
                         // contentPadding: EdgeInsets.symmetric(vertical: 60, horizontal: 355)
                     ),
                     style: TextStyle(fontSize: 24),
