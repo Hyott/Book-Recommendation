@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import '../main.dart';
 
 class ResultScreen extends StatefulWidget {
-  final String userId; // 사용자 ID
+  final String userId;
 
   ResultScreen({required this.userId});
 
@@ -14,10 +14,11 @@ class ResultScreen extends StatefulWidget {
 
 class _ResultScreenState extends State<ResultScreen> {
   final String baseUrl = "http://127.0.0.1:8000";
-  List<String> sentences = [];
   List<Map<String, dynamic>> bookDetails = [];
   PageController _verticalPageController = PageController();
   PageController _horizontalPageController = PageController();
+  int _currentBookIndex = 0;  // 현재 선택된 책의 인덱스를 추적
+  int _currentPage = 0;  // 목록 페이지에서 마지막으로 보았던 페이지 저장
 
   @override
   void initState() {
@@ -31,9 +32,14 @@ class _ResultScreenState extends State<ResultScreen> {
       final response = await http.get(
         Uri.parse("$baseUrl/final_recommendation/${widget.userId}"),
       );
+
+      print("HTTP 요청 URL: $baseUrl/final_recommendation/${widget.userId}");
+      print("HTTP 응답 코드: ${response.statusCode}");
+      print("HTTP 응답 본문: ${response.body}");
+
       if (response.statusCode == 200) {
         List<dynamic> isbnList = json.decode(response.body);
-        fetchSentences(isbnList);
+        await fetchBookDetails(isbnList);
       } else {
         throw Exception("추천 결과를 불러오는 데 실패했습니다.");
       }
@@ -42,61 +48,37 @@ class _ResultScreenState extends State<ResultScreen> {
     }
   }
 
-  Future<void> fetchSentences(List<dynamic> isbnList) async {
-    List<String> tempSentences = [];
+  // 각 도서의 문장 및 상세정보 가져오기
+  Future<void> fetchBookDetails(List<dynamic> isbnList) async {
+    List<Map<String, dynamic>> tempDetails = [];
 
     for (String isbn in isbnList) {
       try {
-        final response = await http.get(Uri.parse("$baseUrl/sentences/$isbn"));
+        final response = await http.get(Uri.parse("$baseUrl/books/$isbn"));
 
-        print("HTTP 요청 URL: $baseUrl/sentences/$isbn");
+        print("HTTP 요청 URL: $baseUrl/books/$isbn");
         print("HTTP 응답 코드: ${response.statusCode}");
         print("HTTP 응답 본문: ${response.body}");
 
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
-          tempSentences.add(data["sentence"]); // JSON에서 문장 가져오기
-        } else {
-          print("문장 데이터를 불러올 수 없습니다.");
+          tempDetails.add({
+            "image_url": data["image_url"] ?? "이미지 없음",
+            "author": data["author"] ?? "작가 미상",
+            "tags": (data["tags"] as List<dynamic>).join(", "), // 태그 리스트 → 문자열 변환
+            "sentence": data["sentence"] ?? "문장 없음",
+            "letter": data["letter"] ?? "편지 없음",
+          });
         }
       } catch (e) {
-        print("Error fetching sentence for ISBN $isbn: $e");
+        print("Error fetching book details for ISBN $isbn: $e");
       }
     }
 
     setState(() {
-      sentences = tempSentences;
+      bookDetails = tempDetails;
     });
   }
-
-  // bookDetails[index]['sentence']
-
-  // // 각 도서의 문장 및 상세정보 가져오기
-  // Future<void> fetchBookDetails(List<dynamic> isbnList) async {
-  //   List<Map<String, dynamic>> tempDetails = [];
-  //
-  //   for (String isbn in isbnList) {
-  //     try {
-  //       final response = await http.get(Uri.parse("$baseUrl/sentences/$isbn"));
-  //       if (response.statusCode == 200) {
-  //         final data = json.decode(response.body);
-  //         tempDetails.add({
-  //           "isbn": isbn,
-  //           "sentence": data["sentence"],
-  //           "title": data["title"] ?? "제목 없음",
-  //           "author": data["author"] ?? "작가 미상",
-  //           "description": data["description"] ?? "소개 없음"
-  //         });
-  //       }
-  //     } catch (e) {
-  //       print("Error fetching sentence for ISBN $isbn: $e");
-  //     }
-  //   }
-  //
-  //   setState(() {
-  //     bookDetails = tempDetails;
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -105,9 +87,7 @@ class _ResultScreenState extends State<ResultScreen> {
         scrollDirection: Axis.vertical,
         controller: _verticalPageController,
         children: [
-          // 추천도서 목록 페이지
           _buildRecommendationPage(),
-          // 추천도서 상세보기 페이지 (PageView)
           _buildDetailPageView(),
         ],
       ),
@@ -131,7 +111,7 @@ class _ResultScreenState extends State<ResultScreen> {
               ),
             ),
           ),
-          if (sentences.isEmpty)
+          if (bookDetails.isEmpty)
             const Expanded(child: Center(child: CircularProgressIndicator()))
           else
             Expanded(
@@ -159,7 +139,12 @@ class _ResultScreenState extends State<ResultScreen> {
                 },
                 child: PageView.builder(
                   controller: _horizontalPageController,
-                  itemCount: sentences.length,
+                  itemCount: bookDetails.length,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentBookIndex = index;  // 책 인덱스 변경
+                    });
+                  },
                   itemBuilder: (context, index) {
                     return Container(
                       padding: const EdgeInsets.all(16),
@@ -174,7 +159,6 @@ class _ResultScreenState extends State<ResultScreen> {
                                 image: AssetImage('assets/images/result_page_image.jpg'),
                                 fit: BoxFit.cover,
                               ),
-                              // borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black26,
@@ -187,7 +171,7 @@ class _ResultScreenState extends State<ResultScreen> {
                             child: Padding(
                               padding: const EdgeInsets.all(20.0),
                               child: Text(
-                                sentences[index],
+                                bookDetails[index]["sentence"],
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -214,26 +198,28 @@ class _ResultScreenState extends State<ResultScreen> {
     );
   }
 
-  // 도서 상세보기 페이지 (PageView)
+  // 도서 상세보기 페이지
   Widget _buildDetailPageView() {
     return bookDetails.isEmpty
         ? const Center(child: CircularProgressIndicator())
         : PageView.builder(
-      scrollDirection: Axis.horizontal,
-      physics: const NeverScrollableScrollPhysics(), // ⛔ 스와이프 비활성화
       itemCount: bookDetails.length,
+      onPageChanged: (index) {
+        setState(() {
+          _currentBookIndex = index;
+        });
+      },
       itemBuilder: (context, index) {
-        final book = bookDetails[index];
+        final book = bookDetails[_currentBookIndex];  // 선택된 책 정보
         return GestureDetector(
           onVerticalDragUpdate: (details) {
-            if (details.primaryDelta! > 10) {
-              // 아래로 스와이프 시 추천도서 목록으로 복귀
-              _verticalPageController.animateToPage(
-                0,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOut,
-              );
-            }
+            _verticalPageController.previousPage(
+              duration: Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            );
+            Future.delayed(Duration(milliseconds: 100), () {
+              _horizontalPageController.jumpToPage(_currentBookIndex); // 사용자가 보던 책 위치로 이동
+            });
           },
           child: Scaffold(
             appBar: AppBar(
@@ -246,70 +232,71 @@ class _ResultScreenState extends State<ResultScreen> {
             ),
             body: SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 책 제목
-                  Text(
-                    book['title'],
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
+              child: Container(
+                width: 400,
+                height: 500,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage('assets/images/result_page_image.jpg'),
+                    fit: BoxFit.cover,
+                    alignment: Alignment.center, // 배경 이미지를 가운데로 설정
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 10,
+                      spreadRadius: 2,
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  // 저자
-                  Text(
-                    "저자: ${book['author']}",
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // 도서 추천 문장
-                  Text(
-                    "\"${book['sentence']}\"",
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  // 도서 설명
-                  Text(
-                    book['description'],
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  const SizedBox(height: 24),
-                  // 공유 및 다시보기 버튼
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          // 공유 기능
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("공유하기 기능 준비 중")),
-                          );
-                        },
-                        child: const Text("공유하기"),
+
+                      // 책 이미지
+                      Image.network(
+                        book['image_url']!,
+                        width: 200,
+                        height: 250,
+                        fit: BoxFit.cover,
                       ),
+                      const SizedBox(height: 16),
+                      // 저자
+                      Text(
+                        "${book['author']}",
+                        style: const TextStyle(fontSize: 16, color: Colors.black),
+                      ),
+                      const SizedBox(height: 8),
+                      // 태그
+                      Text(
+                        "${book['tags']}",
+                        style: const TextStyle(fontSize: 16, color: Colors.black),
+                      ),
+                      const SizedBox(height: 8),
+                      // 편지 내용
+                      Text(
+                        "\n${book['letter']}",
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                      ),
+                      const SizedBox(height: 24),
+                      // 목록으로 돌아가기 버튼
                       ElevatedButton(
                         onPressed: () {
-                          // 다시보기: 목록으로 돌아가기
-                          _verticalPageController.animateToPage(
-                            0,
-                            duration: const Duration(milliseconds: 300),
+                          _verticalPageController.previousPage(
+                            duration: Duration(milliseconds: 300),
                             curve: Curves.easeOut,
                           );
+                          Future.delayed(Duration(milliseconds: 100), () {
+                            _horizontalPageController.jumpToPage(_currentBookIndex); // 사용자가 보던 책 위치로 이동
+                          });
                         },
-                        child: const Text("다시보기"),
+                        child: const Text('목록으로 돌아가기'),
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -317,5 +304,6 @@ class _ResultScreenState extends State<ResultScreen> {
       },
     );
   }
-}
 
+
+}

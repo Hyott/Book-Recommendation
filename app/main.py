@@ -63,6 +63,21 @@ noise_factor = 0.01
 
 
 
+# @app.get("/books/{isbn}")
+# def get_book(isbn: str, db: Session = Depends(get_db)):
+#     if len(isbn) != 13 or not isbn.isdigit():
+#         raise HTTPException(
+#             status_code=400,
+#             detail="Invalid ISBN format. ISBN must be a 13-digit number."
+#         )
+    
+#     book = get_book_by_isbn(db, isbn)
+#     if book is None:
+#         raise HTTPException(
+#             status_code=404,
+#             detail=f"Book with ISBN {isbn} not found."
+#         )
+#     return book
 @app.get("/books/{isbn}")
 def get_book(isbn: str, db: Session = Depends(get_db)):
     if len(isbn) != 13 or not isbn.isdigit():
@@ -70,14 +85,46 @@ def get_book(isbn: str, db: Session = Depends(get_db)):
             status_code=400,
             detail="Invalid ISBN format. ISBN must be a 13-digit number."
         )
-    
+
     book = get_book_by_isbn(db, isbn)
-    if book is None:
+    sentence = get_sentence_by_isbn(db, isbn)
+    tags = get_tags_by_isbn(db, isbn)
+
+    if not book:
         raise HTTPException(
             status_code=404,
             detail=f"Book with ISBN {isbn} not found."
         )
-    return book
+
+    # return {
+    #     "isbn": book.isbn,
+    #     "title": book.title,
+    #     "author": book.author,
+    #     "image_url": book.image_url,
+    #     "category": book.category,
+    #     "description": book.description,
+    #     "key_sentences": book.key_sentences,
+    #     "publication_date": book.publication_date,
+    #     "sentence": sentence.sentence if sentence else None,  # ✅ 문장 추가
+    #     "letter": sentence.letter if sentence else None,
+    #     "tags": [tag.tag_name for tag in tags] if tags else []  # ✅ 태그를 리스트로 변환
+    # }
+
+    response_data = {
+        "isbn": book.isbn,
+        "title": book.title,
+        "author": book.author,
+        "image_url": book.image_url,
+        # "category": book.category,
+        # "description": book.description,
+        # "key_sentences": book.key_sentences,
+        # "publication_date": book.publication_date,
+        "sentence": sentence.sentence if sentence else None,
+        "letter": sentence.letter if sentence else None,
+        "tags": [tag.tag_name for tag in tags] if tags else []
+    }
+    return JSONResponse(content=response_data, media_type="application/json; charset=utf-8")
+
 
 
 @app.get("/tags/{isbn}")
@@ -208,15 +255,15 @@ def suggest_books(question_number, book_embeddings, cluster_to_books, noise_fact
         
         return 1111, 1112
 
-@app.get("/books/{isbn}", response_model=BookSchema)
-def read_book(isbn: str, db: Session = Depends(get_db)):
-    book = get_book_by_isbn(db, isbn)
-    if book is None:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Book with ISBN {isbn} not found."
-        )
-    return book
+# @app.get("/books/{isbn}", response_model=BookSchema)
+# def read_book(isbn: str, db: Session = Depends(get_db)):
+#     book = get_book_by_isbn(db, isbn)
+#     if book is None:
+#         raise HTTPException(
+#             status_code=404,
+#             detail=f"Book with ISBN {isbn} not found."
+#         )
+#     return book
 
 
 @app.get("/question_number/{user_id}", response_model=BookSchema)
