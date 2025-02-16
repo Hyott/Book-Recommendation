@@ -173,62 +173,192 @@
 //   }
 // }
 
-import 'package:flutter/material.dart';
+// import 'package:flutter/material.dart';
+//
+// void main() {
+//   runApp(MyApp());
+// }
+//
+// class MyApp extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       home: MyPageView(),
+//     );
+//   }
+// }
+//
+// class MyPageView extends StatefulWidget {
+//   @override
+//   _MyPageViewState createState() => _MyPageViewState();
+// }
+//
+// class _MyPageViewState extends State<MyPageView> {
+//   final List<String> items = ['Page 1', 'Page 2', 'Page 3'];
+//   final PageController _controller = PageController();
+//
+//   double _start = 0.0;  // 드래그 시작 위치
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       body: GestureDetector(
+//         onHorizontalDragStart: (details) {
+//           _start = details.localPosition.dx;
+//         },
+//         onHorizontalDragUpdate: (details) {
+//           double offset = details.localPosition.dx - _start;
+//           if (offset > 50) {
+//             _controller.previousPage(duration: Duration(milliseconds: 300), curve: Curves.ease);
+//             _start = details.localPosition.dx; // 시작 위치 초기화
+//           } else if (offset < -50) {
+//             _controller.nextPage(duration: Duration(milliseconds: 300), curve: Curves.ease);
+//             _start = details.localPosition.dx; // 시작 위치 초기화
+//           }
+//         },
+//         child: PageView.builder(
+//           controller: _controller,
+//           itemCount: items.length,
+//           itemBuilder: (context, index) {
+//             return Center(
+//               child: Text(
+//                 items[index],
+//                 style: TextStyle(fontSize: 24),
+//               ),
+//             );
+//           },
+//         ),
+//       ),
+//     );
+//   }
+// }
 
-void main() {
-  runApp(MyApp());
-}
+// class NextScreen extends StatefulWidget {
+//   @override
+//   _NextScreenState createState() => _NextScreenState();
+// }
+//
+// const String apiUrl = 'http://176.16.0.17:8000/newbooks/'; // FastAPI 서버 URL 설정
+//
+// class _NextScreenState extends State<NextScreen> {
+//   late Future<List<Message>> _messages; // 메시지를 담을 변수
+//
+//   // API에서 message 가져오기
+//   Future<List<Message>> fetchMessages({int skip = 0, int limit = 10}) async {
+//     final response = await http.get(
+//       Uri.parse('$apiUrl?skip=$skip&limit=$limit'),
+//     );
+//
+//     // 상태 코드 로그
+//     print('Response status code: ${response.statusCode}');
+//
+//     final decodedResponseBody = json.decode(utf8.decode(response.bodyBytes));
+//
+//     if (response.statusCode == 200) {
+//       print('Response body: $decodedResponseBody');
+//
+//       // API 호출 성공 시 message 리스트 반환
+//       final List<dynamic> data = decodedResponseBody;
+//       return data.map((item) {
+//         // item은 Map<String, dynamic> 타입이어야 함
+//         return Message.fromJson(item);
+//       }).toList();
+//     } else {
+//       // 실패 시 오류 로그
+//       print('Failed to load books. Status code: ${response.statusCode}');
+//
+//       throw Exception('Failed to load messages: ${response.statusCode}');
+//     }
+//   }
+//
+//   @override
+//   void initState() {
+//     super.initState();
+//     _messages = fetchMessages(); // 메시지 로드
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     // UserNameProvider를 사용하여 사용자 이름 가져오기
+//     final userName = Provider.of<UserNameProvider>(context).userName;
+//
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text('도서 추천 서비스'),
+//       ),
+//       body: FutureBuilder<List<Message>>(
+//         future: _messages, // fetchMessages()에서 받은 데이터를 기반으로 버튼 생성
+//         builder: (context, snapshot) {
+//           if (snapshot.connectionState == ConnectionState.waiting) {
+//             return Center(child: CircularProgressIndicator());
+//           } else if (snapshot.hasError) {
+//             return Center(child: Text('Error: ${snapshot.error}'));
+//           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+//             return Center(child: Text('No books found'));
+//           }
+//
+//           final messages = snapshot.data!;
+//
+//           return Center(
+//             child: Column(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 // 사용자 이름을 포함하여 문구 출력
+//                 Text(
+//                   '$userName님한테 더 마음이 가는 문장을 골라주세요.',
+//                   style: TextStyle(fontSize: 24),
+//                 ),
+//                 SizedBox(height: 20),
+//                 // 첫 번째 메시지 버튼
+//                 TextButton(
+//                   onPressed: () {
+//                     // 첫 번째 메시지 선택 시 처리
+//                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('첫 번째 문장 선택됨: ${messages[0].message}')));
+//                   },
+//                   child: Text(
+//                     messages[0].message, // 첫 번째 메시지
+//                     style: TextStyle(fontSize: 18, color: Colors.blue),
+//                   ),
+//                 ),
+//                 SizedBox(height: 20),
+//                 // 두 번째 메시지 버튼
+//                 TextButton(
+//                   onPressed: () {
+//                     // 두 번째 메시지 선택 시 처리
+//                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('두 번째 문장 선택됨: ${messages[1].message}')));
+//                   },
+//                   child: Text(
+//                     messages[1].message, // 두 번째 메시지
+//                     style: TextStyle(fontSize: 18, color: Colors.blue),
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           );
+//         },
+//       ),
+//     );
+//   }
+// }
+//
+// class NextScreen extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     final userName = Provider.of<UserNameProvider>(context).userName;
+//
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text('도서 추천 서비스'),
+//       ),
+//       body: Center(
+//         child: Text(
+//           '$userName님한테 더 마음이 가는 문장을 골라주세요.',
+//           style: TextStyle(fontSize: 24),
+//         ),
+//       ),
+//     );
+//   }
+// }
 
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: MyPageView(),
-    );
-  }
-}
 
-class MyPageView extends StatefulWidget {
-  @override
-  _MyPageViewState createState() => _MyPageViewState();
-}
 
-class _MyPageViewState extends State<MyPageView> {
-  final List<String> items = ['Page 1', 'Page 2', 'Page 3'];
-  final PageController _controller = PageController();
-
-  double _start = 0.0;  // 드래그 시작 위치
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: GestureDetector(
-        onHorizontalDragStart: (details) {
-          _start = details.localPosition.dx;
-        },
-        onHorizontalDragUpdate: (details) {
-          double offset = details.localPosition.dx - _start;
-          if (offset > 50) {
-            _controller.previousPage(duration: Duration(milliseconds: 300), curve: Curves.ease);
-            _start = details.localPosition.dx; // 시작 위치 초기화
-          } else if (offset < -50) {
-            _controller.nextPage(duration: Duration(milliseconds: 300), curve: Curves.ease);
-            _start = details.localPosition.dx; // 시작 위치 초기화
-          }
-        },
-        child: PageView.builder(
-          controller: _controller,
-          itemCount: items.length,
-          itemBuilder: (context, index) {
-            return Center(
-              child: Text(
-                items[index],
-                style: TextStyle(fontSize: 24),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
