@@ -115,7 +115,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
 
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(100),
+        preferredSize: Size.fromHeight(80),
         child: AppBar(
           title: null,
           automaticallyImplyLeading: false,
@@ -127,7 +127,8 @@ class _QuestionScreenState extends State<QuestionScreen> {
                 (
                   fontFamily: 'AbhayaLibre',
                   fontSize: 36,
-                  color: Color(0xFFF8F8F8)
+                  color: Color(0xFFF8F8F8),
+                  height: 0.6, // 줄 간격을 기본값보다 더 줄이기
               ),
             ),
           ),
