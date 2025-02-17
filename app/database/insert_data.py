@@ -26,9 +26,10 @@ setup_database_and_tables(host, port, user, password, database_name)
 Session = sessionmaker(bind=engine)
 session = Session()
 
+import os
+print(os.getcwd())
 
-
-json_file_path = 'data/scraping/filtered_book_unique.json'
+json_file_path = 'app/database/data/filtered_book_unique.json'
 print('books 테이블에 데이터를 넣습니다.')
 with open(json_file_path, 'r', encoding='utf-8') as file:
   data = json.load(file)
@@ -54,7 +55,7 @@ with open(json_file_path, 'r', encoding='utf-8') as file:
         session.rollback()
         print(f"오류 발생: {e}")
 
-json_file_path = 'data/scraping/llm_final_output.json'
+json_file_path = 'app/database/data/llm_output_openai.json'
 print('sentences 테이블에 데이터를 넣습니다.')
 with open(json_file_path, 'r', encoding='utf-8') as file:
   data = json.load(file)
