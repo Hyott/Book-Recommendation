@@ -86,7 +86,6 @@ uncertainty_factor = 10
 noise_factor = 0.01
 centroid_weight = 0.6
 
-app.mount("/images", StaticFiles(directory="images"), name="images")
 @app.get("/recommendation/{user_id}")
 def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
     ####### None 출력 대비 5회 시도 설정
