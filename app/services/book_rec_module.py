@@ -151,7 +151,13 @@ def select_books_for_new_cluster(presented_books, neigh_based_clustering_to_book
             
             # 중복 없는 후보군 필터링
             available_books = [idx for idx in neigh_based_clustering_to_books[centroid_cluster] 
-                            if idx not in presented_books]
+                            if top_300_indices[idx] not in presented_books]
+            print(f"Type of presented_books elements: {[type(x) for x in presented_books]}")
+            print(f"Type of available_books elements: {[type(x) for x in available_books]}")
+            # [수정된 중복 검증 로직]
+            intersection_a = set(available_books).intersection(presented_books)
+            print(f"🔍 [DEBUG] Intersection with presented_books for book_a: {intersection_a}")
+
             if not available_books:
                 raise ValueError(f"No available books in centroid cluster {centroid_cluster} excluding presented ones.")
 
@@ -177,7 +183,9 @@ def select_books_for_new_cluster(presented_books, neigh_based_clustering_to_book
 
                 # 중복 없는 후보군 필터링
                 available_books = [idx for idx in neigh_based_clustering_to_books[largest_cluster] 
-                                if idx not in presented_books]
+                                if top_300_indices[idx] not in presented_books]
+                intersection_a = set(available_books).intersection(presented_books)
+                print(f"🔍 [DEBUG] Intersection with presented_books for book_a: {intersection_a}")
                 if not available_books:
                     raise ValueError(f"No available books in centroid cluster {largest_cluster} excluding presented ones.")
                 
@@ -205,7 +213,9 @@ def select_books_for_new_cluster(presented_books, neigh_based_clustering_to_book
 
 
             available_books_for_b = [idx for idx in neigh_based_clustering_to_books[largest_cluster] 
-                                if idx not in presented_books]
+                                if top_300_indices[idx] not in presented_books]
+            intersection_b = set(available_books_for_b).intersection(presented_books)
+            print(f"🔍 [DEBUG] Intersection with presented_books for book_b: {intersection_b}")
             if not available_books_for_b:
                 raise ValueError(f"No available books in centroid cluster {largest_cluster} excluding presented ones.")
             
@@ -235,7 +245,7 @@ def select_books_for_new_cluster(presented_books, neigh_based_clustering_to_book
         raise  # 예외 재발생
 
 
-def get_tournament_winner_cluster_until_round5(book_embeddings, cluster_to_books, alpha, beta_values, 
+def get_tournament_winner_cluster_until_round5(book_embeddings, cluster_to_books, 
                                         presented_books, exploration_prob, noise_factor, book_choice, 
                                         question_number, books_chosen, suggested_books):
     if question_number == 0:
@@ -311,7 +321,7 @@ def get_tournament_winner_cluster_until_round5(book_embeddings, cluster_to_books
             idx for idx in cluster_to_books[cluster_of_winner_3] if idx not in presented_books]))
         book_b = int(np.random.choice([
             idx for idx in cluster_to_books[cluster_of_winner_4] if idx not in presented_books]))
-           
+
 
     else:
         raise ValueError("Question number out of range 5")
@@ -363,7 +373,6 @@ def get_sentence_from_db(db: Session):
     ]
 
 def load_embeddings(file_path):
-
     with open(file_path, "r", encoding="utf-8") as f:
         data = json.load(f)
     embeddings = [inner_dict["embedding"] for inner_dict in data.values()]
@@ -372,26 +381,15 @@ def load_embeddings(file_path):
     return ids, embeddings
 
 
-def update_data(choice, book_a, book_b, alpha, beta_values):
-    """
-    사용자 선택 데이터를 기반으로 베타 분포 업데이트.
-    """
+def update_data(choice, book_a, book_b):
     print("book_a:", book_a)
     print("book_b:", book_b)
     if choice == "a":
-        alpha[book_a] += 1
-        beta_values[book_b] += 1
-        # alpha[-1] += 1
-        # alpha[0] += 1
         print(book_a)
         return book_a
     elif choice == "b":
-        alpha[book_b] += 1
-        beta_values[book_a] += 1
         return book_b
     else:
-        beta_values[book_a] += 1
-        beta_values[book_b] += 1
         return None
         
 def get_message_by_id(ids, book_id, book_data):
@@ -401,17 +399,3 @@ def get_message_by_id(ids, book_id, book_data):
     idx = np.where(ids == book_id)[0][0]  # book_id의 인덱스 찾기
     return book_data[idx]["sentence"]
 
-def weighted_sampling(similarities, num_samples=10, temperature=0.5):
-    """
-    유사도 점수를 기반으로 확률적 샘플링을 수행합니다.
-    - similarities: 코사인 유사도 배열
-    - num_samples: 추천할 책의 개수
-    - temperature: 유사도 가중치 조정을 위한 파라미터 (낮을수록 상위 선택 집중)
-    """
-    # 유사도를 가중치로 변환
-    probabilities = np.exp(similarities / temperature)
-    probabilities /= probabilities.sum()  # 확률로 정규화
-
-    # 가중치를 기반으로 랜덤 샘플링
-    sampled_indices = np.random.choice(len(similarities), size=num_samples, replace=False, p=probabilities)
-    return sampled_indices
