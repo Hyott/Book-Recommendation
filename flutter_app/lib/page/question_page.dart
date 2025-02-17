@@ -123,7 +123,12 @@ class _QuestionScreenState extends State<QuestionScreen> {
           flexibleSpace: Center(
             child: Text(
               "from\n    Sentence",
-              style: TextStyle(fontSize: 36, color: Color(0xFFF8F8F8)),
+              style: TextStyle
+                (
+                  fontFamily: 'AbhayaLibre',
+                  fontSize: 36,
+                  color: Color(0xFFF8F8F8)
+              ),
             ),
           ),
         ),
@@ -134,9 +139,24 @@ class _QuestionScreenState extends State<QuestionScreen> {
             : Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("$question_number / 10", style: TextStyle(fontSize: 24, color: Color(0xFFB4A69B))),
+            Text(
+                "$question_number / 10",
+                style: TextStyle
+                  (
+                    fontFamily: 'Inter',
+                    fontSize: 24,
+                    color: Color(0xFFB4A69B)
+                )
+            ),
             SizedBox(height: 20),
-            Text("      마음에 머무는\n문장은 무엇인가요?", style: TextStyle(fontSize: 27, color: Color(0xFF280404))),
+            Text("      마음에 머무는\n문장은 무엇인가요?",
+                style: TextStyle
+                  (
+                    fontFamily: 'JejuMyeongjo',
+                    fontSize: 27,
+                    color: Color(0xFF280404)
+                )
+            ),
             SizedBox(height: 50),
             Padding(
               padding: EdgeInsets.all(10),
@@ -152,7 +172,12 @@ class _QuestionScreenState extends State<QuestionScreen> {
                   child: Center(
                     child: Text(
                       sentenceA!,
-                      style: TextStyle(fontSize: 18, color: Color(0xFF280404)),
+                      style: TextStyle
+                        (
+                          fontFamily: 'Roboto',
+                          fontSize: 18,
+                          color: Color(0xFF280404)
+                      ),
                     ),
                   ),
                 ),
@@ -173,7 +198,12 @@ class _QuestionScreenState extends State<QuestionScreen> {
                   child: Center(
                     child: Text(
                       sentenceB!,
-                      style: TextStyle(fontSize: 18, color: Color(0xFF280404)),
+                      style: TextStyle
+                        (
+                          fontFamily: 'Roboto',
+                          fontSize: 18,
+                          color: Color(0xFF280404)
+                      ),
                     ),
                   ),
                 ),

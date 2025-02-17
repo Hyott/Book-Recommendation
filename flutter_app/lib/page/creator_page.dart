@@ -16,7 +16,12 @@ class CreatorScreen extends StatelessWidget {
           flexibleSpace: Center(
             child: Text(
               "from\n    Sentence",
-              style: TextStyle(fontSize: 36, color: Color(0xFFF8F8F8)),
+              style: TextStyle
+                (
+                  fontFamily: 'AbhayaLibre',
+                  fontSize: 36,
+                  color: Color(0xFFF8F8F8)
+              ),
             ),
           ),
         ),
@@ -37,7 +42,12 @@ class CreatorScreen extends StatelessWidget {
                     '그것이 fromSentence를 만든 toReader 팀의 바람입니다.\n\n'
                     '책을 통해 더 넓은 세상을 만나는 여정,\n\n'
                     '이제 fromSentence와 함께하세요.\n\n',
-                style: TextStyle(fontSize: 13, color: Colors.black),
+                style: TextStyle
+                  (
+                    fontFamily: 'Spectral-Regular',
+                    fontSize: 13,
+                    color: Colors.black
+                ),
               ),
             ),
             SizedBox(height: 30),  // 텍스트와 사진 사이 여백을 추가
@@ -78,7 +88,12 @@ class CreatorScreen extends StatelessWidget {
         SizedBox(height: 8),  // 이미지와 이름 간 간격
         Text(
           name,
-          style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
+          style: TextStyle
+            (
+              fontFamily: 'Spectral-Regular',
+              fontSize: 8,
+              fontWeight: FontWeight.bold
+          ),
         ),
       ],
     );

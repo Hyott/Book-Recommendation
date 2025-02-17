@@ -4,6 +4,7 @@ import 'package:project/page/question_page.dart';
 import 'package:project/test.dart';
 import 'package:provider/provider.dart';
 
+
 // 색상 팔레트 정의
 Map<int, Color> colorSwatch = {
   50: Color(0xFFF0D8D7),
@@ -38,6 +39,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: false,
         primarySwatch: primarySwatch, // 정의한 MaterialColor 사용
+        fontFamily: 'JejuMyeongjo',
       ),
       home: NameInputScreen(),
       debugShowCheckedModeBanner: false,
@@ -85,7 +87,11 @@ class NameInputScreen extends StatelessWidget {
                 ),
                 Text(
                   '문장으로부터\n책으로 이끄는 순간까지',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.normal),
+                  style: TextStyle
+                    (
+                      fontSize: 22,
+                      fontWeight: FontWeight.normal
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 150),
@@ -103,7 +109,11 @@ class NameInputScreen extends StatelessWidget {
                       counterText: "", // 기본 글자 수 카운터 숨기기 (선택 사항)
                         // contentPadding: EdgeInsets.symmetric(vertical: 60, horizontal: 355)
                     ),
-                    style: TextStyle(fontSize: 24),
+                    style: TextStyle
+                      (
+                        fontFamily: 'Inter',
+                        fontSize: 24
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -128,7 +138,11 @@ class NameInputScreen extends StatelessWidget {
                   },
                   child: Text(
                     '시작하기',
-                    style: TextStyle(fontSize: 30, color: Color(0xFF280404)),
+                    style: TextStyle
+                      (
+                        fontSize: 30,
+                        color: Color(0xFF280404)
+                    ),
                   ),
               ),
             ],

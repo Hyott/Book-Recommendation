@@ -123,7 +123,12 @@ class _ResultScreenState extends State<ResultScreen> {
           flexibleSpace: Center(
             child: Text(
               "from\n    Sentence",
-              style: TextStyle(fontSize: 36, color: Color(0xFFF8F8F8)),
+              style: TextStyle
+                (
+                  fontFamily: 'AbhayaLibre',
+                  fontSize: 36,
+                  color: Color(0xFFF8F8F8)
+              ),
             ),
           ),
         ),
@@ -190,6 +195,7 @@ class _ResultScreenState extends State<ResultScreen> {
                         child: Text(
                           bookDetails[index]["sentence"],
                           style: const TextStyle(
+                            fontFamily: 'Inter',
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
@@ -201,7 +207,12 @@ class _ResultScreenState extends State<ResultScreen> {
                     const SizedBox(height: 24),
                     const Text(
                       "⬆️ 당겨보세요",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle
+                        (
+                          fontFamily: 'JejuMyeongjo',
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold
+                      ),
                     ),
                   ],
                 ),
@@ -227,7 +238,12 @@ class _ResultScreenState extends State<ResultScreen> {
           flexibleSpace: Center(
             child: Text(
               "from\n    Sentence",
-              style: TextStyle(fontSize: 36, color: Color(0xFFF8F8F8)),
+              style: TextStyle
+                (
+                  fontFamily: 'AbhayaLibre',
+                  fontSize: 36,
+                  color: Color(0xFFF8F8F8)
+              ),
             ),
           ),
         ),
@@ -286,7 +302,12 @@ class _ResultScreenState extends State<ResultScreen> {
                               children: [
                                 Text(
                                   'To. $userName',
-                                  style: const TextStyle(fontSize: 14, color: Colors.black),
+                                  style: const TextStyle
+                                    (
+                                      fontFamily: 'GowunBatang',
+                                      fontSize: 14,
+                                      color: Colors.black
+                                  ),
                                 ),
                                 // 책 이미지
                                 book['image_url'] == "이미지 없음"
@@ -301,6 +322,7 @@ class _ResultScreenState extends State<ResultScreen> {
                                 Text(
                                   book['author'],
                                   style: const TextStyle(
+                                    fontFamily: 'GowunBatang',
                                     fontSize: 15,
                                     color: Colors.black,
                                     decoration: TextDecoration.underline,
@@ -309,12 +331,18 @@ class _ResultScreenState extends State<ResultScreen> {
                                 const SizedBox(height: 8),
                                 Text(
                                   book['tags'],
-                                  style: const TextStyle(fontSize: 12, color: Colors.black),
+                                  style: const TextStyle
+                                    (
+                                      fontFamily: 'GowunBatang',
+                                      fontSize: 12,
+                                      color: Colors.black
+                                  ),
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
                                   "\n${book['letter']}",
                                   style: const TextStyle(
+                                    fontFamily: 'GowunBatang',
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black,
@@ -352,7 +380,11 @@ class _ResultScreenState extends State<ResultScreen> {
                                   },
                                   child: const Text(
                                     '공유하기',
-                                    style: TextStyle(fontSize: 20, color: Color(0xFF50513F)),
+                                    style: TextStyle(
+                                        fontFamily: 'JejuMyeongjo',
+                                        fontSize: 20,
+                                        color: Color(0xFF50513F)
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 10), // 간격 조절
@@ -374,7 +406,11 @@ class _ResultScreenState extends State<ResultScreen> {
                                   },
                                   child: const Text(
                                     '다시하기',
-                                    style: TextStyle(fontSize: 20, color: Color(0xFF50513F)),
+                                    style: TextStyle(
+                                        fontFamily: 'JejuMyeongjo',
+                                        fontSize: 20,
+                                        color: Color(0xFF50513F)
+                                    ),
                                   ),
                                 ),
                               ],
@@ -392,7 +428,11 @@ class _ResultScreenState extends State<ResultScreen> {
                               },
                               child: const Text(
                                 '만든 이들',
-                                style: TextStyle(fontSize: 20, color: Color(0xFF2A0606)),
+                                style: TextStyle(
+                                    fontFamily: 'JejuMyeongjo',
+                                    fontSize: 20,
+                                    color: Color(0xFF2A0606)
+                                ),
                               ),
                             ),
                           ],
