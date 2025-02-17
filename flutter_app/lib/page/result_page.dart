@@ -353,19 +353,21 @@ class _ResultScreenState extends State<ResultScreen> {
                             child: Column(
                               children: [
                                 // 책 이미지 표시 코드
-                                AssetImage(
-                                  'assets/images/books/9788901131207.jpg',
+                                Image(
+                                  image: AssetImage(
+                                    'assets/images/books/${book['isbn']}.jpg', // ISBN을 사용한 이미지 경로
+                                  ),
                                   width: 150,
                                   height: 200,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return AssetImage(
-                                      'assets/images/none_book_image.png', // 기본 이미지
-                                      width: 150,
-                                      height: 200,
-                                      fit: BoxFit.cover,
-                                    );
-                                  },
+                                  // errorBuilder: (context, error, stackTrace) {
+                                  //   return Image.asset(
+                                  //     'assets/images/none_book_image.png', // 기본 이미지
+                                  //     width: 150,
+                                  //     height: 200,
+                                  //     fit: BoxFit.cover,
+                                  //   );
+                                  // },
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
