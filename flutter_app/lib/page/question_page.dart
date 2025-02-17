@@ -13,14 +13,7 @@ class QuestionScreen extends StatefulWidget {
 
 class _QuestionScreenState extends State<QuestionScreen> {
   static const String environment = String.fromEnvironment('ENV', defaultValue: 'local');
-  print("Current ENV: $environment");  // 실제 설정된 ENV 값 확인
-  static String get baseUrl
-    if (environment == 'production') {
-      return "https://fromsentence.com/api";
-    } else {
-      return "http://120.0.0.1:8000";
-    }
-  }
+  final String baseUrl = "http://127.0.0.1:8000";
   final String userId = const Uuid().v4(); // UUID 생성
 
   String? sentenceA;
