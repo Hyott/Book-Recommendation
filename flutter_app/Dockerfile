@@ -30,13 +30,3 @@ WORKDIR $APP
 RUN flutter clean
 RUN flutter pub get
 RUN flutter build web --release --dart-define=API_BASE_URL=$API_BASE_URL
-
-# Nginx로 배포 설정
-FROM nginx:1.25.2-alpine
-
-# 빌드된 웹 파일을 올바른 경로에서 복사
-COPY --from=build-env /app/build/web /usr/share/nginx/html
-
-# Nginx 실행
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
