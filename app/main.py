@@ -17,12 +17,9 @@ import os
 from app.database.connection import database_engine
 from fastapi.responses import JSONResponse
 from collections import defaultdict
-<<<<<<< HEAD
 from fastapi.staticfiles import StaticFiles
 
-=======
 from sklearn.preprocessing import normalize
->>>>>>> main
 # .env 파일 로드
 load_dotenv()
 
