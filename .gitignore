@@ -1,4 +1,4 @@
-flutter_app/assets/images/*
+flutter_app/assets/images/books
 .env
 *.tsv
 *.csv
