@@ -12,8 +12,7 @@ class QuestionScreen extends StatefulWidget {
 }
 
 class _QuestionScreenState extends State<QuestionScreen> {
-  static const String environment = String.fromEnvironment('ENV', defaultValue: 'local');
-  final String baseUrl = "http://127.0.0.1:8000";
+  final String baseUrl = "https://fromsentence.com/api";
   final String userId = const Uuid().v4(); // UUID 생성
 
   String? sentenceA;
