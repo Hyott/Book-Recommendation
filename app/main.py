@@ -180,9 +180,11 @@ def choice_arrange(user_id, question_number, book_a, book_b):
     # 데이터 업데이트
     if choice:
         book_choice = update_data(choice, book_a, book_b, alpha, beta_values)
+        print('알파배타 업데이트 ',choice, book_a, book_b, alpha, beta_values)
         return book_choice
     else:
         update_data(choice, book_a, book_b, alpha, beta_values)
+        print('알파배타 업데이트 ',choice, book_a, book_b, alpha, beta_values)
         return None
 
 

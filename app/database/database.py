@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
 from dotenv import load_dotenv
 import os
 
@@ -8,7 +8,7 @@ load_dotenv()
 
 # 환경 변수 가져오기
 host = os.getenv("HOST")
-port = os.getenv("PORT")
+port = os.getenv("POSTGRES_PORT")
 user = os.getenv("POSTGRES_USER")
 password = os.getenv("POSTGRES_PASSWORD")
 database_name = os.getenv("DATABASE_NAME")
@@ -18,6 +18,8 @@ engine = create_engine(f"postgresql://{user}:{password}@{host}:{port}/{database_
 
 # ✅ 세션 생성
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+Base = declarative_base()
 
 # ✅ 데이터베이스 세션 의존성 함수
 def get_db():
