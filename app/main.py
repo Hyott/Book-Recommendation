@@ -18,7 +18,7 @@ from app.database.connection import database_engine
 from fastapi.responses import JSONResponse
 from collections import defaultdict
 from fastapi.staticfiles import StaticFiles
-
+import time
 from sklearn.preprocessing import normalize
 # .env 파일 로드
 load_dotenv()
@@ -86,10 +86,10 @@ uncertainty_factor = 10
 noise_factor = 0.01
 centroid_weight = 0.6
 
-app.mount("/images", StaticFiles(directory="images"), name="images")
 @app.get("/recommendation/{user_id}")
 def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
     ####### None 출력 대비 5회 시도 설정
+    time.sleep(0.2)
     MAX_ATTEMPTS = 5
     for attempt in range(MAX_ATTEMPTS): 
         global user_cluster_to_books, neigh_based_clustering_to_books, book_embeddings, \
@@ -303,6 +303,7 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
                     },
                 headers={"Content-Type": "application/json; charset=utf-8"}
             )
+        time.sleep(1)
     
     raise ValueError(f"📌 책 추천 실패: {MAX_ATTEMPTS}회 시도 후에도 추천되지 않았습니다.")
 

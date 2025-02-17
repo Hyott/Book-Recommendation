@@ -94,6 +94,7 @@ flutter:
   assets:
     - assets/images/ # 앱에서 사용하는 에셋 파일 디렉터리 명시
     - assets/loading_animation.json
+    - assets/images/books/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

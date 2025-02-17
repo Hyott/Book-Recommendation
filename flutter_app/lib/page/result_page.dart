@@ -78,9 +78,14 @@ class _ResultScreenState extends State<ResultScreen> {
         print("HTTP 응답 코드: ${response.statusCode}");
         print("HTTP 응답 본문: ${response.body}");
 
+        // 이미지 경로 출력
+        print("이미지 경로: assets/images/books/9788901131207.jpg");
+
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
+          print("ISBN: ${data['isbn']}");
           tempDetails.add({
+            "isbn": data["isbn"] ?? "isbn 없음",
             "image_url": data["image_url"] ?? "이미지 없음",
             // "image_url": (data["image_url"] as String?)?.replaceFirst("https", "http") ?? "이미지 없음",
             "author": data["author"] ?? "작가 미상",
@@ -347,31 +352,21 @@ class _ResultScreenState extends State<ResultScreen> {
                             padding: const EdgeInsets.all(16.0),
                             child: Column(
                               children: [
-                                // Text(
-                                //   'To. $userName',
-                                //   style: const TextStyle
-                                //     (
-                                //       fontFamily: 'GowunBatang',
-                                //       fontSize: 14,
-                                //       color: Colors.black
-                                //   ),
-                                // ),
-
-                                // 책 이미지
-                                // CachedNetworkImage(
-                                //   imageUrl:  book['image_url'],
-                                //   placeholder: (context, url) => CircularProgressIndicator(),
-                                //   errorWidget: (context, url, error) => Icon(Icons.error),
-                                // ),
-
-                                // book['image_url'] == "이미지 없음"
-                                //     ? const Icon(Icons.image_not_supported, size: 50) // 기본 이미지가 없으면 아이콘을 표시
-                                //     : Image.network(
-                                //   book['image_url'],
-                                //   width: 150, // 이미지 크기 조정
-                                //   height: 200, // 이미지 크기 조정
-                                //   fit: BoxFit.cover, // 이미지를 박스에 맞게 잘라서 보여줌
-                                // ),
+                                // 책 이미지 표시 코드
+                                AssetImage(
+                                  'assets/images/books/9788901131207.jpg',
+                                  width: 150,
+                                  height: 200,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return AssetImage(
+                                      'assets/images/none_book_image.png', // 기본 이미지
+                                      width: 150,
+                                      height: 200,
+                                      fit: BoxFit.cover,
+                                    );
+                                  },
+                                ),
                                 const SizedBox(height: 8),
                                 Text(
                                   book['tags'],
