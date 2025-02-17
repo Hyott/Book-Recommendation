@@ -33,7 +33,7 @@ database_name = os.getenv("DATABASE_NAME")
 #cursor 설정
 engine_for_cursor = database_engine(host, port, user, password, database_name)
 
-app = FastAPI()
+app = FastAPI(root_path = '/api')
 
 # CORS 설정
 app.add_middleware(

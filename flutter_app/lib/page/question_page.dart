@@ -13,7 +13,7 @@ class QuestionScreen extends StatefulWidget {
 
 class _QuestionScreenState extends State<QuestionScreen> {
   // final String baseUrl = Platform.environment['API_BASE_URL']!;
-  final String baseUrl = "http://127.0.0.1:8000"; // FastAPI 백엔드 주소
+  final String baseUrl = "http://nginx/api"; // FastAPI 백엔드 주소
   final String userId = const Uuid().v4(); // UUID 생성
 
   String? sentenceA;
