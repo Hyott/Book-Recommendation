@@ -66,7 +66,7 @@ user_book_a = defaultdict(int)
 user_book_b = defaultdict(int)
 
 
-embedding_save_path = "notebook/notebook/data/book_embeddings.npz"
+embedding_save_path = "data/book_embeddings_openai.json" 
 book_data = None
 num_clusters = 6
 user_id = None
@@ -402,7 +402,7 @@ def get_recommendations(user_id: str, db: Session = Depends(get_db)):
 
 def first_setting_of_logic(user_id, num_clusters, embedding_save_path, db, user_alpha, user_beta_values ):
     global round_num, alpha, beta_values, presented_books, book_embeddings, ids, book_data, cluster_to_books 
-    embedding_save_path = "data/book_embeddings.json" 
+    # embedding_save_path = "data/book_embeddings_openai.json" 
 
     ids, book_embeddings = load_embeddings(embedding_save_path)
 
