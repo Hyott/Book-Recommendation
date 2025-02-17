@@ -18,7 +18,7 @@ from app.database.connection import database_engine
 from fastapi.responses import JSONResponse
 from collections import defaultdict
 from fastapi.staticfiles import StaticFiles
-
+import time
 from sklearn.preprocessing import normalize
 # .env 파일 로드
 load_dotenv()
@@ -154,7 +154,7 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
 
         
         elif question_number == 5:
-
+            time.sleep(1)
             print("This is 'elif' - first :", book_a, book_b)
             book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b, 
                                                 books_chosen, cluster_to_books, book_chosen_dict)
@@ -223,7 +223,8 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
             suggested_books.append(book_a) ; suggested_books.append(book_b)
         
 
-        elif question_number == 8:   
+        elif question_number == 8: 
+            time.sleep(1)  
             book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b, 
                                             books_chosen, cluster_to_books, book_chosen_dict)
             print("book_choice_updated : ", book_choice_updated)
