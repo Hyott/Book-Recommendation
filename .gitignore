@@ -1,4 +1,4 @@
-app/images
+app/images/*
 .env
 *.tsv
 *.csv
