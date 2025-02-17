@@ -28,7 +28,7 @@ database_name = os.getenv("DATABASE_NAME")
 #cursor 설정
 engine_for_cursor = database_engine(host, port, user, password, database_name)
 
-app = FastAPI(root_path="/api")
+app = FastAPI()
 
 # CORS 설정
 app.add_middleware(
@@ -236,7 +236,7 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
     question_number = get_question_number_by_user_id(db, user_id)
     print('question_number:!!!!!!!!!!!!!!!!!!!!!!!!!!!!', question_number)
 
-     # 선택된 책을 저장할 변수
+    # 선택된 책을 저장할 변수
     book_a_isbn = None
     book_b_isbn = None
     message_a = None
