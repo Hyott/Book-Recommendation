@@ -325,8 +325,6 @@ def get_tournament_winner_cluster_until_round5(book_embeddings, cluster_to_books
 
     else:
         raise ValueError("Question number out of range 5")
-    
-    winner_of_q = {f"winner_of_{question_number}"}
 
     print("suggested_books : ", suggested_books)
     print("presented_books : ", presented_books)

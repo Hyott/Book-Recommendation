@@ -467,21 +467,6 @@ async def get_image(image_name: str):
     base_url = "https://fromsentence.com/images/"  # 실제 이미지가 호스팅된 URL
     return {"image_url": f"{base_url}{image_name}"}
 
-# @app.get("/books/{isbn}")
-# def get_book(isbn: str, db: Session = Depends(get_db)):
-#     if len(isbn) != 13 or not isbn.isdigit():
-#         raise HTTPException(
-#             status_code=400,
-#             detail="Invalid ISBN format. ISBN must be a 13-digit number."
-#         )
-    
-#     book = get_book_by_isbn(db, isbn)
-#     if book is None:
-#         raise HTTPException(
-#             status_code=404,
-#             detail=f"Book with ISBN {isbn} not found."
-#         )
-#     return book
 @app.get("/books/{isbn}")
 def get_book(isbn: str, db: Session = Depends(get_db)):
     if len(isbn) != 13 or not isbn.isdigit():
@@ -505,10 +490,6 @@ def get_book(isbn: str, db: Session = Depends(get_db)):
         "title": book.title,
         "author": book.author,
         "image_url": book.image_url,
-        # "category": book.category,
-        # "description": book.description,
-        # "key_sentences": book.key_sentences,
-        # "publication_date": book.publication_date,
         "sentence": sentence.sentence if sentence else None,
         "letter": sentence.letter if sentence else None,
         "tags": [tag.tag_name for tag in tags] if tags else []
@@ -538,7 +519,6 @@ def get_sentence_and_letter(isbn: str, db: Session = Depends(get_db)):
     sentence = get_sentence_by_isbn(db, isbn)
     if sentence is None:
         raise HTTPException(status_code=404, detail="해당 ISBN의 생성문장을 찾을 수 없습니다.")
-    # return sentence
 
     # SQLAlchemy 객체를 Pydantic 모델로 변환
     sentence_data = SentenceSchema(id=sentence.id, isbn=sentence.isbn, sentence=sentence.sentence)
