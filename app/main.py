@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from database.connection import get_db
 import psycopg2
 from database.crud import get_book_by_isbn, get_sentence_by_isbn, add_user_response, get_tags_by_isbn, get_question_number_by_user_id
-from database.schemas import BookSchema, SentenceSchema, UserResponseSchema
+from database.schemas import BookSchema, SentenceSchema, UserResponseSchema, ImageResponse
 from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
 from sklearn.cluster import KMeans
@@ -15,6 +15,7 @@ import os
 from app.database.connection import database_engine
 from fastapi.responses import JSONResponse
 from collections import defaultdict
+from fastapi.staticfiles import StaticFiles
 
 # .env 파일 로드
 load_dotenv()
@@ -61,7 +62,12 @@ decay_factor = 0.9
 uncertainty_factor = 10
 noise_factor = 0.01
 
+app.mount("/images", StaticFiles(directory="images"), name="images")
 
+@app.get("/get-image/{image_name}", response_model=ImageResponse)
+async def get_image(image_name: str):
+    base_url = "https://fromsentence.com/images/"  # 실제 이미지가 호스팅된 URL
+    return {"image_url": f"{base_url}{image_name}"}
 
 # @app.get("/books/{isbn}")
 # def get_book(isbn: str, db: Session = Depends(get_db)):

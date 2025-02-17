@@ -46,3 +46,10 @@ class UserResponseSchema(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class ImageResponse(BaseModel):
+    image_url: str
+    
+    class Config:
+        from_attributes = True
