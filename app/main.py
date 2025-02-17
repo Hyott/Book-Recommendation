@@ -33,7 +33,11 @@ database_name = os.getenv("DATABASE_NAME")
 #cursor 설정
 engine_for_cursor = database_engine(host, port, user, password, database_name)
 
-app = FastAPI(root_path = '/api')
+ENV = os.getenv("ENV", "local")
+ROOT_PATH = os.getenv("ROOT_PATH", "")
+
+# FastAPI 인스턴스 생성 (root_path 적용)
+app = FastAPI(root_path=ROOT_PATH)
 
 # CORS 설정
 app.add_middleware(

@@ -49,6 +49,8 @@ services:
     build:
       context: ./flutter_app
       dockerfile: Dockerfile
+      args:
+        - API_BASE_URL=${BACKEND_URL}  # API 주소를 Dockerfile에서 ARG로 전달
     container_name: flutter_frontend
     ports:
       - "${FRONTEND_PORT}:${HTTP_PORT}"
@@ -57,7 +59,7 @@ services:
     networks:
       - app_networks
     environment:
-      API_BASE_URL: http://nginx/api  # FastAPI의 API 주소를 환경 변수로 지정
+      API_BASE_URL: ${BACKEND_URL}  # API 주소 설정
     env_file:
       - .env
 
