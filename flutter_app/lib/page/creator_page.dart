@@ -67,7 +67,7 @@ class CreatorScreen extends StatelessWidget {
 
             Align(
               alignment: Alignment.center,
-              child: _buildEmployeeCard('assets/images/mentor.jpg', 'mentor.JY'),
+              child: _buildEmployeeCard('assets/images/JY_image.jpg', 'mentor.JY'),
             ),
           ],
         ),
