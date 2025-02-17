@@ -309,15 +309,14 @@ class _ResultScreenState extends State<ResultScreen> {
                                       color: Colors.black
                                   ),
                                 ),
-                                // 책 이미지
-                                // book['image_url'] == "이미지 없음"
-                                //     ? const Icon(Icons.image_not_supported, size: 50) // 기본 이미지가 없으면 아이콘을 표시
-                                //     : Image.network(
-                                //   book['image_url'],
-                                //   width: 150, // 이미지 크기 조정
-                                //   height: 200, // 이미지 크기 조정
-                                //   fit: BoxFit.cover, // 이미지를 박스에 맞게 잘라서 보여줌
-                                // ),
+                                book['image_url'] == "이미지 없음"
+                                    ? const Icon(Icons.image_not_supported, size: 50) // 기본 이미지가 없으면 아이콘을 표시
+                                    : Image.network(
+                                  book['image_url'],
+                                  width: 150, // 이미지 크기 조정
+                                  height: 200, // 이미지 크기 조정
+                                  fit: BoxFit.cover, // 이미지를 박스에 맞게 잘라서 보여줌
+                                ),
                                 const SizedBox(height: 16),
                                 Text(
                                   book['author'],
