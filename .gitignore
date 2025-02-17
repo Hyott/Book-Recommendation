@@ -13,4 +13,5 @@ certbot/conf/archive/
 certbot/conf/live/
 certbot/conf/renewal/
 certbot/www/
+!app/images/.gitkeep
 
