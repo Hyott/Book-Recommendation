@@ -1,8 +1,8 @@
+app/images/*
 .env
 *.tsv
 *.csv
 *.json
-*.ttf
 api_db_connection.py*.pyc
 *.pyc
 *.txt
@@ -13,4 +13,5 @@ certbot/conf/archive/
 certbot/conf/live/
 certbot/conf/renewal/
 certbot/www/
+!app/images/.gitkeep
 
