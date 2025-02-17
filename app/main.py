@@ -191,7 +191,7 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
         print(f"top_300_indices : {top_300_indices}")
 
         #6번라운드에 제안될 책 추출
-        book_a, book_b = select_books_for_new_cluster(neigh_based_clustering_to_books, top_300_indices, 
+        book_a, book_b = select_books_for_new_cluster(presented_books, neigh_based_clustering_to_books, top_300_indices, 
                                                     weighted_centroid, normalized_vectors, 
                                                     kmeans, question_number, visited_clusters, 
                                                     selected_books_of_round678)
@@ -217,7 +217,7 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
                                             books_chosen, cluster_to_books,  alpha, 
                                             beta_values, book_chosen_dict)
         print("book_choice_updated : ", book_choice_updated)
-        book_a, book_b = select_books_for_new_cluster(neigh_based_clustering_to_books, top_300_indices, 
+        book_a, book_b = select_books_for_new_cluster(presented_books, neigh_based_clustering_to_books, top_300_indices, 
                                                     weighted_centroid, normalized_vectors, 
                                                     kmeans, question_number, visited_clusters, 
                                                     selected_books_of_round678)
@@ -250,7 +250,7 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
         user_final_cluster_to_books[user_id] = final_cluster_to_books
 
 
-        book_a, book_b = select_books_for_new_cluster(final_cluster_to_books, top_75_indices, 
+        book_a, book_b = select_books_for_new_cluster(presented_books, final_cluster_to_books, top_75_indices, 
                                                     weighted_centroid_2nd, final_normalized_vectors, 
                                                     final_kmeans, question_number, final_visited_clusters, 
                                                     selected_books_of_round910)
@@ -265,7 +265,7 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
                                         beta_values, book_chosen_dict)
         print("book_choice_updated : ", book_choice_updated)
 
-        book_a, book_b = select_books_for_new_cluster(final_cluster_to_books, top_75_indices, 
+        book_a, book_b = select_books_for_new_cluster(presented_books, final_cluster_to_books, top_75_indices, 
                                                     weighted_centroid_2nd, final_normalized_vectors, 
                                                     final_kmeans, question_number, final_visited_clusters, 
                                                     selected_books_of_round910)

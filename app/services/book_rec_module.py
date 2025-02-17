@@ -120,7 +120,7 @@ def neighborhood_based_clustering(weighted_centroid, book_embeddings, num_indice
 import traceback
 import numpy as np
 
-def select_books_for_new_cluster(neigh_based_clustering_to_books, top_300_indices, 
+def select_books_for_new_cluster(presented_books, neigh_based_clustering_to_books, top_300_indices, 
                                 weighted_centroid, normalized_vectors, 
                                 kmeans, question_number, visited_clusters, 
                                 selected_books_of_round678):
@@ -148,8 +148,14 @@ def select_books_for_new_cluster(neigh_based_clustering_to_books, top_300_indice
 
             if centroid_cluster not in neigh_based_clustering_to_books:
                 raise ValueError(f"centroid_cluster {centroid_cluster} not found in cluster_to_books")
+            
+            # 중복 없는 후보군 필터링
+            available_books = [idx for idx in neigh_based_clustering_to_books[centroid_cluster] 
+                            if idx not in presented_books]
+            if not available_books:
+                raise ValueError(f"No available books in centroid cluster {centroid_cluster} excluding presented ones.")
 
-            book_a_index = np.random.choice(neigh_based_clustering_to_books[centroid_cluster])
+            book_a_index = np.random.choice(available_books)
             print(f"✅ book_a_index from centroid cluster: {book_a_index}")
             book_a = int(top_300_indices[book_a_index])
 
@@ -168,8 +174,14 @@ def select_books_for_new_cluster(neigh_based_clustering_to_books, top_300_indice
                 largest_cluster = unvisited_clusters[0][0]
                 visited_clusters.add(largest_cluster)
                 print(f"✅ Largest unvisited cluster for book_a: {largest_cluster}")
+
+                # 중복 없는 후보군 필터링
+                available_books = [idx for idx in neigh_based_clustering_to_books[largest_cluster] 
+                                if idx not in presented_books]
+                if not available_books:
+                    raise ValueError(f"No available books in centroid cluster {largest_cluster} excluding presented ones.")
                 
-                book_a_index = np.random.choice(neigh_based_clustering_to_books[largest_cluster])
+                book_a_index = np.random.choice(available_books)
                 print(f"✅ book_a_index from largest cluster: {book_a_index}")
                 book_a = int(top_300_indices[book_a_index])
             else:
@@ -190,8 +202,14 @@ def select_books_for_new_cluster(neigh_based_clustering_to_books, top_300_indice
             largest_cluster = remaining_clusters[0][0]
             visited_clusters.add(largest_cluster)
             print(f"✅ Largest unvisited cluster for book_b: {largest_cluster}")
+
+
+            available_books_for_b = [idx for idx in neigh_based_clustering_to_books[largest_cluster] 
+                                if idx not in presented_books]
+            if not available_books_for_b:
+                raise ValueError(f"No available books in centroid cluster {largest_cluster} excluding presented ones.")
             
-            book_b_index = np.random.choice(neigh_based_clustering_to_books[largest_cluster])
+            book_b_index = np.random.choice(available_books_for_b)
             print(f"✅ book_b_index from largest remaining cluster: {book_b_index}")
             book_b = int(top_300_indices[book_b_index])
         else:
