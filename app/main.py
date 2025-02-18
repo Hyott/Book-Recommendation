@@ -154,7 +154,6 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
 
         
         elif question_number == 5:
-            time.sleep(1)
             print("This is 'elif' - first :", book_a, book_b)
             book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b, 
                                                 books_chosen, cluster_to_books, book_chosen_dict)
@@ -224,7 +223,6 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
         
 
         elif question_number == 8: 
-            time.sleep(1)  
             book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b, 
                                             books_chosen, cluster_to_books, book_chosen_dict)
             print("book_choice_updated : ", book_choice_updated)
