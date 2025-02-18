@@ -112,7 +112,7 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
         print(f"New user detected: {user_id}. Initializing presented_books, cluster_to_books and embeddings...")  
         
         ids, book_embeddings, book_data, user_id, first_cluster_to_books = first_setting_of_logic(
-            user_id, num_clusters, db, user_alpha, user_beta_values)  
+            user_id, num_clusters, db)  
         
         user_cluster_to_books[user_id] = first_cluster_to_books
         print(f"✅ user_cluster_to_books[{user_id}]에 클러스터 저장 완료.")
