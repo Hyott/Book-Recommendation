@@ -36,7 +36,7 @@ ENV = os.getenv("ENV", "local")
 ROOT_PATH = os.getenv("ROOT_PATH", "")
 
 # FastAPI 인스턴스 생성 (root_path 적용)
-app = FastAPI(root_path=ROOT_PATH)
+app = FastAPI(root_path=ROOT_PATH, docs_url='/sesac', redoc_url=None, openapi_url=None)
 
 # CORS 설정
 app.add_middleware(
