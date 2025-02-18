@@ -23,7 +23,6 @@ class _QuestionScreenState extends State<QuestionScreen> {
   String? bookBIsbn;
   String? sentenceA_id;
   String? sentenceB_id;
-  // late int question_number;
   int question_number = 0;
 
   @override
@@ -95,7 +94,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
             MaterialPageRoute(builder: (context) => LoadingScreen(userId: userId)), // 로딩 화면으로 이동
           );
         } else {
-          fetchRecommendations(); // 🔹 이후 새로운 질문 불러오기
+          fetchRecommendations(); // 이후 새로운 질문 불러오기
         }
       } else {
         print("Failed to save response.");
@@ -107,7 +106,6 @@ class _QuestionScreenState extends State<QuestionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       appBar: PreferredSize(

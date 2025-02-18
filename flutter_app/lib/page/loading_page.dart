@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:project/page/result_page.dart';
+import 'package:fromSentence/page/result_page.dart';
 import 'package:lottie/lottie.dart';
 
 

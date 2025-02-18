@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:project/page/creator_page.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../main.dart';
+import 'creator_page.dart';
 
 
 class ResultScreen extends StatefulWidget {
@@ -243,7 +243,7 @@ class _ResultScreenState extends State<ResultScreen> {
                       ),
                     ),
                     Text(
-                      "당겨보세요",
+                      "올려보세요",
                       style: TextStyle
                         (
                           fontFamily: 'JejuMyeongjo',
@@ -371,8 +371,8 @@ class _ResultScreenState extends State<ResultScreen> {
                                   errorBuilder: (context, error, stackTrace) {
                                     return Image.asset(
                                       'assets/images/none_book_image.png', // 오류 발생시 기본 이미지
-                                      width: 150,
-                                      height: 200,
+                                      width: 160,
+                                      height: 210,
                                       fit: BoxFit.cover,
                                     );
                                   },
