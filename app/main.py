@@ -438,15 +438,14 @@ def suggest_books(question_number, book_embeddings, cluster_to_books, noise_fact
         exploration_prob = uncertainty_factor / (uncertainty_factor + total_selections)
 
     if 0 <= question_number <= 4:
-        book_a, book_b = get_tournament_winner_cluster_until_round5(book_embeddings, cluster_to_books, alpha, 
-                                                                    beta_values, presented_books, exploration_prob, 
+        book_a, book_b = get_tournament_winner_cluster_until_round5(book_embeddings, cluster_to_books, presented_books, exploration_prob, 
                                                                     noise_factor, book_choice, question_number, books_chosen, suggested_books)
         return book_a, book_b
     else:
         return 1111, 1112
     
 
-def choice_arrange(user_id, question_number, book_a, book_b, books_chosen, cluster_to_books, alpha, beta_values, book_chosen_dict):
+def choice_arrange(user_id, question_number, book_a, book_b, books_chosen, cluster_to_books, book_chosen_dict):
     cursor = get_cursor(host, port, user, password, database_name)
     choice_bool = get_choice_bool(cursor, user_id, question_number)
 
@@ -459,7 +458,7 @@ def choice_arrange(user_id, question_number, book_a, book_b, books_chosen, clust
 
     # 데이터 업데이트
     if choice:
-        book_choice = update_data(choice, book_a, book_b, alpha, beta_values)
+        book_choice = update_data(choice, book_a, book_b)
 
         cluster_of_choice = None
         for cluster_id, book_list in cluster_to_books.items():
@@ -473,7 +472,7 @@ def choice_arrange(user_id, question_number, book_a, book_b, books_chosen, clust
         print("book_chosen_dict: ", book_chosen_dict)
         return book_choice
     else:
-        update_data(choice, book_a, book_b, alpha, beta_values)
+        update_data(choice, book_a, book_b)
         return None
 
 @app.get("/get-image/{image_name}", response_model=ImageResponse)
@@ -481,21 +480,6 @@ async def get_image(image_name: str):
     base_url = "https://fromsentence.com/images/"  # 실제 이미지가 호스팅된 URL
     return {"image_url": f"{base_url}{image_name}"}
 
-# @app.get("/books/{isbn}")
-# def get_book(isbn: str, db: Session = Depends(get_db)):
-#     if len(isbn) != 13 or not isbn.isdigit():
-#         raise HTTPException(
-#             status_code=400,
-#             detail="Invalid ISBN format. ISBN must be a 13-digit number."
-#         )
-    
-#     book = get_book_by_isbn(db, isbn)
-#     if book is None:
-#         raise HTTPException(
-#             status_code=404,
-#             detail=f"Book with ISBN {isbn} not found."
-#         )
-#     return book
 @app.get("/books/{isbn}")
 def get_book(isbn: str, db: Session = Depends(get_db)):
     if len(isbn) != 13 or not isbn.isdigit():
@@ -514,35 +498,16 @@ def get_book(isbn: str, db: Session = Depends(get_db)):
             detail=f"Book with ISBN {isbn} not found."
         )
 
-    # return {
-    #     "isbn": book.isbn,
-    #     "title": book.title,
-    #     "author": book.author,
-    #     "image_url": book.image_url,
-    #     "category": book.category,
-    #     "description": book.description,
-    #     "key_sentences": book.key_sentences,
-    #     "publication_date": book.publication_date,
-    #     "sentence": sentence.sentence if sentence else None,  # ✅ 문장 추가
-    #     "letter": sentence.letter if sentence else None,
-    #     "tags": [tag.tag_name for tag in tags] if tags else []  # ✅ 태그를 리스트로 변환
-    # }
-
     response_data = {
         "isbn": book.isbn,
         "title": book.title,
         "author": book.author,
         "image_url": book.image_url,
-        # "category": book.category,
-        # "description": book.description,
-        # "key_sentences": book.key_sentences,
-        # "publication_date": book.publication_date,
         "sentence": sentence.sentence if sentence else None,
         "letter": sentence.letter if sentence else None,
         "tags": [tag.tag_name for tag in tags] if tags else []
     }
     return JSONResponse(content=response_data, media_type="application/json; charset=utf-8")
-
 
 
 @app.get("/tags/{isbn}")
@@ -567,7 +532,6 @@ def get_sentence_and_letter(isbn: str, db: Session = Depends(get_db)):
     sentence = get_sentence_by_isbn(db, isbn)
     if sentence is None:
         raise HTTPException(status_code=404, detail="해당 ISBN의 생성문장을 찾을 수 없습니다.")
-    # return sentence
 
     # SQLAlchemy 객체를 Pydantic 모델로 변환
     sentence_data = SentenceSchema(id=sentence.id, isbn=sentence.isbn, sentence=sentence.sentence)
