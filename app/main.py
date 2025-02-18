@@ -71,7 +71,7 @@ user_book_a = defaultdict(int)
 user_book_b = defaultdict(int)
 
 
-embedding_save_path = "data/book_embeddings_openai.json" 
+# embedding_save_path = "data/book_embeddings_openai.json" 
 book_data = None
 num_clusters = 6
 user_id = None
@@ -112,7 +112,7 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
         print(f"New user detected: {user_id}. Initializing presented_books, cluster_to_books and embeddings...")  
         
         ids, book_embeddings, book_data, user_id, first_cluster_to_books = first_setting_of_logic(
-            user_id, num_clusters, embedding_save_path, db, user_alpha, user_beta_values)  
+            user_id, num_clusters, db, user_alpha, user_beta_values)  
         
         user_cluster_to_books[user_id] = first_cluster_to_books
         print(f"✅ user_cluster_to_books[{user_id}]에 클러스터 저장 완료.")
@@ -405,7 +405,7 @@ def get_recommendations(user_id: str, db: Session = Depends(get_db)):
     return final_recommendations
 
 
-def first_setting_of_logic(user_id, num_clusters, embedding_save_path, db, user_alpha, user_beta_values ):
+def first_setting_of_logic(user_id, num_clusters, db, user_alpha, user_beta_values ):
     global round_num, alpha, beta_values, presented_books, book_embeddings, ids, book_data, cluster_to_books 
     # # embedding_save_path = "data/book_embeddings_openai.json" 
     # ids, book_embeddings = load_embeddings(embedding_save_path)
