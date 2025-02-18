@@ -232,7 +232,7 @@ class _ResultScreenState extends State<ResultScreen> {
                     ),
                     const SizedBox(height: 24),
                     Transform.rotate(
-                      angle: 4.7124,  // 270도 회전
+                      angle: 4.7124, 
                       child: Text(
                         "⟩",
                         style: TextStyle
@@ -317,7 +317,7 @@ class _ResultScreenState extends State<ResultScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Transform.rotate(
-                          angle: 1.5708,  // 270도 회전
+                          angle: 1.5708, 
                           child: Text(
                             "⟩",
                             style: TextStyle
