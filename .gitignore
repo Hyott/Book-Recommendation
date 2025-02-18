@@ -14,3 +14,4 @@ certbot/conf/live/
 certbot/conf/renewal/
 certbot/www/
 *.pkl
+build_output/
