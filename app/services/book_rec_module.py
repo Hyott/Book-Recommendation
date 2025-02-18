@@ -348,55 +348,37 @@ def get_tournament_winner_cluster_until_round5(book_embeddings, cluster_to_books
 #         book_b_select = None
 #     return book_a_select, book_b_select
 
-# indexing 오류 해결
+
 def get_choice_bool(cursor, user_id, question_number):
-    # 1차 조회: 최대 2개의 기록 조회
-    cursor.execute(
-        sql.SQL("""
-            SELECT book_a, book_b 
-            FROM public.user_responses 
-            WHERE user_id = %s AND question_number = %s 
-            ORDER BY created_at ASC 
-            LIMIT 2
-        """),
-        (user_id, question_number)
-    )
-    results = cursor.fetchall()
+    """
+    같은 user_id, 같은 question_number일 때
+    최대 5회 재조회 후, 둘 중 하나라도 None이면 에러 발생.
+    """
+    attempts = 0
+    book_a_select, book_b_select = None, None
 
-    # 기본값 설정
-    book_a_select = results[0][0] if len(results) >= 1 else None
-    book_b_select = results[1][1] if len(results) >= 2 else None
-
-    # 2차 조회: 필요한 경우 개별 조회
-    if book_a_select is None:
+    while attempts < 5:
         cursor.execute(
-            sql.SQL("""
-                SELECT book_a 
-                FROM public.user_responses 
-                WHERE user_id = %s AND question_number = %s 
-                ORDER BY created_at ASC 
-                LIMIT 1
-            """),
+            sql.SQL("SELECT * FROM public.user_responses WHERE user_id = %s AND question_number = %s"),
             (user_id, question_number)
         )
-        a_result = cursor.fetchone()
-        book_a_select = a_result[0] if a_result else None
+        exists = cursor.fetchall()
 
-    if book_b_select is None:
-        cursor.execute(
-            sql.SQL("""
-                SELECT book_b 
-                FROM public.user_responses 
-                WHERE user_id = %s AND question_number = %s 
-                ORDER BY created_at ASC 
-                LIMIT 1
-            """),
-            (user_id, question_number)
-        )
-        b_result = cursor.fetchone()
-        book_b_select = b_result[0] if b_result else None
+        if exists:
+            book_a_select = exists[0][4] if len(exists) >= 1 else None
+            book_b_select = exists[1][4] if len(exists) >= 2 else None
+
+        if book_a_select is not None and book_b_select is not None:
+            break
+
+        attempts += 1
+
+    if book_a_select is None or book_b_select is None:
+        raise ValueError(f"5회 재시도 후에도 결과를 찾을 수 없습니다. user_id: {user_id}, question_number: {question_number}")
 
     return book_a_select, book_b_select
+
+
 
 
 def get_sentence_from_db(db: Session):
