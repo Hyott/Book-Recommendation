@@ -227,7 +227,6 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
             suggested_books.append(book_a) ; suggested_books.append(book_b)
 
         elif question_number == 8: 
-            
             book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b, 
                                             books_chosen, cluster_to_books, book_chosen_dict)
             print("book_choice_updated : ", book_choice_updated)
