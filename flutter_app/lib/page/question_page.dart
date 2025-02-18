@@ -12,7 +12,8 @@ class QuestionScreen extends StatefulWidget {
 }
 
 class _QuestionScreenState extends State<QuestionScreen> {
-  final String baseUrl = "https://fromsentence.com/api";
+  // final String baseUrl = "https://fromsentence.com/api";
+  final String baseUrl = "https://120.0.0.1";
   final String userId = const Uuid().v4(); // UUID 생성
 
   String? sentenceA;

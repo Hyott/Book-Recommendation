@@ -17,9 +17,8 @@ import os
 from app.database.connection import database_engine
 from fastapi.responses import JSONResponse
 from collections import defaultdict
-from fastapi.staticfiles import StaticFiles
-
-from sklearn.preprocessing import normalize
+import joblib
+# from sklearn.preprocessing import normalize
 # .env 파일 로드
 load_dotenv()
 
@@ -93,7 +92,6 @@ uncertainty_factor = 10
 noise_factor = 0.01
 centroid_weight = 0.6
 
-app.mount("/images", StaticFiles(directory="images"), name="images")
 @app.get("/recommendation/{user_id}")
 def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
     
@@ -409,19 +407,18 @@ def get_recommendations(user_id: str, db: Session = Depends(get_db)):
 
 def first_setting_of_logic(user_id, num_clusters, embedding_save_path, db, user_alpha, user_beta_values ):
     global round_num, alpha, beta_values, presented_books, book_embeddings, ids, book_data, cluster_to_books 
-    # embedding_save_path = "data/book_embeddings_openai.json" 
-
-    ids, book_embeddings = load_embeddings(embedding_save_path)
-
-    # book_embeddings 정규화 (L2 Norm으로 크기 1로 조정)
-    book_embeddings = normalize(book_embeddings, norm='l2')
-
+    # # embedding_save_path = "data/book_embeddings_openai.json" 
+    # ids, book_embeddings = load_embeddings(embedding_save_path)
+    # # book_embeddings 정규화 (L2 Norm으로 크기 1로 조정)
+    # book_embeddings = normalize(book_embeddings, norm='l2')
+    
+    book_embeddings = joblib.load("data/book_embeddings.pkl")
+    ids = book_embeddings[0]
     book_data = get_sentence_from_db(db)
-
+    
     books = [f"Book {i}" for i in range(len(ids))]  # books는 ids의 길이에 따라 생성
     assert len(books) == len(ids), "Books length mismatch with IDs! "
     num_books = len(book_embeddings)
-
     kmeans = KMeans(n_clusters=num_clusters, random_state=42)
     clusters = kmeans.fit_predict(book_embeddings)
 
@@ -435,7 +432,6 @@ def first_setting_of_logic(user_id, num_clusters, embedding_save_path, db, user_
 
     alpha = user_alpha[user_id]
     beta_values = user_beta_values[user_id]
-
     return ids, book_embeddings, book_data, user_id, cluster_to_books
 
 

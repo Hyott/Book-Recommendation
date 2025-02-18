@@ -16,7 +16,8 @@ class ResultScreen extends StatefulWidget {
 }
 
 class _ResultScreenState extends State<ResultScreen> {
-  final String baseUrl = "https://fromsentence.com/api";
+  // final String baseUrl = "https://fromsentence.com/api";
+  final String baseUrl = "https://120.0.0.1";
   List<Map<String, dynamic>> bookDetails = [];
   // PageController _verticalPageController = PageController();
   // PageController _horizontalPageController = PageController();
