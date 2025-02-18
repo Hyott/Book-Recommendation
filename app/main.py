@@ -17,6 +17,7 @@ from app.database.connection import database_engine
 from fastapi.responses import JSONResponse
 from collections import defaultdict
 import joblib
+import time
 
 # .env 파일 로드
 load_dotenv()
@@ -93,237 +94,227 @@ centroid_weight = 0.6
 
 @app.get("/recommendation/{user_id}")
 def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
-    
-    global user_cluster_to_books, neigh_based_clustering_to_books, book_embeddings, \
-        book_data, ids, book_a, book_b, centroid_weight, \
-        exploration_prob, book_choice, user_presented_books, \
-        user_suggested_books, user_books_chosen, user_alpha, \
-        user_beta_values, user_book_chosen_dict, user_weighted_centroid,\
-        user_visited_clusters, top_300_indices, normalized_vectors, kmeans,\
-        user_neigh_based_clustering_to_books, user_final_cluster_to_books,\
-        user_final_visited_clusters, user_selected_books_of_round910, user_weighted_centroid_2nd,\
-        top_75_indices, final_normalized_vectors, final_kmeans, book_a, book_b
-    
-    question_number = get_question_number_by_user_id(db, user_id)
-    print('question_number:!!!!!!!!!!!!!!!!!!!!!!!!!!!!', question_number)
-    
-    if user_id not in user_presented_books:
-        print(f"New user detected: {user_id}. Initializing presented_books, cluster_to_books and embeddings...")  
+    ####### None 출력 대비 5회 시도 설정
+    MAX_ATTEMPTS = 5
+    for attempt in range(MAX_ATTEMPTS): 
+        global user_cluster_to_books, neigh_based_clustering_to_books, book_embeddings, \
+            book_data, ids, book_a, book_b, centroid_weight, \
+            exploration_prob, book_choice, user_presented_books, \
+            user_suggested_books, user_books_chosen, \
+            user_book_chosen_dict, user_weighted_centroid,\
+            user_visited_clusters, top_300_indices, normalized_vectors, kmeans,\
+            user_neigh_based_clustering_to_books, user_final_cluster_to_books,\
+            user_final_visited_clusters, user_selected_books_of_round910, user_weighted_centroid_2nd,\
+            top_75_indices, final_normalized_vectors, final_kmeans, book_a, book_b
         
-        ids, book_embeddings, book_data, user_id, first_cluster_to_books = first_setting_of_logic(
-            user_id, num_clusters, db)  
+        question_number = get_question_number_by_user_id(db, user_id)
+        print('question_number:!!!!!!!!!!!!!!!!!!!!!!!!!!!!', question_number)
         
-        user_cluster_to_books[user_id] = first_cluster_to_books
-        print(f"✅ user_cluster_to_books[{user_id}]에 클러스터 저장 완료.")
+        if user_id not in user_presented_books:
+            print(f"New user detected: {user_id}. Initializing presented_books, cluster_to_books and embeddings...")  
+            
+            ids, book_embeddings, book_data, user_id, first_cluster_to_books = first_setting_of_logic(
+                user_id, num_clusters, db)  
+            
+            user_cluster_to_books[user_id] = first_cluster_to_books
+            print(f"✅ user_cluster_to_books[{user_id}]에 클러스터 저장 완료.")
 
 
-    presented_books = user_presented_books[user_id]
-    suggested_books = user_suggested_books[user_id]
-    books_chosen = user_books_chosen[user_id]
-    book_chosen_dict = user_book_chosen_dict[user_id]
-    sorted_cluster_books = user_sorted_cluster_books[user_id]
-    weighted_centroid = user_weighted_centroid[user_id]
-    cluster_to_books = user_cluster_to_books[user_id]
-    visited_clusters = user_visited_clusters[user_id]
-    final_visited_clusters = user_final_visited_clusters[user_id]
-    selected_books_of_round678 = user_selected_books_of_round678[user_id]
-    selected_books_of_round910 = user_selected_books_of_round910[user_id]
-    # book_choices_of_round678 = user_book_choices_of_round678[user_id]
-    neigh_based_clustering_to_books = user_neigh_based_clustering_to_books[user_id]
-    final_cluster_to_books = user_final_cluster_to_books[user_id]
-    weighted_centroid_2nd = user_weighted_centroid_2nd[user_id]
-    # book_a = user_book_a[user_id]
-    # book_b = user_book_b[user_id]
-    
-
-    book_a_isbn = None
-    book_b_isbn = None
-    message_a = None
-    message_b = None
-
-    if question_number == 0:
-        book_a, book_b = suggest_books(question_number, book_embeddings, 
-                                        cluster_to_books, noise_factor, presented_books, 
-                                        suggested_books, books_chosen, book_chosen_dict)
-        print("This is 'if' :", book_a, book_b)
-
-    elif 1 <= question_number <= 4:
-        print("This is 'elif' - first :", book_a, book_b)
-        book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b, 
-                                            books_chosen, cluster_to_books,  alpha, 
-                                            beta_values, book_chosen_dict)
-        print("book_choice_updated : ", book_choice_updated)
-        book_a, book_b = suggest_books(question_number, book_embeddings, cluster_to_books, 
-                                        noise_factor, presented_books, suggested_books, 
-                                        books_chosen, book_chosen_dict, book_choice_updated)
-        print("This is 'elif' -second :", book_a, book_b)
-
-    
-    elif question_number == 5:
-
-        print("This is 'elif' - first :", book_a, book_b)
-        book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b, 
-                                            books_chosen, cluster_to_books,  alpha, 
-                                            beta_values, book_chosen_dict)
-        print("book_choice_updated : ", book_choice_updated)
-        # 가장 많이 선택된 {클러스터 번호 : 책 인덱스} 반환
-        sorted_items = sorted(book_chosen_dict.items(), 
-                                key=lambda x: (len(x[1]), -x[0]), reverse=True) # 리스트 길이를 기준으로 정렬 (길이가 같으면 키가 작은 순서)
-        sorted_cluster_books = dict(sorted_items)
-        
-        
-        print("sorted_cluster_books : ", sorted_cluster_books)
-        
-        winner_of_5 = books_chosen[4]
-        cluster_of_winner_5 = None
-
-        for cluster_id, book_list in cluster_to_books.items():
-            if winner_of_5 in book_list:
-                cluster_of_winner_5 = cluster_id
-                break
-
-        weighted_centroid = get_centroid_after_round5(sorted_cluster_books, 
-                            book_embeddings, centroid_weight, cluster_of_winner_5)
-        
-        print(f"user_weighted_centroid: {weighted_centroid}")
-        print(f"type user_weighted_centroid : {type(weighted_centroid)}")
-
-
-        num_2nd_cluster_indices, num_2nd_cluster = 300, 6
-        neigh_based_clustering_to_books, top_300_indices, kmeans, normalized_vectors = neighborhood_based_clustering(weighted_centroid, book_embeddings, num_2nd_cluster_indices, num_2nd_cluster)
-        print("neigh_based_clustering_to_books :", neigh_based_clustering_to_books)
-        print(f"top_300_indices : {top_300_indices}")
-
-        #6번라운드에 제안될 책 추출
-        book_a, book_b = select_books_for_new_cluster(presented_books, neigh_based_clustering_to_books, top_300_indices, 
-                                                    weighted_centroid, normalized_vectors, 
-                                                    kmeans, question_number, visited_clusters, 
-                                                    selected_books_of_round678)
-        print(f"selected_books_of_round678 : {selected_books_of_round678}")
-        presented_books.add(book_a) ; presented_books.add(book_b)
-        suggested_books.append(book_a) ; suggested_books.append(book_b)
-
-        # ✅ 사용자별 전역 딕셔너리에 업데이트 추가
-        user_weighted_centroid[user_id] = weighted_centroid
-        user_neigh_based_clustering_to_books[user_id] = neigh_based_clustering_to_books
-        # user_top_300_indices[user_id] = top_300_indices
-        # user_kmeans[user_id] = kmeans
-        # user_normalized_vectors[user_id] = normalized_vectors
-        
-        # 📌 디버깅 로그
-        print(f"✅ user_weighted_centroid[{user_id}] 저장 완료")
-        print(f"✅ user_neigh_based_clustering_to_books[{user_id}] 저장 완료")
-    
-    
-    elif 6 <= question_number <= 7 :
-
-        book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b, 
-                                            books_chosen, cluster_to_books,  alpha, 
-                                            beta_values, book_chosen_dict)
-        print("book_choice_updated : ", book_choice_updated)
-        book_a, book_b = select_books_for_new_cluster(presented_books, neigh_based_clustering_to_books, top_300_indices, 
-                                                    weighted_centroid, normalized_vectors, 
-                                                    kmeans, question_number, visited_clusters, 
-                                                    selected_books_of_round678)
-        print(f"selected_books_of_round678 : {selected_books_of_round678}")
-        presented_books.add(book_a) ; presented_books.add(book_b)
-        suggested_books.append(book_a) ; suggested_books.append(book_b)
-    
-
-    elif question_number == 8:   
-        book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b, 
-                                        books_chosen, cluster_to_books,  alpha, 
-                                        beta_values, book_chosen_dict)
-        print("book_choice_updated : ", book_choice_updated)
+        presented_books = user_presented_books[user_id]
+        suggested_books = user_suggested_books[user_id]
+        books_chosen = user_books_chosen[user_id]
+        book_chosen_dict = user_book_chosen_dict[user_id]
+        sorted_cluster_books = user_sorted_cluster_books[user_id]
+        weighted_centroid = user_weighted_centroid[user_id]
+        cluster_to_books = user_cluster_to_books[user_id]
+        visited_clusters = user_visited_clusters[user_id]
+        final_visited_clusters = user_final_visited_clusters[user_id]
+        selected_books_of_round678 = user_selected_books_of_round678[user_id]
+        selected_books_of_round910 = user_selected_books_of_round910[user_id]
+        neigh_based_clustering_to_books = user_neigh_based_clustering_to_books[user_id]
+        final_cluster_to_books = user_final_cluster_to_books[user_id]
+        weighted_centroid_2nd = user_weighted_centroid_2nd[user_id]
         
 
-        weights_for_2nd_centroid = np.array([3, 1, 1, 1])  
-        vector_of_choice6 = book_embeddings[books_chosen[5]]
-        vector_of_choice7 = book_embeddings[books_chosen[6]]
-        vector_of_choice8 = book_embeddings[books_chosen[7]]
-        all_vectors = np.vstack([weighted_centroid, vector_of_choice6, vector_of_choice7, vector_of_choice8])
-        # 가중 평균으로 new_centroid 계산
-        weighted_centroid_2nd = np.average(all_vectors, axis=0, weights=weights_for_2nd_centroid, keepdims=True)
-        print(f"weighted_centroid_2nd : {weighted_centroid_2nd}")
+        book_a_isbn = None
+        book_b_isbn = None
+        message_a = None
+        message_b = None
 
-        # final clustering
-        num_3rd_cluster_indices, num_3rd_cluster = 75, 4
-        final_cluster_to_books, top_75_indices, final_kmeans, final_normalized_vectors = neighborhood_based_clustering(weighted_centroid, 
-                                                                                        book_embeddings, num_3rd_cluster_indices, num_3rd_cluster)
-        user_weighted_centroid_2nd[user_id] = weighted_centroid_2nd
-        user_final_cluster_to_books[user_id] = final_cluster_to_books
+        if question_number == 0:
+            book_a, book_b = suggest_books(question_number, book_embeddings, 
+                                            cluster_to_books, noise_factor, presented_books, 
+                                            suggested_books, books_chosen, book_chosen_dict)
+            print("This is 'if' :", book_a, book_b)
 
+        elif 1 <= question_number <= 4:
+            print("This is 'elif' - first :", book_a, book_b)
+            book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b, 
+                                                books_chosen, cluster_to_books, 
+                                                book_chosen_dict)
+            print("book_choice_updated : ", book_choice_updated)
+            book_a, book_b = suggest_books(question_number, book_embeddings, cluster_to_books, 
+                                            noise_factor, presented_books, suggested_books, 
+                                            books_chosen, book_chosen_dict, book_choice_updated)
+            print("This is 'elif' -second :", book_a, book_b)
 
-        book_a, book_b = select_books_for_new_cluster(presented_books, final_cluster_to_books, top_75_indices, 
-                                                    weighted_centroid_2nd, final_normalized_vectors, 
-                                                    final_kmeans, question_number, final_visited_clusters, 
-                                                    selected_books_of_round910)
-        print(f"selected_books_of_round910 : {selected_books_of_round910}")
-        presented_books.add(book_a) ; presented_books.add(book_b)
-        suggested_books.append(book_a) ; suggested_books.append(book_b)
+        
+        elif question_number == 5:
+            print("This is 'elif' - first :", book_a, book_b)
+            book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b, 
+                                                books_chosen, cluster_to_books, book_chosen_dict)
+            print("book_choice_updated : ", book_choice_updated)
+            # 가장 많이 선택된 {클러스터 번호 : 책 인덱스} 반환
+            sorted_items = sorted(book_chosen_dict.items(), 
+                                    key=lambda x: (len(x[1]), -x[0]), reverse=True) # 리스트 길이를 기준으로 정렬 (길이가 같으면 키가 작은 순서)
+            sorted_cluster_books = dict(sorted_items)
+            
+            
+            print("sorted_cluster_books : ", sorted_cluster_books)
+            
+            winner_of_5 = books_chosen[4]
+            cluster_of_winner_5 = None
 
+            for cluster_id, book_list in cluster_to_books.items():
+                if winner_of_5 in book_list:
+                    cluster_of_winner_5 = cluster_id
+                    break
 
-    elif question_number == 9:
-        book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b, 
-                                        books_chosen, cluster_to_books,  alpha, 
-                                        beta_values, book_chosen_dict)
-        print("book_choice_updated : ", book_choice_updated)
-
-        book_a, book_b = select_books_for_new_cluster(presented_books, final_cluster_to_books, top_75_indices, 
-                                                    weighted_centroid_2nd, final_normalized_vectors, 
-                                                    final_kmeans, question_number, final_visited_clusters, 
-                                                    selected_books_of_round910)
-        print(f"selected_books_of_round910 : {selected_books_of_round910}")
-        presented_books.add(book_a) ; presented_books.add(book_b)
-        suggested_books.append(book_a) ; suggested_books.append(book_b)
-        print(f"presented_books : {presented_books}")
-
-    else:
-        raise ValueError("올바르지 않은 question_number가 입력되었습니다.")
-
-
-
-    # book_a, book_b가 None이 아닐 때만 실행
-    if book_a is not None and book_b is not None:
-        question_number += 1
-        book_a_isbn = get_isbn_by_id(ids, ids[book_a], book_data)
-        book_b_isbn = get_isbn_by_id(ids, ids[book_b], book_data)
-
-        message_a = get_message_by_id(ids, ids[book_a], book_data)
-        message_b = get_message_by_id(ids, ids[book_b], book_data)
-        user_book_a[user_id] = book_a
-        user_book_b[user_id] = book_b
+            weighted_centroid = get_centroid_after_round5(sorted_cluster_books, 
+                                book_embeddings, centroid_weight, cluster_of_winner_5)
+            
+            print(f"user_weighted_centroid: {weighted_centroid}")
+            print(f"type user_weighted_centroid : {type(weighted_centroid)}")
 
 
+            num_2nd_cluster_indices, num_2nd_cluster = 300, 6
+            neigh_based_clustering_to_books, top_300_indices, kmeans, normalized_vectors = neighborhood_based_clustering(weighted_centroid, book_embeddings, num_2nd_cluster_indices, num_2nd_cluster)
+            print("neigh_based_clustering_to_books :", neigh_based_clustering_to_books)
+            print(f"top_300_indices : {top_300_indices}")
 
-    print('\n')
-    print(f"Round {question_number}: Choose between:")
-    print(f"a: {message_a}")
-    print(f"b: {message_b}")
-    # print_nonone(alpha, "alpha")
-    # print_nonone(beta_values, "beta")
-    print('\n')
+            #6번라운드에 제안될 책 추출
+            book_a, book_b = select_books_for_new_cluster(presented_books, neigh_based_clustering_to_books, top_300_indices, 
+                                                        weighted_centroid, normalized_vectors, 
+                                                        kmeans, question_number, visited_clusters, 
+                                                        selected_books_of_round678)
+            print(f"selected_books_of_round678 : {selected_books_of_round678}")
+            presented_books.add(book_a) ; presented_books.add(book_b)
+            suggested_books.append(book_a) ; suggested_books.append(book_b)
 
-    # ISBN + 문장을 함께 반환
-    return JSONResponse(
-        content={
-            "bookA": {"question_num": question_number, 
-                        "sentence_id": str(book_a), 
-                        "isbn": str(book_a_isbn), 
-                        "sentence": message_a},
-            "bookB": {"question_num": question_number, 
-                        "sentence_id": str(book_b), 
-                        "isbn": str(book_b_isbn), 
-                        "sentence": message_b}
-            },
-        headers={"Content-Type": "application/json; charset=utf-8"}
-    )
+            # ✅ 사용자별 전역 딕셔너리에 업데이트 추가
+            user_weighted_centroid[user_id] = weighted_centroid
+            user_neigh_based_clustering_to_books[user_id] = neigh_based_clustering_to_books
+            ### 아래 3 변수는 직접 업데이트를 하지 않아도 전체 코드가 잘 돌아감. 그래서 주석처리.
+            # user_top_300_indices[user_id] = top_300_indices
+            # user_kmeans[user_id] = kmeans
+            # user_normalized_vectors[user_id] = normalized_vectors
+            
+            # 📌 디버깅 로그
+            print(f"✅ user_weighted_centroid[{user_id}] 저장 완료")
+            print(f"✅ user_neigh_based_clustering_to_books[{user_id}] 저장 완료")
+        
+        
+        elif 6 <= question_number <= 7 :
+            book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b, 
+                                                books_chosen, cluster_to_books, book_chosen_dict)
+            print("book_choice_updated : ", book_choice_updated)
+            book_a, book_b = select_books_for_new_cluster(presented_books, neigh_based_clustering_to_books, top_300_indices, 
+                                                        weighted_centroid, normalized_vectors, 
+                                                        kmeans, question_number, visited_clusters, 
+                                                        selected_books_of_round678)
+            print(f"selected_books_of_round678 : {selected_books_of_round678}")
+            presented_books.add(book_a) ; presented_books.add(book_b)
+            suggested_books.append(book_a) ; suggested_books.append(book_b)
+
+        elif question_number == 8: 
+            
+            book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b, 
+                                            books_chosen, cluster_to_books, book_chosen_dict)
+            print("book_choice_updated : ", book_choice_updated)
+            
+
+            weights_for_2nd_centroid = np.array([3, 1, 1, 1])  
+            vector_of_choice6 = book_embeddings[books_chosen[5]]
+            vector_of_choice7 = book_embeddings[books_chosen[6]]
+            vector_of_choice8 = book_embeddings[books_chosen[7]]
+            all_vectors = np.vstack([weighted_centroid, vector_of_choice6, vector_of_choice7, vector_of_choice8])
+            # 가중 평균으로 new_centroid 계산
+            weighted_centroid_2nd = np.average(all_vectors, axis=0, weights=weights_for_2nd_centroid, keepdims=True)
+            print(f"weighted_centroid_2nd : {weighted_centroid_2nd}")
+
+            # final clustering
+            num_3rd_cluster_indices, num_3rd_cluster = 75, 4
+            final_cluster_to_books, top_75_indices, final_kmeans, final_normalized_vectors = neighborhood_based_clustering(weighted_centroid, 
+                                                                                            book_embeddings, num_3rd_cluster_indices, num_3rd_cluster)
+            user_weighted_centroid_2nd[user_id] = weighted_centroid_2nd
+            user_final_cluster_to_books[user_id] = final_cluster_to_books
+
+
+            book_a, book_b = select_books_for_new_cluster(presented_books, final_cluster_to_books, top_75_indices, 
+                                                        weighted_centroid_2nd, final_normalized_vectors, 
+                                                        final_kmeans, question_number, final_visited_clusters, 
+                                                        selected_books_of_round910)
+            print(f"selected_books_of_round910 : {selected_books_of_round910}")
+            presented_books.add(book_a) ; presented_books.add(book_b)
+            suggested_books.append(book_a) ; suggested_books.append(book_b)
+
+
+        elif question_number == 9:
+            book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b, 
+                                            books_chosen, cluster_to_books, book_chosen_dict)
+            print("book_choice_updated : ", book_choice_updated)
+
+            book_a, book_b = select_books_for_new_cluster(presented_books, final_cluster_to_books, top_75_indices, 
+                                                        weighted_centroid_2nd, final_normalized_vectors, 
+                                                        final_kmeans, question_number, final_visited_clusters, 
+                                                        selected_books_of_round910)
+            print(f"selected_books_of_round910 : {selected_books_of_round910}")
+            presented_books.add(book_a) ; presented_books.add(book_b)
+            suggested_books.append(book_a) ; suggested_books.append(book_b)
+            print(f"presented_books : {presented_books}")
+
+        else:
+            raise ValueError("올바르지 않은 question_number가 입력되었습니다.")
+
+        # ISBN + 문장을 함께 반환
+        if book_a is not None and book_b is not None:
+            question_number += 1
+            book_a_isbn = get_isbn_by_id(ids, ids[book_a], book_data)
+            book_b_isbn = get_isbn_by_id(ids, ids[book_b], book_data)
+
+            message_a = get_message_by_id(ids, ids[book_a], book_data)
+            message_b = get_message_by_id(ids, ids[book_b], book_data)
+            user_book_a[user_id] = book_a
+            user_book_b[user_id] = book_b
+
+            print('\n')
+            print(f"Round {question_number}: Choose between:")
+            print(f"a: {message_a}")
+            print(f"b: {message_b}")
+            print('\n')
+
+            return JSONResponse(
+                content={
+                    "bookA": {"question_num": question_number, 
+                                "sentence_id": str(book_a), 
+                                "isbn": str(book_a_isbn), 
+                                "sentence": message_a},
+                    "bookB": {"question_num": question_number, 
+                                "sentence_id": str(book_b), 
+                                "isbn": str(book_b_isbn), 
+                                "sentence": message_b}
+                    },
+                headers={"Content-Type": "application/json; charset=utf-8"}
+            )
+    
+    raise ValueError(f"📌 책 추천 실패: {MAX_ATTEMPTS}회 시도 후에도 추천되지 않았습니다.")
+
 
 
 @app.get("/final_recommendation/{user_id}")
 def get_recommendations(user_id: str, db: Session = Depends(get_db)):
     global question_number, user_book_a, user_book_b,\
-        books_chosen, cluster_to_books, alpha,beta_values, book_chosen_dict
+        books_chosen, cluster_to_books, book_chosen_dict
     
     question_number = get_question_number_by_user_id(db, user_id)
     print('final_question_number:!!!!!!!!!!!!!!!!!!!!!!!!!!!!', question_number)
@@ -340,8 +331,7 @@ def get_recommendations(user_id: str, db: Session = Depends(get_db)):
 
     #1 10번째 초이스 함수 돌리고
     book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b, 
-                                        books_chosen, cluster_to_books,  alpha, 
-                                        beta_values, book_chosen_dict)
+                                        books_chosen, cluster_to_books, book_chosen_dict)
     print("book_choice_updated : ", book_choice_updated)
     print("presented_books : ", presented_books)
     print(f"suggested_books :  {suggested_books}")

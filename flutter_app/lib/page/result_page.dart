@@ -54,10 +54,6 @@ class _ResultScreenState extends State<ResultScreen> {
         Uri.parse("$baseUrl/final_recommendation/${widget.userId}"),
       );
 
-      print("HTTP 요청 URL: $baseUrl/final_recommendation/${widget.userId}");
-      print("HTTP 응답 코드: ${response.statusCode}");
-      print("HTTP 응답 본문: ${response.body}");
-
       if (response.statusCode == 200) {
         List<dynamic> isbnList = json.decode(response.body);
         await fetchBookDetails(isbnList);
@@ -76,10 +72,6 @@ class _ResultScreenState extends State<ResultScreen> {
     for (String isbn in isbnList) {
       try {
         final response = await http.get(Uri.parse("$baseUrl/books/$isbn"));
-
-        print("HTTP 요청 URL: $baseUrl/books/$isbn");
-        print("HTTP 응답 코드: ${response.statusCode}");
-        print("HTTP 응답 본문: ${response.body}");
 
         if (response.statusCode == 200) {
           final data = json.decode(response.body);

@@ -35,15 +35,10 @@ class _QuestionScreenState extends State<QuestionScreen> {
 
   Future<void> fetchRecommendations() async {
     if (question_number >= 10) return;
-
     try {
       final response = await http.get(
         Uri.parse("$baseUrl/recommendation/$userId"),
       );
-
-      print("HTTP 요청 URL: $baseUrl/recommendation/$userId");
-      print("HTTP 응답 코드: ${response.statusCode}");
-      print("HTTP 응답 본문: ${response.body}");
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
