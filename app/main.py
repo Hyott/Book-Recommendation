@@ -464,11 +464,6 @@ def choice_arrange(user_id, question_number, book_a, book_b, books_chosen, clust
         update_data(choice, book_a, book_b)
         return None
 
-@app.get("/get-image/{image_name}", response_model=ImageResponse)
-async def get_image(image_name: str):
-    base_url = "https://fromsentence.com/images/"  # 실제 이미지가 호스팅된 URL
-    return {"image_url": f"{base_url}{image_name}"}
-
 @app.get("/books/{isbn}")
 def get_book(isbn: str, db: Session = Depends(get_db)):
     if len(isbn) != 13 or not isbn.isdigit():
@@ -481,6 +476,13 @@ def get_book(isbn: str, db: Session = Depends(get_db)):
     sentence = get_sentence_by_isbn(db, isbn)
     tags = get_tags_by_isbn(db, isbn)
 
+    # 저자명을 처리
+    split_comma_reuslt = book.author.split(',')
+    
+    if len(split_comma_reuslt) >= 2:
+        book_author = f'{split_comma_reuslt[0].strip()} 외 {len(split_comma_reuslt)-1}명 저'
+    else:
+        book_author = book.author
     if not book:
         raise HTTPException(
             status_code=404,
@@ -490,7 +492,7 @@ def get_book(isbn: str, db: Session = Depends(get_db)):
     response_data = {
         "isbn": book.isbn,
         "title": book.title,
-        "author": book.author,
+        "author": book_author,
         "image_url": book.image_url,
         "sentence": sentence.sentence if sentence else None,
         "letter": sentence.letter if sentence else None,

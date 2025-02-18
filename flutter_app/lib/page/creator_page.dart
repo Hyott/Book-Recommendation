@@ -38,7 +38,7 @@ class CreatorScreen extends StatelessWidget {
                     '새로운 취향의 책을 발견하고 싶을 때,\n\n'
                     '당신만을 위한 한 권을 찾아드리겠습니다.\n\n\n\n'
                     '책을 통해 더 넓은 세상을 만나는 여정,\n\n'
-                    '책을 고르는 순간이 설렘으로 가득 차길 바랍니다.\n\n'
+                    '책을 고르는 순간이 설렘으로 가득 차길 바랍니다.\n\n',
                 style: TextStyle
                   (
                     fontFamily: 'Spectral-Regular',
