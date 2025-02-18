@@ -1,3 +1,4 @@
+*.pkl
 app/.DS_Store
 build_output/
 *.pkl
