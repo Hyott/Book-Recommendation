@@ -334,18 +334,68 @@ def get_tournament_winner_cluster_until_round5(book_embeddings, cluster_to_books
     return book_a, book_b
 
 
+# def get_choice_bool(cursor, user_id, question_number):
+#     cursor.execute(
+#         sql.SQL("SELECT * FROM public.user_responses WHERE user_id = %s and question_number = %s"),
+#         (user_id, question_number)
+#     )
+#     exists = cursor.fetchall()
+#     if exists:
+#         book_a_select = exists[0][4]
+#         book_b_select = exists[1][4]
+#     else:
+#         book_a_select = None
+#         book_b_select = None
+#     return book_a_select, book_b_select
+
+# indexing 오류 해결
 def get_choice_bool(cursor, user_id, question_number):
+    # 1차 조회: 최대 2개의 기록 조회
     cursor.execute(
-        sql.SQL("SELECT * FROM public.user_responses WHERE user_id = %s and question_number = %s"),
+        sql.SQL("""
+            SELECT book_a, book_b 
+            FROM public.user_responses 
+            WHERE user_id = %s AND question_number = %s 
+            ORDER BY created_at ASC 
+            LIMIT 2
+        """),
         (user_id, question_number)
     )
-    exists = cursor.fetchall()
-    if exists:
-        book_a_select = exists[0][4]
-        book_b_select = exists[1][4]
-    else:
-        book_a_select = None
-        book_b_select = None
+    results = cursor.fetchall()
+
+    # 기본값 설정
+    book_a_select = results[0][0] if len(results) >= 1 else None
+    book_b_select = results[1][1] if len(results) >= 2 else None
+
+    # 2차 조회: 필요한 경우 개별 조회
+    if book_a_select is None:
+        cursor.execute(
+            sql.SQL("""
+                SELECT book_a 
+                FROM public.user_responses 
+                WHERE user_id = %s AND question_number = %s 
+                ORDER BY created_at ASC 
+                LIMIT 1
+            """),
+            (user_id, question_number)
+        )
+        a_result = cursor.fetchone()
+        book_a_select = a_result[0] if a_result else None
+
+    if book_b_select is None:
+        cursor.execute(
+            sql.SQL("""
+                SELECT book_b 
+                FROM public.user_responses 
+                WHERE user_id = %s AND question_number = %s 
+                ORDER BY created_at ASC 
+                LIMIT 1
+            """),
+            (user_id, question_number)
+        )
+        b_result = cursor.fetchone()
+        book_b_select = b_result[0] if b_result else None
+
     return book_a_select, book_b_select
 
 
