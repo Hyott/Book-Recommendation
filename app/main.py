@@ -8,8 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.metrics.pairwise import cosine_similarity
-from services.book_rec_module import load_embeddings, \
-    update_data, get_message_by_id, weighted_sampling, get_choice_bool, \
+from services.book_rec_module import update_data, get_message_by_id, get_choice_bool, \
         get_sentence_from_db, get_tournament_winner_cluster_until_round5, \
         get_centroid_after_round5, neighborhood_based_clustering, select_books_for_new_cluster
 from dotenv import load_dotenv
@@ -18,7 +17,7 @@ from app.database.connection import database_engine
 from fastapi.responses import JSONResponse
 from collections import defaultdict
 import joblib
-# from sklearn.preprocessing import normalize
+
 # .env 파일 로드
 load_dotenv()
 
