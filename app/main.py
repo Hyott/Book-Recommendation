@@ -404,7 +404,7 @@ def get_recommendations(user_id: str, db: Session = Depends(get_db)):
     return final_recommendations
 
 
-def first_setting_of_logic(user_id, num_clusters, db, user_alpha, user_beta_values ):
+def first_setting_of_logic(user_id, num_clusters, db):
     global round_num, alpha, beta_values, presented_books, book_embeddings, ids, book_data, cluster_to_books 
     # # embedding_save_path = "data/book_embeddings_openai.json" 
     # ids, book_embeddings = load_embeddings(embedding_save_path)
@@ -413,11 +413,12 @@ def first_setting_of_logic(user_id, num_clusters, db, user_alpha, user_beta_valu
     
     book_embeddings = joblib.load("data/book_embeddings.pkl")
     ids = book_embeddings[0]
-    book_data = get_sentence_from_db(db)
     
+    book_data = get_sentence_from_db(db)
+
     books = [f"Book {i}" for i in range(len(ids))]  # books는 ids의 길이에 따라 생성
     assert len(books) == len(ids), "Books length mismatch with IDs! "
-    num_books = len(book_embeddings)
+
     kmeans = KMeans(n_clusters=num_clusters, random_state=42)
     clusters = kmeans.fit_predict(book_embeddings)
 
@@ -426,11 +427,6 @@ def first_setting_of_logic(user_id, num_clusters, db, user_alpha, user_beta_valu
     for idx, cluster_id in enumerate(clusters):
         cluster_to_books[cluster_id].append(idx)
 
-    user_alpha[user_id] = np.ones(num_books)
-    user_beta_values[user_id] = np.ones(num_books)
-
-    alpha = user_alpha[user_id]
-    beta_values = user_beta_values[user_id]
     return ids, book_embeddings, book_data, user_id, cluster_to_books
 
 
