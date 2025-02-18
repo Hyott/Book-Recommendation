@@ -27,9 +27,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   FlutterWindow window(project);
   Win32Window::Point origin(10, 10);
   Win32Window::Size size(1280, 720);
-  if (!window.Create(L"project", origin, size)) {
+  if (!window.Create(L"fromSentence", origin, size)) {
     return EXIT_FAILURE;
   }
+
+// ✅ 아이콘 변경 코드 추가
+HICON hIcon = LoadIcon(GetModuleHandle(nullptr), MAKEINTRESOURCE(101));  // 리소스 ID(101)
+SendMessage(window.GetHandle(), WM_SETICON, ICON_BIG, (LPARAM)hIcon);
+SendMessage(window.GetHandle(), WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
+
   window.SetQuitOnClose(true);
 
   ::MSG msg;

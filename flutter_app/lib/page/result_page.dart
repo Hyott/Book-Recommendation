@@ -289,6 +289,7 @@ class _ResultScreenState extends State<ResultScreen> {
       body: bookDetails.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : PageView.builder(
+        physics: const NeverScrollableScrollPhysics(), // 상세페이지에서 옆으로 스와이프 방지
         itemCount: bookDetails.length,
         onPageChanged: (index) {
           setState(() {
@@ -410,14 +411,9 @@ class _ResultScreenState extends State<ResultScreen> {
                                 const SizedBox(height: 11),
                                 Text(
                                   book['tags'],
-                                  style: const TextStyle
-                                    (
-                                      fontFamily: 'GowunBatang',
-                                      fontSize: 12,
-                                      color: Colors.black
-                                  ),
+                                  style: _getDynamicTextStyle(book['title'], book['tags']),
                                 ),
-                                const SizedBox(height: 6),
+                                const SizedBox(height: 18),
                                 Align(
                                   alignment: Alignment.centerRight,
                                   child: Text(
@@ -523,6 +519,15 @@ class _ResultScreenState extends State<ResultScreen> {
     );
   }
 
-
+  TextStyle _getDynamicTextStyle(String text1, String text2) {
+    print("title length: ${text1.length}, hashtag length: ${text2.length}");
+    print("Total length: ${text1.length + text2.length}");
+    return TextStyle(
+      fontSize: text1.length + text2.length > 90 ? 10 : 12, // 90글자 이상이면 폰트 크기를 줄이기
+      fontWeight: FontWeight.bold,
+      fontFamily: 'GowunBatang',
+      color: Colors.black,
+    );
+  }
 
 }
