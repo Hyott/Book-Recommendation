@@ -451,8 +451,9 @@ class _ResultScreenState extends State<ResultScreen> {
                                     ),
                                   ),
                                   onPressed: () {
-                                    Share.share('https://fromsentence.com/');
-                                  },
+                                  String shareUrl = "https://fromsentence.com/final_recommendation/${widget.userId}";
+                                  Share.share(shareUrl);
+                                },
                                   child: const Text(
                                     '공유하기',
                                     style: TextStyle(
