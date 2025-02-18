@@ -8,8 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.metrics.pairwise import cosine_similarity
-from services.book_rec_module import load_embeddings, \
-    update_data, get_message_by_id, get_choice_bool, \
+from services.book_rec_module import update_data, get_message_by_id, get_choice_bool, \
         get_sentence_from_db, get_tournament_winner_cluster_until_round5, \
         get_centroid_after_round5, neighborhood_based_clustering, select_books_for_new_cluster
 from dotenv import load_dotenv
@@ -17,9 +16,9 @@ import os
 from app.database.connection import database_engine
 from fastapi.responses import JSONResponse
 from collections import defaultdict
-from fastapi.staticfiles import StaticFiles
+import joblib
 import time
-from sklearn.preprocessing import normalize
+
 # .env 파일 로드
 load_dotenv()
 
@@ -33,7 +32,11 @@ database_name = os.getenv("DATABASE_NAME")
 #cursor 설정
 engine_for_cursor = database_engine(host, port, user, password, database_name)
 
-app = FastAPI()
+ENV = os.getenv("ENV", "local")
+ROOT_PATH = os.getenv("ROOT_PATH", "")
+
+# FastAPI 인스턴스 생성 (root_path 적용)
+app = FastAPI(root_path=ROOT_PATH)
 
 # CORS 설정
 app.add_middleware(
@@ -49,6 +52,8 @@ user_presented_books = defaultdict(set)
 user_suggested_books = defaultdict(list)
 user_books_chosen = defaultdict(list)
 user_round_num = defaultdict(int)
+user_alpha = defaultdict()
+user_beta_values = defaultdict()
 user_book_chosen_dict = defaultdict(lambda: defaultdict(list))
 user_sorted_cluster_books = defaultdict(lambda: defaultdict(list)) 
 user_weighted_centroid = defaultdict(list)
@@ -59,13 +64,14 @@ user_visited_clusters = defaultdict(set)
 user_final_visited_clusters = defaultdict(set)
 user_selected_books_of_round678 = defaultdict(list)
 user_selected_books_of_round910 = defaultdict(list)
+# user_book_choices_of_round678 = defaultdict(list)
 user_final_cluster_to_books = defaultdict(lambda: defaultdict(list))
 
 user_book_a = defaultdict(int)
 user_book_b = defaultdict(int)
 
 
-embedding_save_path = "data/book_embeddings_openai.json" 
+# embedding_save_path = "data/book_embeddings_openai.json" 
 book_data = None
 num_clusters = 6
 user_id = None
@@ -109,7 +115,7 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
             print(f"New user detected: {user_id}. Initializing presented_books, cluster_to_books and embeddings...")  
             
             ids, book_embeddings, book_data, user_id, first_cluster_to_books = first_setting_of_logic(
-                user_id, num_clusters, embedding_save_path, db)  
+                user_id, num_clusters, db)  
             
             user_cluster_to_books[user_id] = first_cluster_to_books
             print(f"✅ user_cluster_to_books[{user_id}]에 클러스터 저장 완료.")
@@ -155,7 +161,6 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
 
         
         elif question_number == 5:
-
             print("This is 'elif' - first :", book_a, book_b)
             book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b, 
                                                 books_chosen, cluster_to_books, book_chosen_dict)
@@ -211,7 +216,6 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
         
         
         elif 6 <= question_number <= 7 :
-
             book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b, 
                                                 books_chosen, cluster_to_books, book_chosen_dict)
             print("book_choice_updated : ", book_choice_updated)
@@ -222,9 +226,8 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
             print(f"selected_books_of_round678 : {selected_books_of_round678}")
             presented_books.add(book_a) ; presented_books.add(book_b)
             suggested_books.append(book_a) ; suggested_books.append(book_b)
-        
 
-        elif question_number == 8:   
+        elif question_number == 8: 
             book_choice_updated = choice_arrange(user_id, question_number, book_a, book_b, 
                                             books_chosen, cluster_to_books, book_chosen_dict)
             print("book_choice_updated : ", book_choice_updated)
@@ -392,20 +395,20 @@ def get_recommendations(user_id: str, db: Session = Depends(get_db)):
     return final_recommendations
 
 
-def first_setting_of_logic(user_id, num_clusters, embedding_save_path, db):
-    global round_num, presented_books, book_embeddings, ids, book_data, cluster_to_books 
-    # embedding_save_path = "data/book_embeddings_openai.json" 
-
-    ids, book_embeddings = load_embeddings(embedding_save_path)
-
-    # book_embeddings 정규화 (L2 Norm으로 크기 1로 조정)
-    book_embeddings = normalize(book_embeddings, norm='l2')
-
+def first_setting_of_logic(user_id, num_clusters, db):
+    global round_num, alpha, beta_values, presented_books, book_embeddings, ids, book_data, cluster_to_books 
+    # # embedding_save_path = "data/book_embeddings_openai.json" 
+    # ids, book_embeddings = load_embeddings(embedding_save_path)
+    # # book_embeddings 정규화 (L2 Norm으로 크기 1로 조정)
+    # book_embeddings = normalize(book_embeddings, norm='l2')
+    
+    book_embeddings = joblib.load("data/book_embeddings.pkl")
+    ids = book_embeddings[0]
+    
     book_data = get_sentence_from_db(db)
 
     books = [f"Book {i}" for i in range(len(ids))]  # books는 ids의 길이에 따라 생성
     assert len(books) == len(ids), "Books length mismatch with IDs! "
-    num_books = len(book_embeddings)
 
     kmeans = KMeans(n_clusters=num_clusters, random_state=42)
     clusters = kmeans.fit_predict(book_embeddings)
@@ -463,11 +466,6 @@ def choice_arrange(user_id, question_number, book_a, book_b, books_chosen, clust
         update_data(choice, book_a, book_b)
         return None
 
-@app.get("/get-image/{image_name}", response_model=ImageResponse)
-async def get_image(image_name: str):
-    base_url = "https://fromsentence.com/images/"  # 실제 이미지가 호스팅된 URL
-    return {"image_url": f"{base_url}{image_name}"}
-
 @app.get("/books/{isbn}")
 def get_book(isbn: str, db: Session = Depends(get_db)):
     if len(isbn) != 13 or not isbn.isdigit():
@@ -480,6 +478,13 @@ def get_book(isbn: str, db: Session = Depends(get_db)):
     sentence = get_sentence_by_isbn(db, isbn)
     tags = get_tags_by_isbn(db, isbn)
 
+    # 저자명을 처리
+    split_comma_reuslt = book.author.split(',')
+    
+    if len(split_comma_reuslt) >= 2:
+        book_author = f'{split_comma_reuslt[0].strip()} 외 {len(split_comma_reuslt)-1}명 저'
+    else:
+        book_author = book.author
     if not book:
         raise HTTPException(
             status_code=404,
@@ -489,7 +494,7 @@ def get_book(isbn: str, db: Session = Depends(get_db)):
     response_data = {
         "isbn": book.isbn,
         "title": book.title,
-        "author": book.author,
+        "author": book_author,
         "image_url": book.image_url,
         "sentence": sentence.sentence if sentence else None,
         "letter": sentence.letter if sentence else None,

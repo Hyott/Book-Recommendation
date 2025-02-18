@@ -1,8 +1,8 @@
+import traceback
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import normalize
-from numpy.linalg import norm 
 import os
 print("os.getcwd: ", os.getcwd())
 import sys
@@ -116,9 +116,6 @@ def neighborhood_based_clustering(weighted_centroid, book_embeddings, num_indice
         print(f"클러스터 {label}: {count}개")
 
     return neigh_based_clustering_to_books, num_indices, kmeans, normalized_vectors
-
-import traceback
-import numpy as np
 
 def select_books_for_new_cluster(presented_books, neigh_based_clustering_to_books, top_300_indices, 
                                 weighted_centroid, normalized_vectors, 

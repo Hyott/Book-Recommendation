@@ -18,7 +18,10 @@ class ResultScreen extends StatefulWidget {
 }
 
 class _ResultScreenState extends State<ResultScreen> {
-  final String baseUrl = "http://127.0.0.1:8000";
+  static const String baseUrl = String.fromEnvironment(
+    'BASE_URL',
+    defaultValue: 'https://fromsentence.com/api',
+  );
   List<Map<String, dynamic>> bookDetails = [];
   int _currentBookIndex = 0;  // 현재 선택된 책의 인덱스
 
@@ -48,10 +51,6 @@ class _ResultScreenState extends State<ResultScreen> {
         Uri.parse("$baseUrl/final_recommendation/${widget.userId}"),
       );
 
-      print("HTTP 요청 URL: $baseUrl/final_recommendation/${widget.userId}");
-      print("HTTP 응답 코드: ${response.statusCode}");
-      print("HTTP 응답 본문: ${response.body}");
-
       if (response.statusCode == 200) {
         List<dynamic> isbnList = json.decode(response.body);
         await fetchBookDetails(isbnList);
@@ -70,10 +69,6 @@ class _ResultScreenState extends State<ResultScreen> {
     for (String isbn in isbnList) {
       try {
         final response = await http.get(Uri.parse("$baseUrl/books/$isbn"));
-
-        print("HTTP 요청 URL: $baseUrl/books/$isbn");
-        print("HTTP 응답 코드: ${response.statusCode}");
-        print("HTTP 응답 본문: ${response.body}");
 
         if (response.statusCode == 200) {
           final data = json.decode(response.body);

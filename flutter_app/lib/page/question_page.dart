@@ -11,8 +11,10 @@ class QuestionScreen extends StatefulWidget {
 }
 
 class _QuestionScreenState extends State<QuestionScreen> {
-  // final String baseUrl = Platform.environment['API_BASE_URL']!;
-  final String baseUrl = "http://127.0.0.1:8000"; // FastAPI 백엔드 주소
+  static const String baseUrl = String.fromEnvironment(
+    'BASE_URL',
+    defaultValue: 'https://fromsentence.com/api',
+  );
   final String userId = const Uuid().v4(); // UUID 생성
 
   String? sentenceA;
@@ -32,15 +34,10 @@ class _QuestionScreenState extends State<QuestionScreen> {
 
   Future<void> fetchRecommendations() async {
     if (question_number >= 10) return;
-
     try {
       final response = await http.get(
         Uri.parse("$baseUrl/recommendation/$userId"),
       );
-
-      print("HTTP 요청 URL: $baseUrl/recommendation/$userId");
-      print("HTTP 응답 코드: ${response.statusCode}");
-      print("HTTP 응답 본문: ${response.body}");
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
