@@ -17,4 +17,5 @@ certbot/conf/archive/
 certbot/conf/live/
 certbot/conf/renewal/
 certbot/www/
+flutter_app/assets/images/books/*.jpg
 
