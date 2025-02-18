@@ -34,7 +34,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      // title: '사용자 이름 저장 앱',
       theme: ThemeData(
         useMaterial3: false,
         primarySwatch: primarySwatch, // 정의한 MaterialColor 사용
@@ -68,14 +67,9 @@ class NameInputScreen extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
             child: Column(
-              // crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(height: 10),
                 Center(
-                  // child: Text(
-                  //   '문장으로부터 책으로 이끄는 순간까지',
-                  //   style: TextStyle(fontSize: 20, fontWeight: FontWeight.normal),
-                  // ),
                 ),
                 SizedBox(height: 150),
                 Image.asset(
@@ -103,8 +97,7 @@ class NameInputScreen extends StatelessWidget {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
-                      counterText: "", // 기본 글자 수 카운터 숨기기 (선택 사항)
-                        // contentPadding: EdgeInsets.symmetric(vertical: 60, horizontal: 355)
+                      counterText: "", // 기본 글자 수 카운터 숨기기
                     ),
                     style: TextStyle
                       (

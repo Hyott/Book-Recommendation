@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../main.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 
 class ResultScreen extends StatefulWidget {
@@ -21,9 +20,7 @@ class ResultScreen extends StatefulWidget {
 class _ResultScreenState extends State<ResultScreen> {
   final String baseUrl = "http://127.0.0.1:8000";
   List<Map<String, dynamic>> bookDetails = [];
-  // PageController _verticalPageController = PageController();
-  // PageController _horizontalPageController = PageController();
-  int _currentBookIndex = 0;  // 현재 선택된 책의 인덱스를 추적
+  int _currentBookIndex = 0;  // 현재 선택된 책의 인덱스
 
   late PageController _verticalPageController;
   late PageController _horizontalPageController;
@@ -78,20 +75,16 @@ class _ResultScreenState extends State<ResultScreen> {
         print("HTTP 응답 코드: ${response.statusCode}");
         print("HTTP 응답 본문: ${response.body}");
 
-        // 이미지 경로 출력
-        print("이미지 경로: assets/images/books/9788901131207.jpg");
-
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
-          print("ISBN: ${data['isbn']}");
           tempDetails.add({
-            "isbn": data["isbn"] ?? "isbn 없음",
+            "isbn": data["isbn"],
             "image_url": data["image_url"] ?? "이미지 없음",
-            // "image_url": (data["image_url"] as String?)?.replaceFirst("https", "http") ?? "이미지 없음",
+            "title": data["title"] ?? "제목 없음",
             "author": data["author"] ?? "작가 미상",
-            "tags": (data["tags"] as List<dynamic>)
-                .map((tag) => "#$tag") // 각 태그 앞에 #을 붙임
-                .join(" "), // 태그들을 공백으로 구분하여 하나의 문자열로 결합
+            "tags": (data["tags"] as List<dynamic>?)
+                ?.map((tag) => "#$tag") // 각 태그 앞에 #을 붙임
+                .join(" ") ?? "태그 없음",// 태그들을 공백으로 구분하여 하나의 문자열로 결합
             "sentence": data["sentence"] ?? "문장 없음",
             "letter": data["letter"] ?? "편지 없음",
           });
@@ -146,7 +139,6 @@ class _ResultScreenState extends State<ResultScreen> {
         ),
       ),
       body: Container(
-        // color: Colors.grey[200],
         child: bookDetails.isEmpty
             ? const Center(child: CircularProgressIndicator())
             : GestureDetector(
@@ -217,7 +209,9 @@ class _ResultScreenState extends State<ResultScreen> {
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            const SizedBox(height: 4),
                             Text(
                               'To. $userName',
                               style: const TextStyle
@@ -226,9 +220,7 @@ class _ResultScreenState extends State<ResultScreen> {
                                   fontSize: 14,
                                   color: Colors.black
                               ),
-                              textAlign: TextAlign.start,
                             ),
-                            const SizedBox(height: 8),
                             Text(
                               "\n${bookDetails[index]['letter']}",
                               style: const TextStyle(
@@ -255,7 +247,6 @@ class _ResultScreenState extends State<ResultScreen> {
                         ),
                       ),
                     ),
-                    // const SizedBox(height: 6),
                     Text(
                       "당겨보세요",
                       style: TextStyle
@@ -277,7 +268,7 @@ class _ResultScreenState extends State<ResultScreen> {
 
   // 추천 도서 상세 페이지
   Widget _buildDetailPageView() {
-    // final userName = Provider.of<UserNameProvider>(context).userName;
+    final userName = Provider.of<UserNameProvider>(context).userName;
 
     return Scaffold(
       appBar: PreferredSize(
@@ -330,6 +321,26 @@ class _ResultScreenState extends State<ResultScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        Transform.rotate(
+                          angle: 1.5708,  // 270도 회전
+                          child: Text(
+                            "⟩",
+                            style: TextStyle
+                              (
+                              fontFamily: 'JejuMyeongjo',
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          "다른 편지 보기",
+                          style: TextStyle
+                            (
+                            fontFamily: 'JejuMyeongjo',
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
                         // 책 상세 정보 박스
                         Container(
                           width: 300,
@@ -355,21 +366,53 @@ class _ResultScreenState extends State<ResultScreen> {
                                 // 책 이미지 표시 코드
                                 Image(
                                   image: AssetImage(
-                                    'assets/images/books/${book['isbn']}.jpg', // ISBN을 사용한 이미지 경로
+                                    book['isbn'] != null
+                                        ? 'assets/images/books/${book['isbn']}.jpg'
+                                        : 'assets/images/none_book_image.png', // ISBN이 없으면 기본 이미지 사용
                                   ),
-                                  width: 150,
-                                  height: 200,
+                                  width: 160,
+                                  height: 210,
                                   fit: BoxFit.cover,
-                                  // errorBuilder: (context, error, stackTrace) {
-                                  //   return Image.asset(
-                                  //     'assets/images/none_book_image.png', // 기본 이미지
-                                  //     width: 150,
-                                  //     height: 200,
-                                  //     fit: BoxFit.cover,
-                                  //   );
-                                  // },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Image.asset(
+                                      'assets/images/none_book_image.png', // 오류 발생시 기본 이미지
+                                      width: 150,
+                                      height: 200,
+                                      fit: BoxFit.cover,
+                                    );
+                                  },
                                 ),
                                 const SizedBox(height: 8),
+                                RichText(
+                                  text: TextSpan(
+                                    text: '$userName에게 추천하고 싶은 책은 ',
+                                    style: const TextStyle(
+                                      fontFamily: 'GowunBatang',
+                                      fontSize: 12,
+                                      color: Colors.black,
+                                    ),
+                                    children: <TextSpan>[
+                                      TextSpan(
+                                        text: '${book['title']} ',
+                                        style: const TextStyle(
+                                          fontFamily: 'GowunBatang',
+                                          fontSize: 12,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: '(${book['author']}) 입니다.',
+                                        style: const TextStyle(
+                                          fontFamily: 'GowunBatang',
+                                          fontSize: 12,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 11),
                                 Text(
                                   book['tags'],
                                   style: const TextStyle
@@ -379,29 +422,29 @@ class _ResultScreenState extends State<ResultScreen> {
                                       color: Colors.black
                                   ),
                                 ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  "From. ${book['author']}",
-                                  style: const TextStyle(
-                                    fontFamily: 'GowunBatang',
-                                    fontSize: 15,
-                                    color: Colors.black,
-                                    // decoration: TextDecoration.underline,
+                                const SizedBox(height: 6),
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    "From. Sentence",
+                                    style: const TextStyle(
+                                      fontFamily: 'GowunBatang',
+                                      fontSize: 14,
+                                      color: Colors.black,
+                                    ),
                                   ),
                                 ),
-                                const SizedBox(height: 12),
                               ],
                             ),
                           ),
                         ),
-                        const SizedBox(height: 20), // 박스와 버튼 사이 여백
-
+                        const SizedBox(height: 20),
                         // 버튼 영역
                         Column(
                           children: [
                             // 공유하기 & 다시하기 버튼
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.center, // 간격 조절
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 ElevatedButton(
                                   style: ElevatedButton.styleFrom(
@@ -413,10 +456,7 @@ class _ResultScreenState extends State<ResultScreen> {
                                     ),
                                   ),
                                   onPressed: () {
-                                    // ScaffoldMessenger.of(context).showSnackBar(
-                                    //   const SnackBar(content: Text("공유하기 기능 준비 중")),
-                                    // );
-                                    Share.share('http://localhost:8080/');
+                                    Share.share('https://fromsentence.com/');
                                   },
                                   child: const Text(
                                     '공유하기',
@@ -427,7 +467,7 @@ class _ResultScreenState extends State<ResultScreen> {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 10), // 간격 조절
+                                const SizedBox(width: 10),
                                 ElevatedButton(
                                   style: ElevatedButton.styleFrom(
                                     minimumSize: Size(148, 39),
@@ -455,15 +495,14 @@ class _ResultScreenState extends State<ResultScreen> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 14), // 버튼 사이 여백
-
+                            const SizedBox(height: 14),
                             // 만든 이들 버튼
                             TextButton(
                               onPressed: () {
                                 // "만든 이들" 페이지로 이동
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => CreatorScreen()), // MakersPage로 이동
+                                  MaterialPageRoute(builder: (context) => CreatorScreen()),
                                 );
                               },
                               child: const Text(

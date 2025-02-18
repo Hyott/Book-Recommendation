@@ -8,7 +8,7 @@ class CreatorScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(100),
+        preferredSize: Size.fromHeight(80),
         child: AppBar(
           title: null,
           automaticallyImplyLeading: false,
@@ -18,9 +18,10 @@ class CreatorScreen extends StatelessWidget {
               "from\n    Sentence",
               style: TextStyle
                 (
-                  fontFamily: 'AbhayaLibre',
-                  fontSize: 36,
-                  color: Color(0xFFF8F8F8)
+                fontFamily: 'AbhayaLibre',
+                fontSize: 36,
+                color: Color(0xFFF8F8F8),
+                height: 0.6, // 줄 간격을 기본값보다 더 줄이기
               ),
             ),
           ),
@@ -31,6 +32,7 @@ class CreatorScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            SizedBox(height: 40),
             Align(
               alignment: Alignment.topCenter,
               child: Text(
@@ -50,21 +52,18 @@ class CreatorScreen extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(height: 30),  // 텍스트와 사진 사이 여백을 추가
-
+            SizedBox(height: 30),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _buildEmployeeCard('assets/images/seohyeon.jpg', 'seohyeon'),
-                SizedBox(width: 50),  // 사진 간 간격
+                SizedBox(width: 50),
                 _buildEmployeeCard('assets/images/hc.png', 'HC'),
                 SizedBox(width: 50),
                 _buildEmployeeCard('assets/images/yeeun.jpg', 'Yeeun'),
               ],
             ),
-            SizedBox(height: 30),  // 위 사진들과 아래 사진 사이 여백
-
-
+            SizedBox(height: 30),
             Align(
               alignment: Alignment.center,
               child: _buildEmployeeCard('assets/images/JY_image.jpg', 'mentor.JY'),
@@ -75,17 +74,16 @@ class CreatorScreen extends StatelessWidget {
     );
   }
 
-  // 직원 사진과 이름을 포함하는 함수
   Widget _buildEmployeeCard(String imagePath, String name) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         CircleAvatar(
-          radius: 40,  // 원 크기 조정
+          radius: 40,
           backgroundImage: AssetImage(imagePath),
           backgroundColor: imagePath.isEmpty ? Colors.grey : null,  // 이미지가 없을 경우 회색 원으로 표시
         ),
-        SizedBox(height: 8),  // 이미지와 이름 간 간격
+        SizedBox(height: 8),
         Text(
           name,
           style: TextStyle
