@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:project/page/result_page.dart';
+import 'package:lottie/lottie.dart';
 
 
 class LoadingScreen extends StatelessWidget {
@@ -10,7 +10,7 @@ class LoadingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 5), () {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -20,12 +20,8 @@ class LoadingScreen extends StatelessWidget {
     });
 
     return Scaffold(
-      backgroundColor: const Color(0xFF6D0003),
-      body: const Center(
-        child: SpinKitRotatingCircle(
-          color: Colors.white,
-          size: 80.0,
-        ),
+      body: Center(
+        child: Lottie.asset('assets/loading_animation.json'),
       ),
     );
   }

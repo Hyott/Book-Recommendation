@@ -4,7 +4,10 @@ import 'package:http/http.dart' as http;
 import 'package:project/page/creator_page.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../main.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+
 
 class ResultScreen extends StatefulWidget {
   final String userId;
@@ -82,6 +85,7 @@ class _ResultScreenState extends State<ResultScreen> {
           final data = json.decode(response.body);
           tempDetails.add({
             "image_url": data["image_url"] ?? "이미지 없음",
+            // "image_url": (data["image_url"] as String?)?.replaceFirst("https", "http") ?? "이미지 없음",
             "author": data["author"] ?? "작가 미상",
             "tags": (data["tags"] as List<dynamic>)
                 .map((tag) => "#$tag") // 각 태그 앞에 #을 붙임
@@ -116,9 +120,11 @@ class _ResultScreenState extends State<ResultScreen> {
 
   // 추천 도서 목록 페이지
   Widget _buildRecommendationPage() {
+    final userName = Provider.of<UserNameProvider>(context).userName;
+
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(100),
+        preferredSize: Size.fromHeight(80),
         child: AppBar(
           title: null,
           automaticallyImplyLeading: false,
@@ -130,14 +136,15 @@ class _ResultScreenState extends State<ResultScreen> {
                 (
                   fontFamily: 'AbhayaLibre',
                   fontSize: 36,
-                  color: Color(0xFFF8F8F8)
+                  color: Color(0xFFF8F8F8),
+                  height: 0.6,
               ),
             ),
           ),
         ),
       ),
       body: Container(
-        color: Colors.grey[200],
+        // color: Colors.grey[200],
         child: bookDetails.isEmpty
             ? const Center(child: CircularProgressIndicator())
             : GestureDetector(
@@ -162,6 +169,7 @@ class _ResultScreenState extends State<ResultScreen> {
               );
             }
           },
+
           child: PageView.builder(
             controller: _horizontalPageController,
             itemCount: bookDetails.length,
@@ -176,6 +184,17 @@ class _ResultScreenState extends State<ResultScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    SmoothPageIndicator(
+                      controller: _horizontalPageController,
+                      count: bookDetails.length,
+                      effect: ScaleEffect(
+                        dotHeight: 10,
+                        dotWidth: 10,
+                        activeDotColor: Color(0xFF6D0003), // 현재 페이지 색상
+                        dotColor: Colors.grey.shade400, // 나머지 페이지 색상
+                      ),
+                    ),
+                    const SizedBox(height: 20),
                     Container(
                       width: 300,
                       height: 400,
@@ -194,27 +213,53 @@ class _ResultScreenState extends State<ResultScreen> {
                       ),
                       alignment: Alignment.center,
                       child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Text(
-                          bookDetails[index]["sentence"],
-                          style: const TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                          textAlign: TextAlign.center,
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            Text(
+                              'To. $userName',
+                              style: const TextStyle
+                                (
+                                  fontFamily: 'GowunBatang',
+                                  fontSize: 14,
+                                  color: Colors.black
+                              ),
+                              textAlign: TextAlign.start,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              "\n${bookDetails[index]['letter']}",
+                              style: const TextStyle(
+                                fontFamily: 'GowunBatang',
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                         ),
                       ),
                     ),
                     const SizedBox(height: 24),
-                    const Text(
-                      "⬆️ 당겨보세요",
+                    Transform.rotate(
+                      angle: 4.7124,  // 270도 회전
+                      child: Text(
+                        "⟩",
+                        style: TextStyle
+                          (
+                            fontFamily: 'JejuMyeongjo',
+                            fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    // const SizedBox(height: 6),
+                    Text(
+                      "당겨보세요",
                       style: TextStyle
                         (
                           fontFamily: 'JejuMyeongjo',
                           fontSize: 16,
-                          fontWeight: FontWeight.bold
                       ),
                     ),
                   ],
@@ -228,12 +273,13 @@ class _ResultScreenState extends State<ResultScreen> {
   }
 
 
+  // 추천 도서 상세 페이지
   Widget _buildDetailPageView() {
-    final userName = Provider.of<UserNameProvider>(context).userName;
+    // final userName = Provider.of<UserNameProvider>(context).userName;
 
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(100),
+        preferredSize: Size.fromHeight(80),
         child: AppBar(
           title: null,
           automaticallyImplyLeading: false,
@@ -245,7 +291,8 @@ class _ResultScreenState extends State<ResultScreen> {
                 (
                   fontFamily: 'AbhayaLibre',
                   fontSize: 36,
-                  color: Color(0xFFF8F8F8)
+                  color: Color(0xFFF8F8F8),
+                  height: 0.6,
               ),
             ),
           ),
@@ -303,33 +350,31 @@ class _ResultScreenState extends State<ResultScreen> {
                             padding: const EdgeInsets.all(16.0),
                             child: Column(
                               children: [
-                                Text(
-                                  'To. $userName',
-                                  style: const TextStyle
-                                    (
-                                      fontFamily: 'GowunBatang',
-                                      fontSize: 14,
-                                      color: Colors.black
-                                  ),
-                                ),
-                                book['image_url'] == "이미지 없음"
-                                    ? const Icon(Icons.image_not_supported, size: 50) // 기본 이미지가 없으면 아이콘을 표시
-                                    : Image.network(
-                                  book['image_url'],
-                                  width: 150, // 이미지 크기 조정
-                                  height: 200, // 이미지 크기 조정
-                                  fit: BoxFit.cover, // 이미지를 박스에 맞게 잘라서 보여줌
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  book['author'],
-                                  style: const TextStyle(
-                                    fontFamily: 'GowunBatang',
-                                    fontSize: 15,
-                                    color: Colors.black,
-                                    decoration: TextDecoration.underline,
-                                  ),
-                                ),
+                                // Text(
+                                //   'To. $userName',
+                                //   style: const TextStyle
+                                //     (
+                                //       fontFamily: 'GowunBatang',
+                                //       fontSize: 14,
+                                //       color: Colors.black
+                                //   ),
+                                // ),
+
+                                // 책 이미지
+                                // CachedNetworkImage(
+                                //   imageUrl:  book['image_url'],
+                                //   placeholder: (context, url) => CircularProgressIndicator(),
+                                //   errorWidget: (context, url, error) => Icon(Icons.error),
+                                // ),
+
+                                // book['image_url'] == "이미지 없음"
+                                //     ? const Icon(Icons.image_not_supported, size: 50) // 기본 이미지가 없으면 아이콘을 표시
+                                //     : Image.network(
+                                //   book['image_url'],
+                                //   width: 150, // 이미지 크기 조정
+                                //   height: 200, // 이미지 크기 조정
+                                //   fit: BoxFit.cover, // 이미지를 박스에 맞게 잘라서 보여줌
+                                // ),
                                 const SizedBox(height: 8),
                                 Text(
                                   book['tags'],
@@ -342,14 +387,13 @@ class _ResultScreenState extends State<ResultScreen> {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  "\n${book['letter']}",
+                                  "From. ${book['author']}",
                                   style: const TextStyle(
                                     fontFamily: 'GowunBatang',
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
                                     color: Colors.black,
+                                    // decoration: TextDecoration.underline,
                                   ),
-                                  textAlign: TextAlign.center,
                                 ),
                                 const SizedBox(height: 12),
                               ],

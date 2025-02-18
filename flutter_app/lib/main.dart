@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:project/page/question_page.dart';
-import 'package:project/test.dart';
 import 'package:provider/provider.dart';
 
 
@@ -65,9 +64,6 @@ class NameInputScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   title: Text('도서 추천 서비스'),
-      // ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -81,10 +77,11 @@ class NameInputScreen extends StatelessWidget {
                   //   style: TextStyle(fontSize: 20, fontWeight: FontWeight.normal),
                   // ),
                 ),
-                // SizedBox(height: 150),
+                SizedBox(height: 150),
                 Image.asset(
-                  'assets/images/splash_image.png'
+                  'assets/images/main_logo_image.png'
                 ),
+                const SizedBox(height: 30),
                 Text(
                   '문장으로부터\n책으로 이끄는 순간까지',
                   style: TextStyle

@@ -55,9 +55,9 @@ class CreatorScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildEmployeeCard('assets/images/employee1.jpg', 'seohyeon'),
+                _buildEmployeeCard('assets/images/seohyeon.jpg', 'seohyeon'),
                 SizedBox(width: 50),  // 사진 간 간격
-                _buildEmployeeCard('assets/images/employee2.jpg', 'HC'),
+                _buildEmployeeCard('assets/images/hc.png', 'HC'),
                 SizedBox(width: 50),
                 _buildEmployeeCard('assets/images/yeeun.jpg', 'Yeeun'),
               ],
@@ -67,7 +67,7 @@ class CreatorScreen extends StatelessWidget {
 
             Align(
               alignment: Alignment.center,
-              child: _buildEmployeeCard('assets/images/mentor.jpg', 'mentor.JY'),
+              child: _buildEmployeeCard('assets/images/JY_image.jpg', 'mentor.JY'),
             ),
           ],
         ),

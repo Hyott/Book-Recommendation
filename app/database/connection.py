@@ -19,12 +19,14 @@ database_name = os.getenv("DATABASE_NAME")
 
 
 
-# ✅ 엔진 생성
-engine = create_engine(f"postgresql://{user}:{password}@{host}:{port}/{database_name}")
+# ✅ UTF-8 설정된 엔진 생성
+engine = create_engine(
+    f"postgresql://{user}:{password}@{host}:{port}/{database_name}",
+    connect_args={"options": "-c client_encoding=UTF8"}  # UTF-8 강제 설정
+)
 
 # ✅ 세션 생성
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
 
 
 def ensure_database_exists(host, port, user, password, database_name):
