@@ -42,3 +42,15 @@ def get_question_number_by_user_id(db: Session, user_id: str):
         return int(result[0])
     else:
         return 0
+
+def get_user_last_sentenceid(db: Session, user_id: str):
+    result = db.query(UserResponseTable.sentence_id) \
+            .filter(UserResponseTable.user_id == user_id) \
+            .filter(UserResponseTable.is_positive == True) \
+            .order_by(UserResponseTable.question_number.desc()) \
+            .first()
+         # .first()[0]) # 가장 최신 값 가져오기 
+    if result:
+        return int(result[0])
+    else:
+        return 0
