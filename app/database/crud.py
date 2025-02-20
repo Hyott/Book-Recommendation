@@ -76,6 +76,5 @@ def get_user_select_sentence(db: Session, user_id: str):
                .all()
     
     sentence_ids = [row.sentence_id for row in result] if result else []
-    max_question_number = max((row.question_number for row in result) , default=0) + 1
     
-    return sentence_ids, max_question_number
+    return sentence_ids
