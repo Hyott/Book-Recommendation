@@ -128,38 +128,30 @@ class _QuestionScreenState extends State<QuestionScreen> {
           ),
         ),
       ),
-      body: Center(
-        child: sentenceA == null || sentenceB == null
-            ? CircularProgressIndicator()
-            : Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+    body: sentenceA == null || sentenceB == null
+    ? Center(child: CircularProgressIndicator())
+    : Padding(
+        padding: const EdgeInsets.only(top: 80), // 상단 여백만 지정
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start, // 위쪽 정렬
           children: [
             Text(
-                "$question_number / 10",
-                style: TextStyle
-                  (
-                    fontFamily: 'Inter',
-                    fontSize: 24,
-                    color: Color(0xFFB4A69B)
-                )
+              "      마음에 머무는\n문장은 무엇인가요?",
+              style: TextStyle(
+                fontFamily: 'JejuMyeongjo',
+                fontSize: 27,
+                color: Color(0xFF280404),
+              ),
             ),
-            SizedBox(height: 20),
-            Text("      마음에 머무는\n문장은 무엇인가요?",
-                style: TextStyle
-                  (
-                    fontFamily: 'JejuMyeongjo',
-                    fontSize: 27,
-                    color: Color(0xFF280404)
-                )
-            ),
-            SizedBox(height: 50),
+            SizedBox(height: 40),
             Padding(
               padding: EdgeInsets.all(10),
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.all(30),
                   backgroundColor: Color(0xFFEADACD),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
                   minimumSize: Size(355, 70),
                 ),
                 onPressed: () => sendUserResponse(bookAIsbn!),
@@ -167,11 +159,10 @@ class _QuestionScreenState extends State<QuestionScreen> {
                   child: Center(
                     child: Text(
                       sentenceA!,
-                      style: TextStyle
-                        (
-                          fontFamily: 'Roboto',
-                          fontSize: 18,
-                          color: Color(0xFF280404)
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontSize: 18,
+                        color: Color(0xFF280404),
                       ),
                     ),
                   ),
@@ -185,7 +176,8 @@ class _QuestionScreenState extends State<QuestionScreen> {
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.all(30),
                   backgroundColor: Color(0xFFEADACD),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
                   minimumSize: Size(355, 70),
                 ),
                 onPressed: () => sendUserResponse(bookBIsbn!),
@@ -193,15 +185,23 @@ class _QuestionScreenState extends State<QuestionScreen> {
                   child: Center(
                     child: Text(
                       sentenceB!,
-                      style: TextStyle
-                        (
-                          fontFamily: 'Roboto',
-                          fontSize: 18,
-                          color: Color(0xFF280404)
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontSize: 18,
+                        color: Color(0xFF280404),
                       ),
                     ),
                   ),
                 ),
+              ),
+            ),
+            SizedBox(height: 20),
+            Text(
+              "$question_number / 10",
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 24,
+                color: Color(0xFFB4A69B),
               ),
             ),
           ],
