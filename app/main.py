@@ -42,7 +42,6 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
   recommendationEngine = RecommendationEngine(db)
   sentence_ids, question_number = recommendationEngine.get_book_options(user_id) # 유저의 선택을 넣으면 다음 책 2개의 후보를 가져옵니다.
   book_a, book_b = get_sentences_by_ids(db, sentence_ids)
-  print(book_a, book_b)
   return JSONResponse(
                 content={
                     "bookA": {"question_num": question_number, 
