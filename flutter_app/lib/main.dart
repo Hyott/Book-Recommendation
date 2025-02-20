@@ -22,6 +22,13 @@ Map<int, Color> colorSwatch = {
 MaterialColor primarySwatch = MaterialColor(0xFF6D0003, colorSwatch);
 
 void main() {
+  const String baseUrl = String.fromEnvironment(
+    'BASE_URL',
+    defaultValue: 'https://fromsentence.com/api', // 기본값 확인
+  );
+
+  print("현재 사용 중인 API URL: $baseUrl");  // 🚀 여기에 배치해야 오류 없음.
+
   runApp(
     ChangeNotifierProvider(
       create: (context) => UserNameProvider(),

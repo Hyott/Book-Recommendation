@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y curl git unzip
 ARG FLUTTER_SDK=/usr/local/flutter
 ARG FLUTTER_VERSION=3.27.1
 ARG APP=/app
-ARG API_BASE_URL
+ARG BASE_URL
 
 # Flutter 설치 및 버전 체크아웃
 RUN git clone https://github.com/flutter/flutter.git $FLUTTER_SDK
@@ -16,7 +16,7 @@ RUN cd $FLUTTER_SDK && git fetch && git checkout $FLUTTER_VERSION
 
 # 환경 변수 설정
 ENV PATH="$FLUTTER_SDK/bin:$FLUTTER_SDK/bin/cache/dart-sdk/bin:${PATH}"
-ENV API_BASE_URL=${API_BASE_URL}
+ENV BASE_URL=${BASE_URL}
 
 # Flutter 설치 확인
 RUN flutter doctor -v
@@ -29,7 +29,7 @@ WORKDIR $APP
 # 1️⃣ 이미 Docker 이미지 빌드 시점에 Flutter 빌드 수행
 RUN flutter clean
 RUN flutter pub get
-RUN flutter build web --release --dart-define=API_BASE_URL=$API_BASE_URL
+RUN flutter build web --release --dart-define=BASE_URL=$BASE_URL
 
 # 2️⃣ 빌드된 결과(/app/build/web)를 임시 폴더로 이동 (볼륨 덮어쓰기 방지)
 RUN mv /app/build/web /app/build/web_dist
