@@ -24,11 +24,11 @@ class RecommendationEngine:
         selected_zero_indices = self.to_zero_index(selected_book_indices)
         average_similarity = self.cosine_similarity[selected_zero_indices, :].mean(axis=0)  # 열 방향 평균
 
-        ranked_indices = np.argsort(-average_similarity)  # 이 값은 0-index 기준
+        ranked_indices = self.to_one_index(np.argsort(-average_similarity))  # 이 값은 0-index 기준
         # 0-index 기준으로 선택된 인덱스를 제외한 후, 상위 1000개 선택
         remove_selected_indices = ranked_indices[~np.isin(ranked_indices, selected_zero_indices)][:1000]
         # 추천 결과를 1-indexed로 변환하여 반환
-        recommended_books = list(map(int, self.to_one_index(np.random.choice(remove_selected_indices, 2))))
+        recommended_books = list(map(int, np.random.choice(remove_selected_indices, 2)))
         return recommended_books, question_number
     else:
         # self.book_indices는 이미 1-indexed이므로 그대로 사용
@@ -42,12 +42,11 @@ class RecommendationEngine:
         selected_zero_indices = self.to_zero_index(selected_book_indices)
         average_similarity = self.cosine_similarity[selected_zero_indices, :].mean(axis=0)  # 열 방향 평균
 
-        ranked_indices = np.argsort(-average_similarity)  # 이 값은 0-index 기준
-        # 0-index 기준으로 선택된 인덱스를 제외한 후, 상위 1000개 선택
+        ranked_indices = self.to_one_index(np.argsort(-average_similarity))  # 이 값은 0-index 기준
         remove_selected_indices = ranked_indices[~np.isin(ranked_indices, selected_zero_indices)][:5]
         
         # 추천 결과를 1-indexed로 변환하여 반환
-        recommended_books = list(map(int, self.to_one_index(remove_selected_indices)))
+        recommended_books = list(map(int, remove_selected_indices))
         result_recommended_books = self.isbn_arr[recommended_books]
         return [int(isbn) for isbn in result_recommended_books]  # ✅ numpy.int64 → int 변환
     else:
