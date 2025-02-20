@@ -97,16 +97,21 @@ class _ResultScreenState extends State<ResultScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView(
-        scrollDirection: Axis.vertical,
-        controller: _verticalPageController,
-        children: [
-          _buildRecommendationPage(),
-          _buildDetailPageView(),
-        ],
+      body: Container(
+        height: double.infinity, // 화면 전체를 차지하도록 설정
+        width: double.infinity,  // 가로도 꽉 차게 설정
+        child: PageView(
+          scrollDirection: Axis.vertical,
+          controller: _verticalPageController,
+          children: [
+            _buildRecommendationPage(),
+            _buildDetailPageView(),
+          ],
+        ),
       ),
     );
   }
+
 
   // 추천 도서 목록 페이지
   Widget _buildRecommendationPage() {
