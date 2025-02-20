@@ -22,7 +22,6 @@ from fastapi.responses import JSONResponse
 
 load_dotenv()
 
-ENV = os.getenv("ENV", "local")
 ROOT_PATH = os.getenv("ROOT_PATH", "")
 
 # FastAPI 인스턴스 생성 (root_path 적용)
