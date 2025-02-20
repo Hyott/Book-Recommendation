@@ -437,28 +437,7 @@ class _ResultScreenState extends State<ResultScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                // ElevatedButton(
-                                //   style: ElevatedButton.styleFrom(
-                                //     minimumSize: Size(148, 39),
-                                //     backgroundColor: Color(0xFFF8F8F8),
-                                //     side: BorderSide(color: Color(0xFF50513F), width: 0.5),
-                                //     shape: RoundedRectangleBorder(
-                                //       borderRadius: BorderRadius.circular(20),
-                                //     ),
-                                //   ),
-                                //   onPressed: () {
-                                //     Share.share('https://fromsentence.com/');
-                                //   },
-                                //   child: const Text(
-                                //     '공유하기',
-                                //     style: TextStyle(
-                                //         fontFamily: 'JejuMyeongjo',
-                                //         fontSize: 20,
-                                //         color: Color(0xFF50513F)
-                                //     ),
-                                //   ),
-                                // ),
-                                const SizedBox(width: 10),
+                                
                                 ElevatedButton(
                                   style: ElevatedButton.styleFrom(
                                     minimumSize: Size(148, 39),
@@ -484,12 +463,17 @@ class _ResultScreenState extends State<ResultScreen> {
                                     ),
                                   ),
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 14),
-                            // 만든 이들 버튼
-                            TextButton(
-                              onPressed: () {
+                                const SizedBox(width: 10),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    minimumSize: Size(148, 39),
+                                    backgroundColor: Color(0xFFF8F8F8),
+                                    side: BorderSide(color: Color(0xFF50513F), width: 0.5),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                  ),
+                                  onPressed: () {
                                 // "만든 이들" 페이지로 이동
                                 Navigator.push(
                                   context,
@@ -504,7 +488,28 @@ class _ResultScreenState extends State<ResultScreen> {
                                     color: Color(0xFF2A0606)
                                 ),
                               ),
+                                ),
+                              ],
                             ),
+                            const SizedBox(height: 14),
+                            // 만든 이들 버튼
+                            // TextButton(
+                            //   onPressed: () {
+                            //     // "만든 이들" 페이지로 이동
+                            //     Navigator.push(
+                            //       context,
+                            //       MaterialPageRoute(builder: (context) => CreatorScreen()),
+                            //     );
+                            //   },
+                            //   child: const Text(
+                            //     '만든 이들',
+                            //     style: TextStyle(
+                            //         fontFamily: 'JejuMyeongjo',
+                            //         fontSize: 20,
+                            //         color: Color(0xFF2A0606)
+                            //     ),
+                            //   ),
+                            // ),
                           ],
                         ),
                       ],
