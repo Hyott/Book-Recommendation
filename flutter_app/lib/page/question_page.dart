@@ -136,7 +136,15 @@ class _QuestionScreenState extends State<QuestionScreen> {
           mainAxisAlignment: MainAxisAlignment.start, // 위쪽 정렬
           children: [
             Text(
-              "      마음에 머무는\n문장은 무엇인가요?",
+              "마음에 머무는",
+              style: TextStyle(
+                fontFamily: 'JejuMyeongjo',
+                fontSize: 27,
+                color: Color(0xFF280404),
+              ),
+            ),
+            Text(
+              "문장은 무엇인가요?",
               style: TextStyle(
                 fontFamily: 'JejuMyeongjo',
                 fontSize: 27,
