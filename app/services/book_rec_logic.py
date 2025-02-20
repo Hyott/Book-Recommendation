@@ -1,5 +1,5 @@
 import numpy as np
-from database.crud import get_user_response
+from database.crud import get_user_select_sentence, get_user_true_response
 
 class RecommendationEngine:
   def __init__(self, db):
@@ -18,17 +18,19 @@ class RecommendationEngine:
       return np.array(indices) + 1
     
   def get_book_options(self, user_id):
-    selected_book_indices, question_number = get_user_response(self.db, user_id)
+    selected_book_indices, question_number = get_user_true_response(self.db, user_id)
+    selected_all_indices = get_user_select_sentence
     if selected_book_indices:
         # 1-indexed 값을 0-indexed로 변환해서 cosine_similarity 접근
         selected_zero_indices = self.to_zero_index(selected_book_indices)
         average_similarity = self.cosine_similarity[selected_zero_indices, :].mean(axis=0)  # 열 방향 평균
 
         ranked_indices = self.to_one_index(np.argsort(-average_similarity))  # 이 값은 0-index 기준
-        # 0-index 기준으로 선택된 인덱스를 제외한 후, 상위 1000개 선택
-        remove_selected_indices = ranked_indices[~np.isin(ranked_indices, selected_zero_indices)][:1000]
-        # 추천 결과를 1-indexed로 변환하여 반환
-        recommended_books = list(map(int, np.random.choice(remove_selected_indices, 2)))
+        remove_selected_indices = ranked_indices[~np.isin(ranked_indices, selected_all_indices)]
+        book_a = np.random.choice(remove_selected_indices[100:500], 1)
+        book_b = np.random.choice(remove_selected_indices[-500:-100], 1)
+
+        recommended_books = list(map(int, [book_a, book_b]))
         return recommended_books, question_number
     else:
         # self.book_indices는 이미 1-indexed이므로 그대로 사용
@@ -36,7 +38,7 @@ class RecommendationEngine:
 
   
   def get_result_isbn(self, user_id):
-    selected_book_indices, _ = get_user_response(self.db, user_id)
+    selected_book_indices, _ = get_user_true_response(self.db, user_id)
     if selected_book_indices:
         # 1-indexed 값을 0-indexed로 변환해서 cosine_similarity 접근
         selected_zero_indices = self.to_zero_index(selected_book_indices)
