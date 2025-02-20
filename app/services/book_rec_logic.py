@@ -19,7 +19,7 @@ class RecommendationEngine:
     
   def get_book_options(self, user_id):
     selected_book_indices, question_number = get_user_true_response(self.db, user_id)
-    selected_all_indices = get_user_select_sentence
+    selected_all_indices = get_user_select_sentence(self.db, user_id)
     if selected_book_indices:
         # 1-indexed 값을 0-indexed로 변환해서 cosine_similarity 접근
         selected_zero_indices = self.to_zero_index(selected_book_indices)
@@ -27,8 +27,8 @@ class RecommendationEngine:
 
         ranked_indices = self.to_one_index(np.argsort(-average_similarity))  # 이 값은 0-index 기준
         remove_selected_indices = ranked_indices[~np.isin(ranked_indices, selected_all_indices)]
-        book_a = np.random.choice(remove_selected_indices[100:500], 1)
-        book_b = np.random.choice(remove_selected_indices[-500:-100], 1)
+        book_a = np.random.choice(remove_selected_indices[10:len(self.book_indices)//3], 1)
+        book_b = np.random.choice(remove_selected_indices[-len(self.book_indices)//3:-100], 1)
 
         recommended_books = list(map(int, [book_a, book_b]))
         return recommended_books, question_number
