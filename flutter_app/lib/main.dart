@@ -92,15 +92,18 @@ class NameInputScreen extends StatelessWidget {
               children: [
                 SizedBox(height: 10),
                 Center(),
-                SizedBox(height: 150),
-                Image.asset('assets/images/main_logo_image.png'),
+                SizedBox(height: 100),
+                Image.asset('assets/images/main_logo_image.png',  
+                width: 355, // 원하는 너비
+                height: 120, // 원하는 높이
+                fit: BoxFit.contain), // 비율을 유지하며 이미지가 컨테이너 안에 들어가도록 함),
                 const SizedBox(height: 30),
                 Text(
                   '문장으로부터\n책으로 이끄는 순간까지',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.normal),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 150),
+                SizedBox(height: 100),
                 SizedBox(
                   width: 355,
                   height: 60,
@@ -138,7 +141,7 @@ class NameInputScreen extends StatelessWidget {
                     );
                   },
                   child: Text(
-                    '시작하기',
+                    '시작',
                     style: TextStyle(fontSize: 30, color: Color(0xFF280404)),
                   ),
               ),
