@@ -16,6 +16,7 @@ RUN cd $FLUTTER_SDK && git fetch && git checkout $FLUTTER_VERSION
 
 # 환경 변수 설정
 ENV PATH="$FLUTTER_SDK/bin:$FLUTTER_SDK/bin/cache/dart-sdk/bin:${PATH}"
+ENV API_BASE_URL=${API_BASE_URL}
 
 # Flutter 설치 확인
 RUN flutter doctor -v

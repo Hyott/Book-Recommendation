@@ -54,3 +54,18 @@ def get_user_last_sentenceid(db: Session, user_id: str):
         return int(result[0])
     else:
         return 0
+    
+def get_sentences_by_ids(db: Session, sentence_ids: list[int]):
+    return db.query(SentenceTable).filter(SentenceTable.id.in_(sentence_ids)).all()
+
+def get_user_response(db: Session, user_id: str):
+    result = db.query(UserResponseTable.question_number,
+                      UserResponseTable.sentence_id) \
+               .filter(UserResponseTable.user_id == user_id) \
+               .filter(UserResponseTable.is_positive == True) \
+               .all()
+    
+    sentence_ids = [row.sentence_id for row in result] if result else []
+    max_question_number = max((row.question_number for row in result) , default=0) + 1
+    
+    return sentence_ids, max_question_number
