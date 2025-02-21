@@ -42,3 +42,39 @@ def get_question_number_by_user_id(db: Session, user_id: str):
         return int(result[0])
     else:
         return 0
+
+def get_user_last_sentenceid(db: Session, user_id: str):
+    result = db.query(UserResponseTable.sentence_id) \
+            .filter(UserResponseTable.user_id == user_id) \
+            .filter(UserResponseTable.is_positive == True) \
+            .order_by(UserResponseTable.question_number.desc()) \
+            .first()
+         # .first()[0]) # 가장 최신 값 가져오기 
+    if result:
+        return int(result[0])
+    else:
+        return 0
+    
+def get_sentences_by_ids(db: Session, sentence_ids: list[int]):
+    return db.query(SentenceTable).filter(SentenceTable.id.in_(sentence_ids)).all()
+
+def get_user_true_response(db: Session, user_id: str):
+    result = db.query(UserResponseTable.question_number,
+                      UserResponseTable.sentence_id) \
+               .filter(UserResponseTable.user_id == user_id) \
+               .filter(UserResponseTable.is_positive == True) \
+               .all()
+    
+    sentence_ids = [row.sentence_id for row in result] if result else []
+    max_question_number = max((row.question_number for row in result) , default=0) + 1
+    
+    return sentence_ids, max_question_number
+
+def get_user_select_sentence(db: Session, user_id: str):
+    result = db.query(UserResponseTable.sentence_id) \
+               .filter(UserResponseTable.user_id == user_id) \
+               .all()
+    
+    sentence_ids = [row.sentence_id for row in result] if result else []
+    
+    return sentence_ids

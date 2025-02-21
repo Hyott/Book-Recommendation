@@ -1,3 +1,7 @@
+*.pkl
+app/.DS_Store
+build_output/
+*.pkl
 .env
 *.tsv
 *.csv
@@ -9,4 +13,8 @@ api_db_connection.py*.pyc
 *.sql
 .DS_Store
 __pycache__/"readme.env" 
-
+certbot/conf/archive/
+certbot/conf/live/
+certbot/conf/renewal/
+certbot/www/
+*.npy

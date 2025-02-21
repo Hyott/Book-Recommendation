@@ -1,5 +1,5 @@
-name: project
-description: "A new Flutter project."
+name: fromSentence
+description: "프롬센텐스: 문장으로부터 책으로 이끄는 순간까지"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -30,6 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_dotenv: ^5.1.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -39,15 +40,21 @@ dependencies:
   http: ^1.2.2
   provider: ^6.1.2
   uuid: ^4.5.1
+  carousel_slider: ^5.0.0
+  share_plus: ^10.1.4
+  cached_network_image: ^3.4.1
+  smooth_page_indicator: ^1.2.0+3
+  lottie: ^3.3.1
+  url_launcher: ^6.3.1
 
 flutter_native_splash:
   color: "#FFFFFF" # 스플래시 화면의 배경색 설정 (흰색)
-  image: "assets/images/splash.png" # 스플래시 화면에 표시될 이미지 설정 (앱 로고)
+  image: "assets/images/splash_image.png" # 스플래시 화면에 표시될 이미지 설정 (앱 로고)
   android: true # 안드로이드 플랫폼에 스플래시 화면 적용
   ios: true # iOS 플랫폼에 스플래시 화면 적용
   android_12: # Android 12 이상을 위한 추가 설정
     color: "#FFFFFF" # Android 12 이상 스플래시 화면의 배경색 (흰색)
-    image: "assets/images/splash.png" # Android 12 이상 스플래시 화면에 표시될 이미지
+    image: "assets/images/splash_image.png" # Android 12 이상 스플래시 화면에 표시될 이미지
 
 dev_dependencies:
   flutter_test:
@@ -64,9 +71,9 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true # 안드로이드 플랫폼에 런처 아이콘 적용 여부
   ios: true # iOS 플랫폼에 런처 아이콘 적용 여부
-  image_path: "assets/images/splash.png" # 런처 아이콘으로 사용할 이미지 경로
+  image_path: "assets/images/logo_image.png" # 런처 아이콘으로 사용할 이미지 경로
   adaptive_icon_background: "#000000" # 안드로이드 적응형 아이콘의 배경색 (검정색)
-  adaptive_icon_foreground: "assets/images/splash.png" # 안드로이드 적응형 아이콘의 전경 이미지 경로
+  adaptive_icon_foreground: "assets/images/logo_image.png" # 안드로이드 적응형 아이콘의 전경 이미지 경로
   min_sdk_android: 21 # 안드로이드 최소 SDK 버전 (API 21(Android 5.0) 이상)
   remove_alpha_ios: true
 
@@ -87,6 +94,7 @@ flutter:
   #   - images/a_dot_ham.jpeg
   assets:
     - assets/images/ # 앱에서 사용하는 에셋 파일 디렉터리 명시
+    - assets/loading_animation.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -99,17 +107,40 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
-  #
+  fonts:
+#     - family: Schyler
+#       fonts:
+#         - asset: fonts/Schyler-Regular.ttf
+#         - asset: fonts/Schyler-Italic.ttf
+#           style: italic
+#     - family: Trajan Pro
+#       fonts:
+#         - asset: fonts/TrajanPro.ttf
+#         - asset: fonts/TrajanPro_Bold.ttf
+#           weight: 700
+     - family: AbhayaLibre
+       fonts:
+         - asset: assets/fonts/AbhayaLibre-Regular.ttf
+     - family: GowunBatang
+       fonts:
+         - asset: assets/fonts/GowunBatang-Bold.ttf
+         - asset: assets/fonts/GowunBatang-Regular.ttf
+     - family: Inter
+       fonts:
+         - asset: assets/fonts/Inter-Bold.ttf
+         - asset: assets/fonts/Inter-Regular.ttf
+     - family: JejuMyeongjo
+       fonts:
+         - asset: assets/fonts/JejuMyeongjo.ttf
+     - family: Roboto
+       fonts:
+         - asset: assets/fonts/Roboto-Italic-VariableFont_wdth,wght.ttf
+         - asset: assets/fonts/Roboto-Regular.ttf
+         - asset: assets/fonts/Roboto-VariableFont_wdth,wght.ttf
+     - family: Spectral-Regular
+       fonts:
+         - asset: assets/fonts/Spectral-Regular.ttf
+
+
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package

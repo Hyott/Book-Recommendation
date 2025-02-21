@@ -13,7 +13,7 @@ load_dotenv()
 
 # 환경 변수 가져오기
 host = 'localhost'
-port = os.getenv("PORT")
+port = os.getenv("POSTGRES_PORT")
 user = os.getenv("POSTGRES_USER")
 password = os.getenv("POSTGRES_PASSWORD")
 database_name = os.getenv("DATABASE_NAME")
@@ -26,9 +26,10 @@ setup_database_and_tables(host, port, user, password, database_name)
 Session = sessionmaker(bind=engine)
 session = Session()
 
+import os
+print(os.getcwd())
 
-
-json_file_path = 'data/scraping/filtered_book_unique.json'
+json_file_path = 'app/database/data/filtered_book_unique.json'
 print('books 테이블에 데이터를 넣습니다.')
 with open(json_file_path, 'r', encoding='utf-8') as file:
   data = json.load(file)
@@ -54,51 +55,53 @@ with open(json_file_path, 'r', encoding='utf-8') as file:
         session.rollback()
         print(f"오류 발생: {e}")
 
-# json_file_path = 'data/scraping/llm_output_fixed.json'
-# print('sentences 테이블에 데이터를 넣습니다.')
-# with open(json_file_path, 'r', encoding='utf-8') as file:
-#   data = json.load(file)
+json_file_path = 'app/database/data/llm_output_openai.json'
+print('sentences 테이블에 데이터를 넣습니다.')
+with open(json_file_path, 'r', encoding='utf-8') as file:
+  data = json.load(file)
 
-#   tag_id = 1
-#   for book_key in data:
-#     book = data[book_key]
-#     isbn = str(book["isbn"])
-#     sentence_text = book["sentence"]
-#     hashtags = book["hashtags"]
+  tag_id = 1
+  for book_key in data:
+    book = data[book_key]
+    isbn = str(book["isbn"])
+    sentence_text = book["sentence"]
+    hashtags = book["hashtags"]
+    letter = book['letter']
 
-#     book_sentence = SentenceTable(
-#                 isbn=isbn,
-#                 sentence=sentence_text,
-#             )
-#     try:
-#       session.merge(book_sentence)
-#       session.commit()
-#     except IntegrityError:
-#       session.rollback()
-#       print(f"중복된 ISBN: {isbn} - 'sentences' 삽입을 건너뜁니다.")
-#     except Exception as e:
-#         session.rollback()
-#         print(f"오류 발생: {e}")
+    book_sentence = SentenceTable(
+                isbn=isbn,
+                sentence=sentence_text,
+                letter=letter
+            )
+    try:
+      session.merge(book_sentence)
+      session.commit()
+    except IntegrityError:
+      session.rollback()
+      print(f"중복된 ISBN: {isbn} - 'sentences' 삽입을 건너뜁니다.")
+    except Exception as e:
+        session.rollback()
+        print(f"오류 발생: {e}")
 
 
-#     cleaned_tags = re.findall(r"#([^\s#\d.][^#]*)", hashtags)
+    cleaned_tags = re.findall(r"#([^\s#\d.][^#]*)", hashtags)
 
-#     for tag in cleaned_tags:
-#       tag_entry = TagTable(
-#         id = tag_id,
-#         isbn = isbn,
-#         tag_name = tag.strip()
-#       )
-#       try:
-#         session.add(tag_entry)
-#         session.commit()
-#         tag_id += 1
-#       except IntegrityError:
-#         session.rollback()
-#         print(f"중복된 ISBN: {isbn} - {tag.strip()} 삽입을 건너뜁니다.")
-#       except Exception as e:
-#           session.rollback()
-#           print(f"오류 발생: {e}")
+    for tag in cleaned_tags:
+      tag_entry = TagTable(
+        id = tag_id,
+        isbn = isbn,
+        tag_name = tag.strip()
+      )
+      try:
+        session.add(tag_entry)
+        session.commit()
+        tag_id += 1
+      except IntegrityError:
+        session.rollback()
+        print(f"중복된 ISBN: {isbn} - {tag.strip()} 삽입을 건너뜁니다.")
+      except Exception as e:
+          session.rollback()
+          print(f"오류 발생: {e}")
 
 
 session.close()

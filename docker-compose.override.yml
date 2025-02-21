@@ -1,0 +1,5 @@
+services:
+  nginx:
+    volumes:
+      - ./nginx/local_nginx.conf:/etc/nginx/nginx.conf
+      - ./build_output:/usr/share/nginx/html:ro
