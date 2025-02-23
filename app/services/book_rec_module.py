@@ -426,3 +426,4 @@ def get_message_by_id(ids, book_id, book_data):
     idx = np.where(ids == book_id)[0][0]  # book_id의 인덱스 찾기
     return book_data[idx]["sentence"]
 
+

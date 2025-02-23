@@ -97,16 +97,21 @@ class _ResultScreenState extends State<ResultScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView(
-        scrollDirection: Axis.vertical,
-        controller: _verticalPageController,
-        children: [
-          _buildRecommendationPage(),
-          _buildDetailPageView(),
-        ],
+      body: Container(
+        height: double.infinity, // 화면 전체를 차지하도록 설정
+        width: double.infinity,  // 가로도 꽉 차게 설정
+        child: PageView(
+          scrollDirection: Axis.vertical,
+          controller: _verticalPageController,
+          children: [
+            _buildRecommendationPage(),
+            _buildDetailPageView(),
+          ],
+        ),
       ),
     );
   }
+
 
   // 추천 도서 목록 페이지
   Widget _buildRecommendationPage() {
@@ -289,6 +294,7 @@ class _ResultScreenState extends State<ResultScreen> {
       body: bookDetails.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : PageView.builder(
+        physics: const NeverScrollableScrollPhysics(), // 상세페이지에서 옆으로 스와이프 방지
         itemCount: bookDetails.length,
         onPageChanged: (index) {
           setState(() {
@@ -410,14 +416,9 @@ class _ResultScreenState extends State<ResultScreen> {
                                 const SizedBox(height: 11),
                                 Text(
                                   book['tags'],
-                                  style: const TextStyle
-                                    (
-                                      fontFamily: 'GowunBatang',
-                                      fontSize: 12,
-                                      color: Colors.black
-                                  ),
+                                  style: _getDynamicTextStyle(book['title'], book['tags']),
                                 ),
-                                const SizedBox(height: 6),
+                                const SizedBox(height: 18),
                                 Align(
                                   alignment: Alignment.centerRight,
                                   child: Text(
@@ -441,28 +442,7 @@ class _ResultScreenState extends State<ResultScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    minimumSize: Size(148, 39),
-                                    backgroundColor: Color(0xFFF8F8F8),
-                                    side: BorderSide(color: Color(0xFF50513F), width: 0.5),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                  ),
-                                  onPressed: () {
-                                    Share.share('https://fromsentence.com/');
-                                  },
-                                  child: const Text(
-                                    '공유하기',
-                                    style: TextStyle(
-                                        fontFamily: 'JejuMyeongjo',
-                                        fontSize: 20,
-                                        color: Color(0xFF50513F)
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
+                                
                                 ElevatedButton(
                                   style: ElevatedButton.styleFrom(
                                     minimumSize: Size(148, 39),
@@ -488,12 +468,17 @@ class _ResultScreenState extends State<ResultScreen> {
                                     ),
                                   ),
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 14),
-                            // 만든 이들 버튼
-                            TextButton(
-                              onPressed: () {
+                                const SizedBox(width: 10),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    minimumSize: Size(148, 39),
+                                    backgroundColor: Color(0xFFF8F8F8),
+                                    side: BorderSide(color: Color(0xFF50513F), width: 0.5),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                  ),
+                                  onPressed: () {
                                 // "만든 이들" 페이지로 이동
                                 Navigator.push(
                                   context,
@@ -508,7 +493,28 @@ class _ResultScreenState extends State<ResultScreen> {
                                     color: Color(0xFF2A0606)
                                 ),
                               ),
+                                ),
+                              ],
                             ),
+                            const SizedBox(height: 14),
+                            // 만든 이들 버튼
+                            // TextButton(
+                            //   onPressed: () {
+                            //     // "만든 이들" 페이지로 이동
+                            //     Navigator.push(
+                            //       context,
+                            //       MaterialPageRoute(builder: (context) => CreatorScreen()),
+                            //     );
+                            //   },
+                            //   child: const Text(
+                            //     '만든 이들',
+                            //     style: TextStyle(
+                            //         fontFamily: 'JejuMyeongjo',
+                            //         fontSize: 20,
+                            //         color: Color(0xFF2A0606)
+                            //     ),
+                            //   ),
+                            // ),
                           ],
                         ),
                       ],
@@ -523,6 +529,14 @@ class _ResultScreenState extends State<ResultScreen> {
     );
   }
 
-
-
+  TextStyle _getDynamicTextStyle(String text1, String text2) {
+    print("title length: ${text1.length}, hashtag length: ${text2.length}");
+    print("Total length: ${text1.length + text2.length}");
+    return TextStyle(
+      fontSize: text1.length + text2.length > 90 ? 10 : 12, // 90글자 이상이면 폰트 크기를 줄이기
+      fontWeight: FontWeight.bold,
+      fontFamily: 'GowunBatang',
+      color: Colors.black,
+    );
+  }
 }

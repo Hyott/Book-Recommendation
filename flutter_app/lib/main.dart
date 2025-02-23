@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fromSentence/page/question_page.dart';
+import 'package:fromSentence/page/result_page.dart'; // 결과 페이지 추가
 import 'package:provider/provider.dart';
-
 
 // 색상 팔레트 정의
 Map<int, Color> colorSwatch = {
@@ -22,6 +22,10 @@ Map<int, Color> colorSwatch = {
 MaterialColor primarySwatch = MaterialColor(0xFF6D0003, colorSwatch);
 
 void main() {
+  const String baseUrl = String.fromEnvironment(
+    'BASE_URL',
+    defaultValue: 'https://fromsentence.com/api', // 기본값 확인
+  );
   runApp(
     ChangeNotifierProvider(
       create: (context) => UserNameProvider(),
@@ -39,8 +43,23 @@ class MyApp extends StatelessWidget {
         primarySwatch: primarySwatch, // 정의한 MaterialColor 사용
         fontFamily: 'JejuMyeongjo',
       ),
-      home: NameInputScreen(),
       debugShowCheckedModeBanner: false,
+      onGenerateRoute: (settings) {
+        Uri uri = Uri.parse(settings.name ?? "");
+
+        if (uri.pathSegments.isNotEmpty && uri.pathSegments[0] == 'final_recommendation') {
+          // URL에서 userId 추출
+          String userId = uri.pathSegments.length > 1 ? uri.pathSegments[1] : "";
+          
+          return MaterialPageRoute(
+            builder: (context) => ResultScreen(userId: userId),
+          );
+        }
+
+        // 기본적으로 홈 화면으로 이동
+        return MaterialPageRoute(builder: (context) => NameInputScreen());
+      },
+      home: NameInputScreen(), // 기존 홈 화면 유지
     );
   }
 }
@@ -69,23 +88,19 @@ class NameInputScreen extends StatelessWidget {
             child: Column(
               children: [
                 SizedBox(height: 10),
-                Center(
-                ),
-                SizedBox(height: 150),
-                Image.asset(
-                  'assets/images/main_logo_image.png'
-                ),
+                Center(),
+                SizedBox(height: 100),
+                Image.asset('assets/images/main_logo_image.png',  
+                width: 355, // 원하는 너비
+                height: 120, // 원하는 높이
+                fit: BoxFit.contain), // 비율을 유지하며 이미지가 컨테이너 안에 들어가도록 함),
                 const SizedBox(height: 30),
                 Text(
                   '문장으로부터\n책으로 이끄는 순간까지',
-                  style: TextStyle
-                    (
-                      fontSize: 22,
-                      fontWeight: FontWeight.normal
-                  ),
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.normal),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 150),
+                SizedBox(height: 100),
                 SizedBox(
                   width: 355,
                   height: 60,
@@ -99,11 +114,7 @@ class NameInputScreen extends StatelessWidget {
                         ),
                       counterText: "", // 기본 글자 수 카운터 숨기기
                     ),
-                    style: TextStyle
-                      (
-                        fontFamily: 'Inter',
-                        fontSize: 24
-                    ),
+                    style: TextStyle(fontFamily: 'Inter', fontSize: 24),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -127,12 +138,8 @@ class NameInputScreen extends StatelessWidget {
                     );
                   },
                   child: Text(
-                    '시작하기',
-                    style: TextStyle
-                      (
-                        fontSize: 30,
-                        color: Color(0xFF280404)
-                    ),
+                    '시작',
+                    style: TextStyle(fontSize: 30, color: Color(0xFF280404)),
                   ),
               ),
             ],

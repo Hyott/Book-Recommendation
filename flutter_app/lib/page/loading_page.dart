@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:fromSentence/page/result_page.dart';
 import 'package:lottie/lottie.dart';
 
-
 class LoadingScreen extends StatelessWidget {
   final String userId; // 사용자 ID
 
@@ -20,9 +19,13 @@ class LoadingScreen extends StatelessWidget {
     });
 
     return Scaffold(
-      body: Center(
-        child: Lottie.asset('assets/loading_animation.json'),
-      ),
-    );
-  }
+  body: Container(
+    height: double.infinity, // 전체 화면을 차지하도록 설정
+    child: Center(
+      child: Lottie.asset('assets/loading_animation.json'),
+    ),
+  ),
+);
+
+  } // <- 중괄호 닫기 추가
 }
