@@ -36,7 +36,7 @@ ENV = os.getenv("ENV", "local")
 ROOT_PATH = os.getenv("ROOT_PATH", "")
 
 # FastAPI 인스턴스 생성 (root_path 적용)
-app = FastAPI(root_path=ROOT_PATH)
+app = FastAPI(root_path=ROOT_PATH, docs_url='/sesac', redoc_url=None, openapi_url=None)
 
 # CORS 설정
 app.add_middleware(
@@ -51,9 +51,9 @@ app.add_middleware(
 user_presented_books = defaultdict(set)
 user_suggested_books = defaultdict(list)
 user_books_chosen = defaultdict(list)
-user_round_num = defaultdict(int)
-user_alpha = defaultdict()
-user_beta_values = defaultdict()
+# user_round_num = defaultdict(int)
+# user_alpha = defaultdict()
+# user_beta_values = defaultdict()
 user_book_chosen_dict = defaultdict(lambda: defaultdict(list))
 user_sorted_cluster_books = defaultdict(lambda: defaultdict(list)) 
 user_weighted_centroid = defaultdict(list)
@@ -67,8 +67,8 @@ user_selected_books_of_round910 = defaultdict(list)
 # user_book_choices_of_round678 = defaultdict(list)
 user_final_cluster_to_books = defaultdict(lambda: defaultdict(list))
 
-user_book_a = defaultdict(int)
-user_book_b = defaultdict(int)
+# user_book_a = defaultdict(int)
+# user_book_b = defaultdict(int)
 
 
 # embedding_save_path = "data/book_embeddings_openai.json" 

@@ -70,7 +70,7 @@ def get_user_true_response(db: Session, user_id: str):
     
     return sentence_ids, max_question_number
 
-def get_user_select_sentence(db: Session, user_id: str):
+def get_presented_sentence(db: Session, user_id: str):
     result = db.query(UserResponseTable.sentence_id) \
                .filter(UserResponseTable.user_id == user_id) \
                .all()

@@ -7,9 +7,6 @@ import os
 print("os.getcwd: ", os.getcwd())
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
-import numpy as np
-from numpy.linalg import norm 
-import json
 from psycopg2 import sql
 from sqlalchemy.orm import Session
 from app.database.models import SentenceTable
@@ -96,7 +93,7 @@ def neighborhood_based_clustering(weighted_centroid, book_embeddings, num_indice
     cosine_similarities = cosine_similarity(book_embeddings, weighted_centroid).flatten()
     
     # ✅ 성능 향상: np.argpartition() 사용
-    num_indices = np.argpartition(cosine_similarities, -num_indices)[-num_indices:]
+    selected_new_indices = np.argpartition(cosine_similarities, -num_indices)[-num_indices:]
     selected_vectors = book_embeddings[num_indices]
 
     # ✅ 3. 선택된 벡터 정규화 (코사인 거리 기반 KMeans)
@@ -118,7 +115,7 @@ def neighborhood_based_clustering(weighted_centroid, book_embeddings, num_indice
     for label, count in zip(unique, counts):
         print(f"클러스터 {label}: {count}개")
 
-    return neigh_based_clustering_to_books, num_indices, kmeans, normalized_vectors
+    return neigh_based_clustering_to_books, selected_new_indices, kmeans, normalized_vectors
 
 def select_books_for_new_cluster(presented_books, neigh_based_clustering_to_books, top_300_indices, 
                                 weighted_centroid, normalized_vectors, 
@@ -337,19 +334,51 @@ def get_tournament_winner_cluster_until_round5(book_embeddings, cluster_to_books
     return book_a, book_b
 
 
+# def get_choice_bool(cursor, user_id, question_number):
+#     cursor.execute(
+#         sql.SQL("SELECT * FROM public.user_responses WHERE user_id = %s and question_number = %s"),
+#         (user_id, question_number)
+#     )
+#     exists = cursor.fetchall()
+#     if exists:
+#         book_a_select = exists[0][4]
+#         book_b_select = exists[1][4]
+#     else:
+#         book_a_select = None
+#         book_b_select = None
+#     return book_a_select, book_b_select
+
+
 def get_choice_bool(cursor, user_id, question_number):
-    cursor.execute(
-        sql.SQL("SELECT * FROM public.user_responses WHERE user_id = %s and question_number = %s"),
-        (user_id, question_number)
-    )
-    exists = cursor.fetchall()
-    if exists:
-        book_a_select = exists[0][4]
-        book_b_select = exists[1][4]
-    else:
-        book_a_select = None
-        book_b_select = None
+    """
+    같은 user_id, 같은 question_number일 때
+    최대 5회 재조회 후, 둘 중 하나라도 None이면 에러 발생.
+    """
+    attempts = 0
+    book_a_select, book_b_select = None, None
+
+    while attempts < 5:
+        cursor.execute(
+            sql.SQL("SELECT * FROM public.user_responses WHERE user_id = %s AND question_number = %s"),
+            (user_id, question_number)
+        )
+        exists = cursor.fetchall()
+
+        if exists:
+            book_a_select = exists[0][4] if len(exists) >= 1 else None
+            book_b_select = exists[1][4] if len(exists) >= 2 else None
+
+        if book_a_select is not None and book_b_select is not None:
+            break
+
+        attempts += 1
+
+    if book_a_select is None or book_b_select is None:
+        raise ValueError(f"5회 재시도 후에도 결과를 찾을 수 없습니다. user_id: {user_id}, question_number: {question_number}")
+
     return book_a_select, book_b_select
+
+
 
 
 def get_sentence_from_db(db: Session):

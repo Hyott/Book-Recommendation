@@ -1,44 +1,31 @@
-from services.module import BookRecommendation
+from fastapi import FastAPI, Depends
+from sqlalchemy.orm import Session
+from database.connection import get_db
+from services.book_rec_logic import RecommendationEngine
+from fastapi.middleware.cors import CORSMiddleware
+import os
+from fastapi.responses import JSONResponse
+import numpy as np
+from database.crud import get_sentences_by_ids
+
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database.connection import get_db
 import psycopg2
-from database.crud import get_book_by_isbn, get_sentence_by_isbn, add_user_response, get_tags_by_isbn, get_question_number_by_user_id, get_sentences_by_ids
-from database.schemas import BookSchema, SentenceSchema, UserResponseSchema, ImageResponse
+from database.crud import get_book_by_isbn, get_sentence_by_isbn, add_user_response, get_tags_by_isbn, get_question_number_by_user_id
+from database.schemas import BookSchema, SentenceSchema, UserResponseSchema
 from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
-from sklearn.cluster import KMeans
-from sklearn.metrics.pairwise import cosine_similarity
-from services.book_rec_module import update_data, get_message_by_id, get_choice_bool, \
-        get_sentence_from_db, get_tournament_winner_cluster_until_round5, \
-        get_centroid_after_round5, neighborhood_based_clustering, select_books_for_new_cluster
-from services.module import BookRecommendation
 from dotenv import load_dotenv
 import os
-from app.database.connection import database_engine
 from fastapi.responses import JSONResponse
-from collections import defaultdict
-import joblib
-import time
 
-# .env 파일 로드
 load_dotenv()
 
-# 환경 변수 가져오기
-host = os.getenv("HOST")
-port = os.getenv("POSTGRES_PORT")
-user = os.getenv("POSTGRES_USER")
-password = os.getenv("POSTGRES_PASSWORD")
-database_name = os.getenv("DATABASE_NAME")
-
-#cursor 설정
-engine_for_cursor = database_engine(host, port, user, password, database_name)
-
-ENV = os.getenv("ENV", "local")
 ROOT_PATH = os.getenv("ROOT_PATH", "")
 
 # FastAPI 인스턴스 생성 (root_path 적용)
-app = FastAPI(root_path=ROOT_PATH, docs_url='/sesac', redoc_url=None, openapi_url=None)
+app = FastAPI(root_path=ROOT_PATH)
 
 # CORS 설정
 app.add_middleware(
@@ -49,19 +36,12 @@ app.add_middleware(
     allow_headers=["*"],  # 모든 헤더 허용
 )
 
-user_book_chosen_dict = defaultdict(lambda: defaultdict(list))
-
 @app.get("/recommendation/{user_id}")
 def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
-    
-    
-
-    bookrecommendation = BookRecommendation(user_id, db)
-    suggested_books_indices, question_number = bookrecommendation.get_book_suggestions()
-    print(f"suggested_books_indices: {suggested_books_indices}")
-    book_a, book_b = get_sentences_by_ids(db, suggested_books_indices)
-    
-    return JSONResponse(
+  recommendationEngine = RecommendationEngine(db)
+  sentence_ids, question_number = recommendationEngine.get_book_options(user_id) # 유저의 선택을 넣으면 다음 책 2개의 후보를 가져옵니다.
+  book_a, book_b = get_sentences_by_ids(db, sentence_ids)
+  return JSONResponse(
                 content={
                     "bookA": {"question_num": question_number, 
                                 "sentence_id": book_a.id, 
@@ -75,6 +55,11 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
                 headers={"Content-Type": "application/json; charset=utf-8"}
             )
 
+@app.get("/final_recommendation/{user_id}")
+def get_recommendations(user_id: str, db: Session = Depends(get_db)):
+    recommendationEngine = RecommendationEngine(db)
+    recommendation_isbn = recommendationEngine.get_result_isbn(user_id)
+    return recommendation_isbn
 
 @app.get("/books/{isbn}")
 def get_book(isbn: str, db: Session = Depends(get_db)):
