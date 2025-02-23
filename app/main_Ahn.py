@@ -237,7 +237,7 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
             vector_of_choice6 = book_embeddings[books_chosen[5]]
             vector_of_choice7 = book_embeddings[books_chosen[6]]
             vector_of_choice8 = book_embeddings[books_chosen[7]]
-            all_vectors = np.vstack([weighted_centroid, vector_of_choice6, vector_of_choice7, vector_of_choice8])
+            all_vectors = np.vstack([weights_for_2nd_centroid, vector_of_choice6, vector_of_choice7, vector_of_choice8])
             # 가중 평균으로 new_centroid 계산
             weighted_centroid_2nd = np.average(all_vectors, axis=0, weights=weights_for_2nd_centroid, keepdims=True)
             print(f"weighted_centroid_2nd : {weighted_centroid_2nd}")
