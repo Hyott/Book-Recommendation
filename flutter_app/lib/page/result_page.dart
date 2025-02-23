@@ -225,11 +225,14 @@ class _ResultScreenState extends State<ResultScreen> {
                               "\n${bookDetails[index]['letter']}",
                               style: const TextStyle(
                                 fontFamily: 'GowunBatang',
-                                fontSize: 14,
+                                fontSize: 12  ,
+                                height: 1.5,     // 줄 간격 (글자 크기의 1.5배)
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black,
+                                letterSpacing: 2.0, // 자간을 넓히는 부분 (값을 조정 가능)
+                                
                               ),
-                              textAlign: TextAlign.center,
+                              textAlign: TextAlign.left,
                             ),
                           ],
                         ),
