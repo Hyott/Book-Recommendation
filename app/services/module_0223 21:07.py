@@ -1,11 +1,11 @@
 import numpy as np
 import traceback
-from database.crud import get_presented_sentence, get_user_true_response
+from database.crud import get_presented_sentence, get_user_true_response, get_question_number_by_user_id
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import normalize
 from collections import defaultdict
 from sklearn.metrics.pairwise import cosine_similarity
-
+import joblib
 
 class UserDataStorage:
 
@@ -17,8 +17,8 @@ class UserDataStorage:
         self.user_selected_indices_from_weighted_centroid = defaultdict(list)
         self.user_kmeans_2nd = defaultdict(list)
         self.user_suggested_books_10th = defaultdict(list)
-        self.user_weighted_centroid_2nd = defaultdict(list)
         
+    
     def get_user_neigh_based_clustering_to_books(self, user_id):
         return self.user_neigh_based_clustering_to_books[user_id]
     
@@ -40,8 +40,6 @@ class UserDataStorage:
     def get_user_suggested_books_10th(self, user_id):
         return self.user_suggested_books_10th[user_id]
     
-    def get_user_weighted_centroid_2nd(self, user_id):
-        return self.user_weighted_centroid_2nd[user_id]
 
 
 
@@ -82,7 +80,6 @@ class BookRecommendation:
         self.selected_indices_from_weighted_centroid = user_data_storage.get_user_selected_indices_from_weighted_centroid(user_id)
         self.kmeans_2nd = user_data_storage.get_user_kmeans_2nd(user_id)
         self.suggested_books_10th = user_data_storage.get_user_suggested_books_10th(user_id)
-        self.weighted_centroid_2nd = user_data_storage.get_user_weighted_centroid_2nd(user_id)
 
         self.selected_book_indices, self.question_number = get_user_true_response(self.db, user_id)
         self.presented_book_indices = get_presented_sentence(self.db, self.user_id)
@@ -130,6 +127,7 @@ class BookRecommendation:
                                                                 self.visited_clusters,
                                                                 self.kmeans_2nd)
 
+
         elif self.question_number ==9:
             presented_book_indices = self.presented_book_indices
             book_embeddings = self.book_embeddings
@@ -146,10 +144,10 @@ class BookRecommendation:
             print(f"self.weighted_centroid[0].shape : {self.weighted_centroid[0].shape}")
             print(f"vector_of_choice6.shape : {vector_of_choice6.shape}")
 
+
             all_vectors = np.vstack([weighted_centroid_reshaped, vector_of_choice6, vector_of_choice7, vector_of_choice8])
             weighted_centroid_2nd = np.average(all_vectors, axis=0, weights=weights_for_2nd_centroid, keepdims=True)
-
-            user_data_storage.get_user_weighted_centroid_2nd(self.user_id).append(weighted_centroid_2nd)
+            print(f"weighted_centroid_2nd : {weighted_centroid_2nd}")
 
             num_3rd_cluster_indices, num_3rd_cluster = 75, 4
             final_cluster_to_books, final_selected_indices, final_kmeans= \
@@ -162,50 +160,35 @@ class BookRecommendation:
                                                                 weighted_centroid_2nd, 
                                                                 visited_cluster_2nd,
                                                                 final_kmeans)
+            print(f"suggested_books_9th : {suggested_books_9th}")
+            
             suggested_books_10th = self.select_books_for_new_cluster(
                                                                 final_cluster_to_books, 
                                                                 weighted_centroid_2nd, 
                                                                 visited_cluster_2nd,
                                                                 final_kmeans)
             user_data_storage.get_user_suggested_books_10th(self.user_id).append(suggested_books_10th)
+
+            print(f"suggested_books_10th: {suggested_books_10th}")
             
             suggested_books = suggested_books_9th
 
+            
         elif self.question_number == 10:
             suggested_books = self.suggested_books_10th[0]
+            suggested_books = self.suggested_books_10th[0]
             
+
+
         else:
             raise ValueError(f"[ERROR] No books suggested for question_number={self.question_number}")
         
         return suggested_books, self.question_number
 
 
-    def get_final_recommendation(self):
-        vector_of_choice9, vector_of_choice10 = self.presented_book_indices[8], self.presented_book_indices[9]
-        weights_for_3rd_centroid = np.array([2, 1, 1])  
-        vector_of_choice9, vector_of_choice10 = \
-            [self.book_embeddings[self.presented_book_indices[i]].reshape(1, -1) for i in (9, 10)]
-        weighted_2nd_centroid_reshaped = self.weighted_centroid_2nd[0].reshape(1, -1)
+    
 
-        all_vectors = np.vstack([weighted_2nd_centroid_reshaped, vector_of_choice9, vector_of_choice10])
-        final_centroid = np.average(all_vectors, axis=0, weights=weights_for_3rd_centroid, keepdims=True)
-        print(f"final_centroid : {final_centroid}")
-
-        if final_centroid.ndim == 1:
-            final_centroid = final_centroid.reshape(1, -1)
-        
-        similarities = cosine_similarity(final_centroid, self.book_embeddings)[0]
-        
-        top_n = 25
-        top_indices = np.argsort(similarities)[::-1][:top_n]
-        
-        final_recommendations = self.isbn_arr[top_indices[:5]]
-        final_recommendations = [int(isbn) for isbn in final_recommendations]
-        # print("final_recommendations_isbn : ", final_recommendations)
-        # print("type el final_recommendations :", [type(el) for el in final_recommendations])
-
-        return final_recommendations
-        
+    
 
     def get_tournament_winner_cluster_indices_until_round5(self):
         cluster_to_books = self.cluster_to_books
@@ -217,18 +200,21 @@ class BookRecommendation:
         if question_number == 1:
             book_a = int(np.random.choice([
                 idx for idx in cluster_to_books[0] if idx not in presented_book_indices]))
+
             book_b = int(np.random.choice([
                 idx for idx in cluster_to_books[1] if idx not in presented_book_indices]))
 
         elif question_number == 2:
             book_a = int(np.random.choice([
                 idx for idx in cluster_to_books[2] if idx not in presented_book_indices]))
+            
             book_b = int(np.random.choice([
                 idx for idx in cluster_to_books[3] if idx not in presented_book_indices]))
             
         elif question_number == 3:
             book_a = int(np.random.choice([
-                idx for idx in cluster_to_books[4] if idx not in presented_book_indices]))           
+                idx for idx in cluster_to_books[4] if idx not in presented_book_indices]))
+            
             book_b = int(np.random.choice([
                 idx for idx in cluster_to_books[5] if idx not in presented_book_indices]))
 
@@ -244,6 +230,7 @@ class BookRecommendation:
                     break
             print("winner_of_1: ", winner_of_1)
             print("cluster_of_winner_1", cluster_of_winner_1)
+
 
             winner_of_2 = selected_book_indices[1]
             cluster_of_winner_2 = None
@@ -293,8 +280,11 @@ class BookRecommendation:
             raise ValueError("Question number out of range 5")
 
         suggested_books = list(map(int, [book_a, book_b]))
-
+        # return book_a, book_b
         return suggested_books
+        
+    def final_selection(self):
+        pass
 
 
     def books_chosen_dict_update(self):
@@ -310,7 +300,7 @@ class BookRecommendation:
             books_chosen_dict[cluster_of_choice].append(selected_book)
         print("books_chosen_dict: ", books_chosen_dict)
         return books_chosen_dict
-
+        
 
     def get_centroid_after_round5(self, centroid_weight=0.7):
         
@@ -324,6 +314,9 @@ class BookRecommendation:
         book_values_of_cluster = list(sorted_cluster_books.values())
         book_keys_of_cluster = list(sorted_cluster_books.keys())
 
+        # print("book_values_of_cluster:", book_values_of_cluster)
+        # print("book_keys_of_cluster:", book_keys_of_cluster)
+
         winner_of_5 = self.selected_book_indices[4]
         self.cluster_of_winner_5 = None
         for cluster_id, book_list in self.cluster_to_books.items():
@@ -331,6 +324,9 @@ class BookRecommendation:
                 self.cluster_of_winner_5 = cluster_id
                 break
         
+        
+
+
         first_cluster_num = self.cluster_of_winner_5
         first_cluster_indices = sorted_cluster_books[first_cluster_num]
         remaining_clusters = [key for key in book_keys_of_cluster if key != first_cluster_num]
@@ -372,7 +368,7 @@ class BookRecommendation:
         centroid_first * weight_first +
         centroid_second * weight_second +
         centroid_third * weight_third
-        ) / (weight_first + weight_second + weight_third)
+         ) / (weight_first + weight_second + weight_third)
         
         if isinstance(weighted_centroid, list):
             weighted_centroid = np.array(weighted_centroid)
@@ -390,48 +386,78 @@ class BookRecommendation:
 
 
     def neighborhood_based_clustering(self, num_indices, num_clusters, book_embeddings, weighted_centroid, winner_cluster_indices=None):
+        # if isinstance(weighted_centroid, list):
+        #     weighted_centroid = weighted_centroid[0]
+
+        # assert self.weighted_centroid.shape[1] == self.book_embeddings.shape[1], "차원이 일치하지 않습니다."
+    
+        # if winner_cluster_indices is None:
+        #     print("!!  valid_indices = book_embeddings !!")
+        #     valid_indices = book_embeddings
+
+        # print(f" valid indices : {type(valid_indices)} - {valid_indices}")
+        # cosine_similarities = cosine_similarity(book_embeddings[valid_indices], weighted_centroid).flatten()
+
+        # print("cosine_similarities : ", cosine_similarities)
+        # selected_relative_indices = np.argpartition(cosine_similarities, -num_indices)[-num_indices:]
+        # selected_new_indices = valid_indices[selected_relative_indices] 
+
+        # # 최종 선택된 벡터 결합 (winner_cluster_indices 추가)
+        # selected_indices_from_weighted_centroid = np.unique(np.concatenate([selected_new_indices, winner_cluster_indices]))
 
         if isinstance(weighted_centroid, list):
             weighted_centroid = weighted_centroid[0]
     
+        # cosine similarity 계산
         cosine_similarities = cosine_similarity(book_embeddings, weighted_centroid).flatten()
         
+        # 유사도 높은 순으로 num_indices 개 선택
         selected_new_indices = np.argpartition(cosine_similarities, -num_indices)[-num_indices:]
-
+        
+        # winner_cluster_indices가 None이면 빈 리스트로 초기화
         if winner_cluster_indices is None:
             winner_cluster_indices = []
         
+    
+        # 중복 인덱스 확인
         combined_indices = np.concatenate([selected_new_indices, winner_cluster_indices])
         unique_indices, counts = np.unique(combined_indices, return_counts=True)
         duplicate_indices = unique_indices[counts > 1]
         
+        # valid_indices 설정: 유사도 높은 인덱스 + winner_cluster_indices
         selected_indices_from_weighted_centroid = np.unique(combined_indices)
         selected_indices_from_weighted_centroid = np.unique(np.array(selected_indices_from_weighted_centroid, dtype=np.int64))
+
 
         print(f"[INFO] weighted_centroid 기반 {num_indices}개 선택 완료")
         print(f"[INFO] winner_cluster_indices 개수: {len(winner_cluster_indices)}개")
         print(f"[INFO] 최종 valid_indices 개수 (중복 제거): {len(selected_indices_from_weighted_centroid)}개")
         print(f"[INFO] 중복된 인덱스 len: {len(duplicate_indices)}")
 
+        # ✅ 선택된 벡터 가져오기
         selected_vectors = book_embeddings[selected_indices_from_weighted_centroid]
 
+        # 1D 배열인 경우 2D 배열로 변환
         if selected_vectors.ndim == 1:
             selected_vectors = selected_vectors.reshape(1, -1)
 
         print(f"selected_vectors.shape : {selected_vectors.shape}")
-
+        # ✅ 5. KMeans 클러스터링 (최신 옵션 적용)
         kmeans = KMeans(n_clusters=num_clusters, random_state=42, n_init='auto')
         clusters = kmeans.fit_predict(selected_vectors)
 
+        # ✅ 6. 각 클러스터의 책 인덱스 저장
         neigh_based_clustering_to_books = {i: [] for i in range(num_clusters)}
         for idx, cluster_id in enumerate(clusters):
             neigh_based_clustering_to_books[cluster_id].append(int(selected_indices_from_weighted_centroid[idx]))
             
+        # ✅ 7. 클러스터 결과 출력
         unique, counts = np.unique(clusters, return_counts=True)
         print("K-Means 클러스터 결과:")
         for label, count in zip(unique, counts):
             print(f"클러스터 {label}: {count}개")
         print(f"kmeans_2nd : {kmeans}")
+
 
         return neigh_based_clustering_to_books, selected_indices_from_weighted_centroid, kmeans
 
@@ -439,10 +465,20 @@ class BookRecommendation:
     def select_books_for_new_cluster(self, neigh_based_clustering_to_books, weighted_centroid, visited_clusters, kmeans):
         
         presented_book_indices = self.presented_book_indices
+        # neigh_based_clustering_to_books = self.neigh_based_clustering_to_books
+        # weighted_centroid = self.weighted_centroid
+        # visited_clusters = self.visited_clusters
         question_number = self.question_number
         if isinstance(kmeans, list):
             kmeans = kmeans[0]
+        # kmeans_2nd = self.kmeans_2nd
+        # selected_indices_from_weighted_centroid = self.selected_indices_from_weighted_centroid
         print(f"presented_book_indices: {presented_book_indices}")
+
+        # print(f"visited_clusters: {visited_clusters}")
+        # print(f"All Clusters: {list(neigh_based_clustering_to_books.keys())}")
+        # print(f"✅ Remaining Clusters: {[c for c in neigh_based_clustering_to_books.keys() if c not in visited_clusters]}")
+        # print(f"✅ weighted_centroid len: {len(weighted_centroid)}")
         
         try:
             print(f"\n🟡 [Start] Selecting books for Question {self.question_number}")
@@ -460,9 +496,14 @@ class BookRecommendation:
                 if centroid_cluster not in neigh_based_clustering_to_books.keys():
                     raise ValueError(f"centroid_cluster {centroid_cluster} not found in cluster_to_books")
                 
+                # print(f"selected_indices_from_weighted_centroid:  {selected_indices_from_weighted_centroid}")
+                # print(f"neigh_based_clustering_to_books:  {neigh_based_clustering_to_books}")
                 
                 available_books = [idx for idx in neigh_based_clustering_to_books[centroid_cluster] 
                                 if idx not in presented_book_indices]
+                # print(f"Type of presented_book_indices elements: {[type(x) for x in presented_book_indices]}")
+                # print(f"Type of available_books elements: {[type(x) for x in available_books]}")
+                # [수정된 중복 검증 로직]
                 intersection_a = set(available_books).intersection(presented_book_indices)
                 print(f"🔍 [DEBUG] Intersection with presented_book_indices for book_a: {intersection_a}")
 

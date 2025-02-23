@@ -4,43 +4,32 @@ from sqlalchemy.orm import Session
 from database.connection import get_db
 import psycopg2
 from database.crud import get_book_by_isbn, get_sentence_by_isbn, add_user_response, get_tags_by_isbn, get_question_number_by_user_id, get_sentences_by_ids
-from database.schemas import BookSchema, SentenceSchema, UserResponseSchema, ImageResponse
+from database.schemas import BookSchema, SentenceSchema, UserResponseSchema
 from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
-from sklearn.cluster import KMeans
-from sklearn.metrics.pairwise import cosine_similarity
-from services.book_rec_module import update_data, get_message_by_id, get_choice_bool, \
-        get_sentence_from_db, get_tournament_winner_cluster_until_round5, \
-        get_centroid_after_round5, neighborhood_based_clustering, select_books_for_new_cluster
+
 from services.module import BookRecommendation
 from dotenv import load_dotenv
 import os
-from app.database.connection import database_engine
+from database.connection import database_engine
 from fastapi.responses import JSONResponse
 from collections import defaultdict
-import joblib
-import time
 
-# .env 파일 로드
 load_dotenv()
 
-# 환경 변수 가져오기
 host = os.getenv("HOST")
 port = os.getenv("POSTGRES_PORT")
 user = os.getenv("POSTGRES_USER")
 password = os.getenv("POSTGRES_PASSWORD")
 database_name = os.getenv("DATABASE_NAME")
 
-#cursor 설정
 engine_for_cursor = database_engine(host, port, user, password, database_name)
 
 ENV = os.getenv("ENV", "local")
 ROOT_PATH = os.getenv("ROOT_PATH", "")
 
-# FastAPI 인스턴스 생성 (root_path 적용)
 app = FastAPI(root_path=ROOT_PATH, docs_url='/sesac', redoc_url=None, openapi_url=None)
 
-# CORS 설정
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # 모든 출처 허용 (배포 시 특정 도메인으로 제한 추천)
@@ -53,9 +42,6 @@ user_book_chosen_dict = defaultdict(lambda: defaultdict(list))
 
 @app.get("/recommendation/{user_id}")
 def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
-    
-    
-
     bookrecommendation = BookRecommendation(user_id, db)
     suggested_books_indices, question_number = bookrecommendation.get_book_suggestions()
     print(f"suggested_books_indices: {suggested_books_indices}")
@@ -68,12 +54,18 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
                                 "isbn": book_a.isbn, 
                                 "sentence": book_a.sentence},
                     "bookB": {"question_num": question_number, 
-                              "sentence_id": book_b.id, 
+                                "sentence_id": book_b.id, 
                                 "isbn": book_b.isbn, 
                                 "sentence": book_b.sentence},
                     },
                 headers={"Content-Type": "application/json; charset=utf-8"}
             )
+
+@app.get("/final_recommendation/{user_id}")
+def get_recommendations(user_id: str, db: Session = Depends(get_db)):
+    recommendationEngine = BookRecommendation(user_id, db)
+    recommendation_isbn = recommendationEngine.get_final_recommendation()
+    return recommendation_isbn
 
 
 @app.get("/books/{isbn}")
