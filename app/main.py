@@ -64,8 +64,8 @@ def get_book_suggestions(user_id: str, db: Session = Depends(get_db)):
 @app.get("/final_recommendation/{user_id}")
 def get_recommendations(user_id: str, db: Session = Depends(get_db)):
     recommendationEngine = BookRecommendation(user_id, db)
-    recommendation_isbn = recommendationEngine.get_final_recommendation()
-    return recommendation_isbn
+    recommendation_isbns = recommendationEngine.get_final_recommendation()
+    return recommendation_isbns
 
 
 @app.get("/books/{isbn}")
