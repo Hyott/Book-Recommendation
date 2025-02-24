@@ -18,3 +18,4 @@ certbot/conf/live/
 certbot/conf/renewal/
 certbot/www/
 *.npy
+flutter_app/assets/images/books/*.jpg
